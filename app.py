@@ -25,7 +25,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # ==========================================
 st.set_page_config(
     page_title="FlexiFit AI - PCOS/PCOD Exercise Coach",
-    page_icon="🧘‍♀️",
+    page_icon="logo.png",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -54,22 +54,21 @@ st.markdown("""
     }
     
     /* Glassmorphism header */
-    .main-header {
-        font-size: 3.5rem;
-        font-weight: 700;
-        text-align: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        padding: 2rem 0;
-        text-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        animation: fadeInDown 1s ease-out;
-    }
+   .main-header {
+    font-size: 3.5rem;
+    font-weight: 700;
+    text-align: center;
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    padding: 2rem 0;
+    animation: fadeInDown 1s ease-out;
+}
     
     .sub-header {
         font-size: 1.3rem;
         text-align: center;
-        color: #6c757d;
+        color: #11998e;
         margin-bottom: 3rem;
         font-weight: 300;
         animation: fadeInUp 1s ease-out;
@@ -107,7 +106,7 @@ st.markdown("""
     .exercise-card:hover {
         transform: translateY(-10px) scale(1.02);
         box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
-        border-color: #667eea;
+        border-color: #11998e;
     }
     
     /* Success and warning boxes with gradient */
@@ -199,25 +198,23 @@ st.markdown("""
         font-weight: 700;
     }
     
-    /* Video container with premium styling */
-    .video-container {
-        max-width: 400px;
-        max-height: 400px;
-        margin: 1rem auto;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        border: 3px solid white;
-        background: white;
-    }
-    
-    .video-container video {
-        max-width: 400px !important;
-        max-height: 400px !important;
-        width: 100% !important;
-        height: auto !important;
-        display: block;
-    }
+ .video-container {
+    width: 400px;
+    height: 400px;
+    margin: 1rem auto;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border: 3px solid white;
+    background: white;
+}
+
+.video-container video {
+    width: 400px !important;
+    height: 400px !important;
+    object-fit: cover !important;
+    display: block;
+}
     
     /* Chat message styling */
     .chat-user {
@@ -456,7 +453,6 @@ es = setup_elasticsearch()
 gemini_model = setup_vertex_ai()
 
 mp_pose = mp.solutions.pose
-pose = mp_pose.Pose(static_image_mode=False)
 mp_drawing = mp.solutions.drawing_utils
 
 class_names = ["Downdog", "Plank", "Warrior2", "Modified_Tree", "Standard_Tree"]
@@ -466,11 +462,12 @@ class_names = ["Downdog", "Plank", "Warrior2", "Modified_Tree", "Standard_Tree"]
 # ==========================================
 def extract_landmarks(frame):
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    results = pose.process(frame_rgb)
-    if not results.pose_landmarks:
-        return None, None
-    lm = results.pose_landmarks.landmark
-    return [[l.x, l.y, l.z] for l in lm], results
+    with mp_pose.Pose(static_image_mode=False) as pose_detector:
+        results = pose_detector.process(frame_rgb)
+        if not results.pose_landmarks:
+            return None, None
+        lm = results.pose_landmarks.landmark
+        return [[l.x, l.y, l.z] for l in lm], results
 
 def detect_class(lm):
     lm_flat = [coord for point in lm for coord in point]
@@ -548,6 +545,7 @@ def analyze_video(video_path, target_pose):
     out.release()
     progress_bar.empty()
     status_text.empty()
+    os.unlink(tfile.name)  # ADD THIS LINE
     
     if detected_poses:
         from collections import Counter
@@ -611,7 +609,11 @@ Provide a helpful, personalized response. If suggesting exercises, explain why t
 # ==========================================
 # MAIN APP
 # ==========================================
-st.markdown('<h1 class="main-header">🧘‍♀️ FlexiFit AI</h1>', unsafe_allow_html=True)
+col_logo, col_title = st.columns([1, 9])
+with col_logo:
+    st.image("logo.png", width=100)
+with col_title:
+    st.markdown('<h1 class="main-header">FlexiFit AI</h1>', unsafe_allow_html=True)
 st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
 
 # ==========================================
@@ -671,18 +673,27 @@ with tab1:
     st.markdown("## 📚 PCOS/PCOD Exercise Library")
     st.markdown("Browse our curated collection of exercises specifically designed for PCOS/PCOD management")
     
-    search_query = st.text_input("🔍 Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
-    
-    if search_query:
-        exercises = search_exercises(search_query)
+  search_query = st.text_input("🔍 Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
+
+if search_query:
+    exercises = search_exercises(search_query)
+else:
+    exercises = get_all_exercises()
+
+st.markdown(f"### 🎯 Found {len(exercises)} exercises")
+
+cols = st.columns(2)
+
+for idx, ex in enumerate(exercises):
     else:
-        exercises = get_all_exercises()
-    
-    st.markdown(f"### 🎯 Found {len(exercises)} exercises")
-    
-    cols = st.columns(2)
-    
-    for idx, ex in enumerate(exercises):
+    st.markdown("""
+    <div class="info-box" style="text-align: center; padding: 3rem;">
+        <h2>🔍 Search for PCOS/PCOD Exercises</h2>
+        <p style="font-size: 1.2rem; margin: 1rem 0;">
+        Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
         with cols[idx % 2]:
             st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
             
@@ -691,24 +702,26 @@ with tab1:
             image_name = None
             
             # Try to find matching image
-            if 'downward' in exercise_name or 'down dog' in exercise_name:
-                image_name = "Downdog.jpg"
-            elif 'plank' in exercise_name:
-                image_name = "Plank.jpg"
-            elif 'warrior' in exercise_name:
-                image_name = "Warrior2.jpg"
-            elif 'modified tree' in exercise_name:
-                image_name = "Modified_Tree.jpg"
-            elif 'standard tree' in exercise_name or ('tree' in exercise_name and 'modified' not in exercise_name):
-                image_name = "Standard_Tree.jpg"
+           # Try to find matching image
+if 'downward' in exercise_name or 'down dog' in exercise_name or 'downdog' in exercise_name:
+    image_name = "Downdog.jpg"
+elif 'plank' in exercise_name:
+    image_name = "Plank.jpg"
+elif 'warrior' in exercise_name:
+    image_name = "Warrior2.jpg"
+elif 'modified' in exercise_name and 'tree' in exercise_name:
+    image_name = "Modified_Tree.jpg"
+elif 'tree' in exercise_name:
+    image_name = "Standard_Tree.jpg"
             
             # Also try the exercise_id directly
             if image_name is None:
                 image_name = ex.get('exercise_id', '') + ".jpg"
             
             if image_name and os.path.exists(image_name):
-                img = Image.open(image_name)
-                st.image(img, use_column_width=True)
+    img = Image.open(image_name)
+    img = img.resize((400, 400))
+    st.image(img, width=400)
             else:
                 # Show placeholder if image not found
                 st.markdown("""
@@ -830,7 +843,10 @@ with tab2:
                         'accuracy': results['accuracy'],
                         'confidence': results['confidence']
                     })
-                    
+
+
+                    if len(st.session_state.exercise_history) > 50:
+                      st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                     st.markdown("---")
                     st.markdown("## 📊 Analysis Results")
                     
@@ -982,6 +998,10 @@ with tab3:
                     'role': 'user',
                     'content': user_input
                 })
+
+                if len(st.session_state.chat_history) > 100:
+                  st.session_state.chat_history = st.session_state.chat_history[-100:]
+
                 
                 with st.spinner("🤖 AI Coach is thinking..."):
                     response = chat_with_ai(user_input)
@@ -1121,13 +1141,15 @@ with tab4:
             </div>
             """, unsafe_allow_html=True)
 
-# ==========================================
-# PREMIUM SIDEBAR
-# ==========================================
+
 with st.sidebar:
     st.markdown("""
     <div style="text-align: center; padding: 1rem 0; margin-bottom: 2rem;">
-        <h1 style="color: white; font-size: 2.5rem; margin: 0;">🧘‍♀️</h1>
+    """, unsafe_allow_html=True)
+    
+    st.image("logo.png", width=80)
+    
+    st.markdown("""
         <h2 style="color: white; margin: 0.5rem 0;">FlexiFit AI</h2>
         <p style="color: rgba(255,255,255,0.8); margin: 0;">PCOS/PCOD Exercise Coach</p>
     </div>
@@ -1137,22 +1159,22 @@ with st.sidebar:
     
     st.markdown("""
     <div style="color: white;">
-        <h3 style="color: white;">🎯 Powered By</h3>
+        <h3 style="color: white;">Powered By</h3>
         <ul style="list-style: none; padding: 0;">
             <li style="padding: 0.5rem 0;">
-                <b>🤖 MediaPipe</b><br>
+                <b>MediaPipe</b><br>
                 <span style="opacity: 0.8;">Real-time pose detection</span>
             </li>
             <li style="padding: 0.5rem 0;">
-                <b>🧠 Custom ML Model</b><br>
+                <b>Custom ML Model</b><br>
                 <span style="opacity: 0.8;">92% accuracy classification</span>
             </li>
             <li style="padding: 0.5rem 0;">
-                <b>🔍 Elasticsearch</b><br>
+                <b> Elasticsearch</b><br>
                 <span style="opacity: 0.8;">Smart exercise search</span>
             </li>
             <li style="padding: 0.5rem 0;">
-                <b>💬 Vertex AI Gemini</b><br>
+                <b>Vertex AI Gemini</b><br>
                 <span style="opacity: 0.8;">Intelligent coaching</span>
             </li>
         </ul>
@@ -1161,19 +1183,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.markdown("""
-    <div style="color: white;">
-        <h3 style="color: white;">✨ Key Features</h3>
-        <ul style="opacity: 0.9;">
-            <li>Real-time pose detection & analysis</li>
-            <li>Video annotation with visual feedback</li>
-            <li>AI-powered personalized coaching</li>
-            <li>Progress tracking & analytics</li>
-            <li>PCOS/PCOD-specific exercises</li>
-            <li>Download annotated videos</li>
-        </ul>
-    </div>
-    """, unsafe_allow_html=True)
+
     
     st.markdown("---")
     
@@ -1185,10 +1195,4 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.markdown("""
-    <div style="color: white; text-align: center; padding: 1rem 0;">
-        <h3 style="color: white;">🏆 Built for</h3>
-        <p style="font-size: 1.1rem; font-weight: 600;">Google Cloud Hackathon</p>
-        <p style="opacity: 0.8; margin-top: 1rem;">Made with ❤️ for women with PCOS/PCOD</p>
-    </div>
-    """, unsafe_allow_html=True)
+
