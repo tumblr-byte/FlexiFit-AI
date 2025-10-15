@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 import torch
-from dotenv import load_dotenv
+
 import torch.nn as nn
 import mediapipe as mp
 from elasticsearch import Elasticsearch
@@ -15,7 +15,6 @@ from datetime import datetime
 from PIL import Image
 import json
 
-load_dotenv()
 
 # ==========================================
 # PAGE CONFIG
@@ -658,3 +657,4 @@ with st.sidebar:
     st.markdown("---")
 
     st.caption("Made with ❤️ for women with PCOS/PCOD")
+
