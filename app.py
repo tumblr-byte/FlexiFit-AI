@@ -47,7 +47,7 @@ st.markdown("""
     header {visibility: hidden;}
     
     .main {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        background: linear-gradient(135deg, ##dee276 0%, #c3cfe2 100%);
         padding: 2rem 1rem;
     }
     
@@ -66,7 +66,7 @@ st.markdown("""
     .sub-header {
         font-size: 1.1rem;
         text-align: center;
-        color: #2d6a4f;
+        color: ##dee276;
         margin-bottom: 2rem;
         font-weight: 300;
         animation: fadeInUp 1s ease-out;
@@ -1189,3 +1189,4 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("✅ All history cleared!")
         st.rerun()
+
