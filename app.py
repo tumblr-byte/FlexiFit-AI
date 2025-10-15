@@ -11,10 +11,14 @@ from google.oauth2 import service_account
 from vertexai.generative_models import GenerativeModel
 import tempfile
 import os
+import warnings
 from datetime import datetime
 from PIL import Image
 import json
 
+# Suppress warnings
+warnings.filterwarnings('ignore')
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 # ==========================================
 # PAGE CONFIG
@@ -27,66 +31,361 @@ st.set_page_config(
 )
 
 # ==========================================
-# CUSTOM CSS
+# PREMIUM CUSTOM CSS
 # ==========================================
 st.markdown("""
 <style>
+    /* Import modern font */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    
+    * {
+        font-family: 'Poppins', sans-serif;
+    }
+    
+    /* Hide Streamlit branding */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
+    /* Main container styling */
+    .main {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 2rem 1rem;
+    }
+    
+    /* Glassmorphism header */
     .main-header {
-        font-size: 3rem;
-        font-weight: bold;
+        font-size: 3.5rem;
+        font-weight: 700;
         text-align: center;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        padding: 1rem 0;
+        padding: 2rem 0;
+        text-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        animation: fadeInDown 1s ease-out;
     }
+    
     .sub-header {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         text-align: center;
         color: #6c757d;
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
+        font-weight: 300;
+        animation: fadeInUp 1s ease-out;
     }
+    
+    /* Premium card design */
     .exercise-card {
-        border: 2px solid #e0e0e0;
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        background: white;
-        transition: all 0.3s;
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 20px;
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(10px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
     }
+    
+    .exercise-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+        transition: left 0.5s;
+    }
+    
+    .exercise-card:hover::before {
+        left: 100%;
+    }
+    
     .exercise-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
         border-color: #667eea;
     }
+    
+    /* Success and warning boxes with gradient */
     .success-box {
-        background: #d4edda;
-        border: 2px solid #28a745;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border: none;
+        border-left: 5px solid #28a745;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
         font-size: 1.1rem;
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.2);
+        animation: slideInLeft 0.5s ease-out;
     }
+    
     .warning-box {
-        background: #fff3cd;
-        border: 2px solid #ffc107;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin: 1rem 0;
+        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        border: none;
+        border-left: 5px solid #ffc107;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 4px 15px rgba(255, 193, 7, 0.2);
+        animation: slideInLeft 0.5s ease-out;
     }
+    
+    .info-box {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        border: none;
+        border-left: 5px solid #2196f3;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+    }
+    
+    /* Premium buttons */
     .stButton>button {
         width: 100%;
-        border-radius: 10px;
-        height: 3rem;
-        font-weight: bold;
+        border-radius: 15px;
+        height: 3.5rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
+    
+    .stButton>button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    
+    /* Animated metric cards */
     .metric-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
+        padding: 2rem;
+        border-radius: 20px;
         text-align: center;
-        margin: 0.5rem 0;
+        margin: 1rem 0;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        transition: all 0.3s ease;
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    .metric-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.6);
+    }
+    
+    .metric-card h3 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 400;
+        opacity: 0.9;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    
+    .metric-card h1 {
+        margin: 1rem 0 0 0;
+        font-size: 3rem;
+        font-weight: 700;
+    }
+    
+    /* Video container with premium styling */
+    .video-container {
+        max-width: 400px;
+        max-height: 400px;
+        margin: 1rem auto;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        border: 3px solid white;
+        background: white;
+    }
+    
+    .video-container video {
+        max-width: 400px !important;
+        max-height: 400px !important;
+        width: 100% !important;
+        height: auto !important;
+        display: block;
+    }
+    
+    /* Chat message styling */
+    .chat-user {
+        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+        padding: 1.5rem;
+        border-radius: 20px 20px 5px 20px;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+        animation: slideInRight 0.3s ease-out;
+    }
+    
+    .chat-assistant {
+        background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
+        padding: 1.5rem;
+        border-radius: 20px 20px 20px 5px;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(156, 39, 176, 0.2);
+        animation: slideInLeft 0.3s ease-out;
+    }
+    
+    /* Tab styling */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2rem;
+        background: rgba(255, 255, 255, 0.5);
+        padding: 1rem;
+        border-radius: 15px;
+    }
+    
+    .stTabs [data-baseweb="tab"] {
+        height: 4rem;
+        padding: 0 2rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .stTabs [aria-selected="true"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Progress bar styling */
+    .stProgress > div > div > div > div {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 10px;
+    }
+    
+    /* Input field styling */
+    .stTextInput>div>div>input {
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        padding: 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .stTextInput>div>div>input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    
+    /* Expander styling */
+    .streamlit-expanderHeader {
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 10px;
+        font-weight: 600;
+        color: #667eea;
+    }
+    
+    /* Animations */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slideInLeft {
+        from {
+            opacity: 0;
+            transform: translateX(-50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(50px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    /* Sidebar styling */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    [data-testid="stSidebar"] .element-container {
+        color: white;
+    }
+    
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3 {
+        color: white;
+    }
+    
+    /* Badge styling */
+    .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin: 0.25rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .badge-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .badge-success {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+    
+    .badge-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        color: white;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -131,8 +430,6 @@ def load_pose_model():
     
     return model, device
 
-
-
 @st.cache_resource
 def setup_elasticsearch():
     es = Elasticsearch(
@@ -141,30 +438,18 @@ def setup_elasticsearch():
     )
     return es
 
-
-
-
 @st.cache_resource
 def setup_vertex_ai():
-    # Decode the base64-encoded JSON
     b64_string = os.environ["VERTEX_SERVICE_ACCOUNT_B64"]
     service_account_json = base64.b64decode(b64_string)
     service_account_info = json.loads(service_account_json)
-
-    # Create credentials
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
-
-    # Initialize Vertex AI
     aiplatform.init(
         project=os.environ["VERTEX_PROJECT_ID"],
         location=os.environ["VERTEX_LOCATION"],
         credentials=credentials
     )
-
-    # Return the model
     return GenerativeModel("gemini-2.5-flash")
-
-
 
 model, device = load_pose_model()
 es = setup_elasticsearch()
@@ -225,7 +510,7 @@ def analyze_video(video_path, target_pose):
         frame_count += 1
         progress = min(frame_count / total_frames, 1.0)
         progress_bar.progress(progress)
-        status_text.text(f"Analyzing frame {frame_count}/{total_frames}...")
+        status_text.text(f"🔄 Analyzing frame {frame_count}/{total_frames}...")
         
         lm, results = extract_landmarks(frame)
         
@@ -327,7 +612,47 @@ Provide a helpful, personalized response. If suggesting exercises, explain why t
 # MAIN APP
 # ==========================================
 st.markdown('<h1 class="main-header">🧘‍♀️ FlexiFit AI</h1>', unsafe_allow_html=True)
-st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach</p>', unsafe_allow_html=True)
+st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
+
+# ==========================================
+# STATS ROW
+# ==========================================
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.markdown(f"""
+    <div class="metric-card">
+        <h3>Total Exercises</h3>
+        <h1>{len(st.session_state.exercise_history)}</h1>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col2:
+    avg_accuracy = np.mean([h['accuracy'] for h in st.session_state.exercise_history]) if st.session_state.exercise_history else 0
+    st.markdown(f"""
+    <div class="metric-card">
+        <h3>Avg Accuracy</h3>
+        <h1>{avg_accuracy:.1f}%</h1>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col3:
+    st.markdown(f"""
+    <div class="metric-card">
+        <h3>Chat Messages</h3>
+        <h1>{len(st.session_state.chat_history)}</h1>
+    </div>
+    """, unsafe_allow_html=True)
+
+with col4:
+    st.markdown(f"""
+    <div class="metric-card">
+        <h3>AI Accuracy</h3>
+        <h1>92%</h1>
+    </div>
+    """, unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # ==========================================
 # TABS
@@ -335,91 +660,129 @@ st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach</p>'
 tab1, tab2, tab3, tab4 = st.tabs([
     "🏋️ Exercise Library", 
     "🎬 Analyze Video", 
-    "💬 AI Chat", 
-    "📊 My History"
+    "💬 AI Coach Chat", 
+    "📊 My Progress"
 ])
 
 # ==========================================
 # TAB 1: EXERCISE LIBRARY
 # ==========================================
 with tab1:
-    st.header("📚 PCOS/PCOD Exercise Library")
+    st.markdown("## 📚 PCOS/PCOD Exercise Library")
+    st.markdown("Browse our curated collection of exercises specifically designed for PCOS/PCOD management")
     
-    search_query = st.text_input("🔍 Search exercises...", placeholder="Try: balance, beginner, stress relief...")
+    search_query = st.text_input("🔍 Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
     
     if search_query:
         exercises = search_exercises(search_query)
     else:
         exercises = get_all_exercises()
     
-    st.markdown(f"### Found {len(exercises)} exercises")
+    st.markdown(f"### 🎯 Found {len(exercises)} exercises")
     
     cols = st.columns(2)
     
     for idx, ex in enumerate(exercises):
         with cols[idx % 2]:
-            with st.container():
-                st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
-                
-                # Try to load image
-                image_name = ex['exercise_id'] + ".jpg"
-                if os.path.exists(image_name):
-                    img = Image.open(image_name)
-                    st.image(img, use_column_width=True)
-                
-                st.markdown(f"### {ex['name']}")
-                st.markdown(f"**Category:** `{ex['category']}` | **Difficulty:** `{ex['difficulty']}`")
-                st.markdown(f"**Duration:** {ex['duration_seconds']}s | **Reps:** {ex['reps']}")
-                
-                with st.expander("📖 Details"):
-                    st.markdown(f"**Description:**\n{ex['description']}")
-                    st.markdown("**PCOS/PCOD Benefits:**")
-                    for benefit in ex['pcos_benefits']:
-                        st.markdown(f"- {benefit}")
-                
-                st.markdown('</div>', unsafe_allow_html=True)
+            st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
+            
+            # Map exercise names to image filenames
+            exercise_name = ex.get('name', '').lower()
+            image_name = None
+            
+            # Try to find matching image
+            if 'downward' in exercise_name or 'down dog' in exercise_name:
+                image_name = "Downdog.jpg"
+            elif 'plank' in exercise_name:
+                image_name = "Plank.jpg"
+            elif 'warrior' in exercise_name:
+                image_name = "Warrior2.jpg"
+            elif 'modified tree' in exercise_name:
+                image_name = "Modified_Tree.jpg"
+            elif 'standard tree' in exercise_name or ('tree' in exercise_name and 'modified' not in exercise_name):
+                image_name = "Standard_Tree.jpg"
+            
+            # Also try the exercise_id directly
+            if image_name is None:
+                image_name = ex.get('exercise_id', '') + ".jpg"
+            
+            if image_name and os.path.exists(image_name):
+                img = Image.open(image_name)
+                st.image(img, use_column_width=True)
+            else:
+                # Show placeholder if image not found
+                st.markdown("""
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                            height: 200px; display: flex; align-items: center; justify-content: center;
+                            border-radius: 10px; color: white; font-size: 1.5rem;">
+                    🧘‍♀️
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown(f"### {ex['name']}")
+            
+            st.markdown(f"""
+            <span class="badge badge-primary">{ex['category']}</span>
+            <span class="badge badge-warning">{ex['difficulty']}</span>
+            <span class="badge badge-success">{ex['duration_seconds']}s</span>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"**Reps:** {ex['reps']}")
+            
+            with st.expander("📖 View Details"):
+                st.markdown(f"**Description:**\n{ex['description']}")
+                st.markdown("**🌟 PCOS/PCOD Benefits:**")
+                for benefit in ex['pcos_benefits']:
+                    st.markdown(f"• {benefit}")
+            
+            st.markdown('</div>', unsafe_allow_html=True)
 
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
 with tab2:
-    st.header("🎬 Upload & Analyze Your Exercise Video")
+    st.markdown("## 🎬 Upload & Analyze Your Exercise Video")
     
     st.markdown("""
     <div class="info-box">
-    📹 <b>How it works:</b><br>
-    1. Choose the exercise you're performing<br>
-    2. Upload your video (MP4, MOV, AVI)<br>
-    3. Our AI analyzes your posture in real-time<br>
-    4. Get instant feedback with visual overlays!
+    <h3 style="margin-top: 0;">📹 How it works:</h3>
+    <ol style="font-size: 1.1rem; line-height: 2;">
+        <li><b>Choose</b> the exercise you're performing from the dropdown</li>
+        <li><b>Upload</b> your video (MP4, MOV, AVI format)</li>
+        <li><b>Analyze</b> - Our AI will detect your pose in real-time</li>
+        <li><b>Download</b> the annotated video with visual feedback!</li>
+    </ol>
     </div>
     """, unsafe_allow_html=True)
     
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.subheader("1️⃣ Select Target Exercise")
+        st.markdown("### 1️⃣ Select Target Exercise")
         
-        # Map class names to display names
         exercise_mapping = {
-            "Downdog": "Downward Facing Dog",
-            "Plank": "Plank Pose",
-            "Warrior2": "Warrior 2",
-            "Modified_Tree": "Modified Tree Pose",
-            "Standard_Tree": "Standard Tree Pose"
+            "Downdog": "Downward Facing Dog 🐕",
+            "Plank": "Plank Pose 💪",
+            "Warrior2": "Warrior 2 ⚔️",
+            "Modified_Tree": "Modified Tree Pose 🌳",
+            "Standard_Tree": "Standard Tree Pose 🌲"
         }
         
         display_names = list(exercise_mapping.values())
-        selected_display = st.selectbox("Choose your exercise:", display_names)
+        selected_display = st.selectbox("Choose your exercise:", display_names, key="exercise_select")
         
-        # Reverse mapping
         reverse_mapping = {v: k for k, v in exercise_mapping.items()}
         target_pose = reverse_mapping[selected_display]
         
-        st.success(f"✅ Target Exercise: **{selected_display}**")
+        st.markdown(f"""
+        <div class="success-box">
+        <h3 style="margin: 0;">✅ Target Exercise Selected</h3>
+        <h2 style="margin: 0.5rem 0 0 0; color: #28a745;">{selected_display}</h2>
+        </div>
+        """, unsafe_allow_html=True)
     
     with col2:
-        st.subheader("2️⃣ Upload Video")
+        st.markdown("### 2️⃣ Upload Your Video")
         uploaded_video = st.file_uploader(
             "Choose a video file",
             type=['mp4', 'mov', 'avi'],
@@ -432,25 +795,34 @@ with tab2:
         col_preview, col_analyze = st.columns([1, 1])
         
         with col_preview:
-            st.subheader("📹 Your Uploaded Video")
+            st.markdown("### 📹 Your Uploaded Video")
+            st.markdown('<div class="video-container">', unsafe_allow_html=True)
             st.video(uploaded_video)
+            st.markdown('</div>', unsafe_allow_html=True)
         
         with col_analyze:
-            st.subheader("🔍 Ready to Analyze!")
-            st.info(f"**Target Exercise:** {selected_display}")
+            st.markdown("### 🔍 Ready to Analyze!")
+            st.markdown(f"""
+            <div class="info-box">
+            <h3 style="margin-top: 0;">Analysis Details</h3>
+            <p><b>Target Exercise:</b> {selected_display}</p>
+            <p><b>AI Model:</b> Custom Pose Classifier</p>
+            <p><b>Accuracy:</b> 92% on validation set</p>
+            <p><b>Processing:</b> Real-time frame analysis</p>
+            </div>
+            """, unsafe_allow_html=True)
             
-            if st.button("🚀 Analyze Video", type="primary", use_container_width=True):
+            if st.button("🚀 Start AI Analysis", type="primary", use_container_width=True):
                 tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                 tfile.write(uploaded_video.read())
                 tfile.close()
                 
-                with st.spinner("🤖 AI is analyzing your video... Please wait!"):
+                with st.spinner("🤖 AI is analyzing your video... This may take a moment!"):
                     results = analyze_video(tfile.name, target_pose)
                 
                 if results:
                     st.session_state.analyzed_video_path = results['output_path']
                     
-                    # Save to history
                     st.session_state.exercise_history.append({
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'target_pose': selected_display,
@@ -460,14 +832,14 @@ with tab2:
                     })
                     
                     st.markdown("---")
-                    st.subheader("📊 Analysis Results")
+                    st.markdown("## 📊 Analysis Results")
                     
                     if results['match']:
                         st.markdown("""
                         <div class="success-box">
-                        <h2 style="color: #28a745; margin: 0;">✅ PERFECT MATCH!</h2>
-                        <p style="margin: 0.5rem 0 0 0; font-size: 1.1rem;">
-                        Great job! Your pose matches the target exercise.
+                        <h2 style="color: #28a745; margin: 0;">🎉 PERFECT MATCH!</h2>
+                        <p style="margin: 1rem 0 0 0; font-size: 1.2rem;">
+                        Excellent work! Your pose matches the target exercise perfectly. Keep up the great form!
                         </p>
                         </div>
                         """, unsafe_allow_html=True)
@@ -475,9 +847,10 @@ with tab2:
                         st.markdown(f"""
                         <div class="warning-box">
                         <h2 style="color: #856404; margin: 0;">⚠️ Different Pose Detected</h2>
-                        <p style="margin: 0.5rem 0 0 0;">
-                        <b>Target:</b> {selected_display}<br>
-                        <b>Detected:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}
+                        <p style="margin: 1rem 0 0 0; font-size: 1.1rem;">
+                        <b>Target Exercise:</b> {selected_display}<br>
+                        <b>Detected Exercise:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}<br><br>
+                        Don't worry! Check the annotated video below to see where adjustments are needed.
                         </p>
                         </div>
                         """, unsafe_allow_html=True)
@@ -488,58 +861,82 @@ with tab2:
                     with metric_col1:
                         st.markdown(f"""
                         <div class="metric-card">
-                        <h3 style="margin: 0;">Accuracy</h3>
-                        <h1 style="margin: 0.5rem 0 0 0;">{results['accuracy']:.1f}%</h1>
+                        <h3>Accuracy Score</h3>
+                        <h1>{results['accuracy']:.1f}%</h1>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with metric_col2:
                         st.markdown(f"""
                         <div class="metric-card">
-                        <h3 style="margin: 0;">Confidence</h3>
-                        <h1 style="margin: 0.5rem 0 0 0;">{results['confidence']*100:.1f}%</h1>
+                        <h3>AI Confidence</h3>
+                        <h1>{results['confidence']*100:.1f}%</h1>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     with metric_col3:
                         st.markdown(f"""
                         <div class="metric-card">
-                        <h3 style="margin: 0;">Frames</h3>
-                        <h1 style="margin: 0.5rem 0 0 0;">{results['total_frames']}</h1>
+                        <h3>Frames Analyzed</h3>
+                        <h1>{results['total_frames']}</h1>
                         </div>
                         """, unsafe_allow_html=True)
                     
                     st.markdown("---")
-                    st.subheader("🎥 Analyzed Video (with AI Overlay)")
+                    st.markdown("### 🎥 Annotated Video with AI Feedback")
+                    st.markdown("**Green** = Correct Pose | **Red** = Incorrect Pose")
+                    
+                    st.markdown('<div class="video-container">', unsafe_allow_html=True)
                     st.video(results['output_path'])
+                    st.markdown('</div>', unsafe_allow_html=True)
                     
                     st.markdown("---")
                     
                     col_action1, col_action2 = st.columns(2)
                     
                     with col_action1:
-                        if st.button("🔄 Analyze Another Video", use_container_width=True):
-                            st.session_state.analyzed_video_path = None
-                            st.rerun()
+                        with open(results['output_path'], 'rb') as video_file:
+                            video_bytes = video_file.read()
+                            st.download_button(
+                                label="📥 Download Annotated Video",
+                                data=video_bytes,
+                                file_name=f"flexifit_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
+                                mime="video/mp4",
+                                use_container_width=True
+                            )
                     
                     with col_action2:
-                        if st.button("💬 Ask AI for Feedback", use_container_width=True):
-                            st.session_state.switch_to_chat = True
+                        if st.button("🔄 Analyze Another Video", use_container_width=True):
+                            st.session_state.analyzed_video_path = None
                             st.rerun()
 
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
 with tab3:
-    st.header("💬 Chat with Your AI Coach")
+    st.markdown("## 💬 Chat with Your AI Exercise Coach")
     
     st.markdown("""
     <div class="info-box">
-    💡 <b>Ask me anything!</b><br>
-    • "What exercises should I do for PCOS?"<br>
-    • "How can I improve my plank form?"<br>
-    • "What should I eat today?"<br>
-    • "Can you explain the benefits of Tree Pose?"
+    <h3 style="margin-top: 0;">💡 Ask me anything about PCOS/PCOD exercises!</h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+        <div>
+            <b>🏋️ Exercise Questions:</b>
+            <ul style="margin: 0.5rem 0;">
+                <li>"What exercises help with PCOS?"</li>
+                <li>"How to improve my plank form?"</li>
+                <li>"Best poses for stress relief?"</li>
+            </ul>
+        </div>
+        <div>
+            <b>🌟 Health & Wellness:</b>
+            <ul style="margin: 0.5rem 0;">
+                <li>"Benefits of Tree Pose?"</li>
+                <li>"How often should I exercise?"</li>
+                <li>"Tips for better hormonal balance?"</li>
+            </ul>
+        </div>
+    </div>
     </div>
     """, unsafe_allow_html=True)
     
@@ -547,34 +944,46 @@ with tab3:
     chat_container = st.container()
     
     with chat_container:
+        if not st.session_state.chat_history:
+            st.markdown("""
+            <div style="text-align: center; padding: 3rem; color: #999;">
+                <h2>👋 Welcome to AI Coach Chat!</h2>
+                <p style="font-size: 1.2rem;">Start a conversation by typing your question below.</p>
+            </div>
+            """, unsafe_allow_html=True)
+        
         for message in st.session_state.chat_history:
             if message['role'] == 'user':
                 st.markdown(f"""
-                <div style="background: #e3f2fd; padding: 1rem; border-radius: 10px; margin: 0.5rem 0;">
-                <b>You:</b> {message['content']}
+                <div class="chat-user">
+                <b style="color: #2196f3; font-size: 1.1rem;">👤 You:</b><br>
+                <p style="margin: 0.5rem 0 0 0; font-size: 1.05rem;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
-                <div style="background: #f3e5f5; padding: 1rem; border-radius: 10px; margin: 0.5rem 0;">
-                <b>🤖 AI Coach:</b> {message['content']}
+                <div class="chat-assistant">
+                <b style="color: #9c27b0; font-size: 1.1rem;">🤖 AI Coach:</b><br>
+                <p style="margin: 0.5rem 0 0 0; font-size: 1.05rem;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
     
+    st.markdown("---")
+    
     # Chat input
-    user_input = st.text_input("Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises...")
+    user_input = st.text_input("💭 Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
     
     col_send, col_clear = st.columns([3, 1])
     
     with col_send:
-        if st.button("📤 Send", use_container_width=True, type="primary"):
+        if st.button("📤 Send Message", use_container_width=True, type="primary"):
             if user_input:
                 st.session_state.chat_history.append({
                     'role': 'user',
                     'content': user_input
                 })
                 
-                with st.spinner("🤖 AI is thinking..."):
+                with st.spinner("🤖 AI Coach is thinking..."):
                     response = chat_with_ai(user_input)
                 
                 st.session_state.chat_history.append({
@@ -583,6 +992,8 @@ with tab3:
                 })
                 
                 st.rerun()
+            else:
+                st.warning("⚠️ Please type a message first!")
     
     with col_clear:
         if st.button("🗑️ Clear Chat", use_container_width=True):
@@ -593,82 +1004,191 @@ with tab3:
 # TAB 4: HISTORY
 # ==========================================
 with tab4:
-    st.header("📊 Your Exercise & Chat History")
+    st.markdown("## 📊 Your Progress & History")
     
-    history_tab1, history_tab2 = st.tabs(["🏋️ Exercise History", "💬 Chat History"])
+    history_tab1, history_tab2 = st.tabs(["🏋️ Exercise Analytics", "💬 Chat History"])
     
     with history_tab1:
         if st.session_state.exercise_history:
-            st.subheader(f"Total Exercises: {len(st.session_state.exercise_history)}")
+            st.markdown(f"### 📈 Total Workouts Completed: {len(st.session_state.exercise_history)}")
+            
+            # Summary stats
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                avg_acc = np.mean([h['accuracy'] for h in st.session_state.exercise_history])
+                st.markdown(f"""
+                <div class="metric-card">
+                <h3>Average Accuracy</h3>
+                <h1>{avg_acc:.1f}%</h1>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                avg_conf = np.mean([h['confidence'] for h in st.session_state.exercise_history])
+                st.markdown(f"""
+                <div class="metric-card">
+                <h3>Average Confidence</h3>
+                <h1>{avg_conf*100:.1f}%</h1>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                matches = sum(1 for h in st.session_state.exercise_history if h['target_pose'] == h['detected_pose'])
+                success_rate = (matches / len(st.session_state.exercise_history)) * 100
+                st.markdown(f"""
+                <div class="metric-card">
+                <h3>Success Rate</h3>
+                <h1>{success_rate:.1f}%</h1>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            st.markdown("---")
+            st.markdown("### 📜 Workout History")
             
             for idx, record in enumerate(reversed(st.session_state.exercise_history)):
-                with st.expander(f"📅 {record['timestamp']} - {record['target_pose']}"):
+                match_status = record['target_pose'] == record['detected_pose']
+                
+                with st.expander(f"{'✅' if match_status else '⚠️'} {record['timestamp']} - {record['target_pose']}", expanded=(idx==0)):
+                    st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
+                    
                     col1, col2, col3 = st.columns(3)
                     
                     with col1:
-                        st.metric("Target Exercise", record['target_pose'])
-                    with col2:
-                        st.metric("Detected Exercise", record['detected_pose'])
-                    with col3:
-                        match_status = "✅ Match" if record['target_pose'] == record['detected_pose'] else "❌ No Match"
-                        st.metric("Result", match_status)
+                        st.markdown("**Target Exercise**")
+                        st.markdown(f"<h3>{record['target_pose']}</h3>", unsafe_allow_html=True)
                     
-                    st.progress(record['accuracy'] / 100)
-                    st.caption(f"Accuracy: {record['accuracy']:.1f}% | Confidence: {record['confidence']*100:.1f}%")
+                    with col2:
+                        st.markdown("**Detected Exercise**")
+                        st.markdown(f"<h3>{record['detected_pose']}</h3>", unsafe_allow_html=True)
+                    
+                    with col3:
+                        st.markdown("**Result**")
+                        if match_status:
+                            st.markdown('<h3 style="color: #28a745;">✅ Perfect Match</h3>', unsafe_allow_html=True)
+                        else:
+                            st.markdown('<h3 style="color: #ffc107;">⚠️ Different Pose</h3>', unsafe_allow_html=True)
+                    
+                    st.markdown("---")
+                    
+                    progress_col1, progress_col2 = st.columns(2)
+                    
+                    with progress_col1:
+                        st.markdown("**Accuracy Score**")
+                        st.progress(record['accuracy'] / 100)
+                        st.caption(f"{record['accuracy']:.1f}%")
+                    
+                    with progress_col2:
+                        st.markdown("**AI Confidence**")
+                        st.progress(record['confidence'])
+                        st.caption(f"{record['confidence']*100:.1f}%")
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
         else:
-            st.info("No exercise history yet. Upload and analyze a video to get started!")
+            st.markdown("""
+            <div class="info-box" style="text-align: center; padding: 3rem;">
+                <h2>📊 No Exercise History Yet</h2>
+                <p style="font-size: 1.2rem; margin: 1rem 0;">
+                Upload and analyze a video in the "Analyze Video" tab to start tracking your progress!
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
     
     with history_tab2:
         if st.session_state.chat_history:
-            st.subheader(f"Total Messages: {len(st.session_state.chat_history)}")
+            st.markdown(f"### 💬 Total Conversations: {len(st.session_state.chat_history) // 2}")
             
-            for message in st.session_state.chat_history:
+            for idx, message in enumerate(st.session_state.chat_history):
                 if message['role'] == 'user':
-                    st.markdown(f"**You:** {message['content']}")
+                    st.markdown(f"""
+                    <div class="chat-user">
+                    <b style="color: #2196f3;">👤 You:</b> {message['content']}
+                    </div>
+                    """, unsafe_allow_html=True)
                 else:
-                    st.markdown(f"**🤖 AI:** {message['content']}")
-                st.markdown("---")
+                    st.markdown(f"""
+                    <div class="chat-assistant">
+                    <b style="color: #9c27b0;">🤖 AI Coach:</b> {message['content']}
+                    </div>
+                    """, unsafe_allow_html=True)
         else:
-            st.info("No chat history yet. Start a conversation with the AI coach!")
+            st.markdown("""
+            <div class="info-box" style="text-align: center; padding: 3rem;">
+                <h2>💬 No Chat History Yet</h2>
+                <p style="font-size: 1.2rem; margin: 1rem 0;">
+                Start a conversation with the AI Coach in the "AI Coach Chat" tab!
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
 
 # ==========================================
-# SIDEBAR
+# PREMIUM SIDEBAR
 # ==========================================
 with st.sidebar:
-    st.markdown("### 🎯 About FlexiFit AI")
+    st.markdown("""
+    <div style="text-align: center; padding: 1rem 0; margin-bottom: 2rem;">
+        <h1 style="color: white; font-size: 2.5rem; margin: 0;">🧘‍♀️</h1>
+        <h2 style="color: white; margin: 0.5rem 0;">FlexiFit AI</h2>
+        <p style="color: rgba(255,255,255,0.8); margin: 0;">PCOS/PCOD Exercise Coach</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
     
     st.markdown("""
-    **FlexiFit AI** is your personal PCOS/PCOD exercise coach powered by:
+    <div style="color: white;">
+        <h3 style="color: white;">🎯 Powered By</h3>
+        <ul style="list-style: none; padding: 0;">
+            <li style="padding: 0.5rem 0;">
+                <b>🤖 MediaPipe</b><br>
+                <span style="opacity: 0.8;">Real-time pose detection</span>
+            </li>
+            <li style="padding: 0.5rem 0;">
+                <b>🧠 Custom ML Model</b><br>
+                <span style="opacity: 0.8;">92% accuracy classification</span>
+            </li>
+            <li style="padding: 0.5rem 0;">
+                <b>🔍 Elasticsearch</b><br>
+                <span style="opacity: 0.8;">Smart exercise search</span>
+            </li>
+            <li style="padding: 0.5rem 0;">
+                <b>💬 Vertex AI Gemini</b><br>
+                <span style="opacity: 0.8;">Intelligent coaching</span>
+            </li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
     
-    - 🤖 **MediaPipe** - Pose detection
-    - 🧠 **Custom ML Model** - 92% accuracy
-    - 🔍 **Elastic Search** - Exercise database
-    - 💬 **Vertex AI Gemini** - AI coaching
+    st.markdown("---")
     
-    ---
-    
-    **✨ Features:**
-    - Real-time pose detection
-    - Video analysis with visual feedback
-    - AI-powered coaching
-    - Exercise history tracking
-    - PCOS/PCOD-specific exercises
-    
-    ---
-    
-    **🏆 Built for Google Cloud Hackathon**
-    """)
+    st.markdown("""
+    <div style="color: white;">
+        <h3 style="color: white;">✨ Key Features</h3>
+        <ul style="opacity: 0.9;">
+            <li>Real-time pose detection & analysis</li>
+            <li>Video annotation with visual feedback</li>
+            <li>AI-powered personalized coaching</li>
+            <li>Progress tracking & analytics</li>
+            <li>PCOS/PCOD-specific exercises</li>
+            <li>Download annotated videos</li>
+        </ul>
+    </div>
+    """, unsafe_allow_html=True)
     
     st.markdown("---")
     
     if st.button("🗑️ Clear All History", use_container_width=True):
         st.session_state.exercise_history = []
         st.session_state.chat_history = []
-        st.success("History cleared!")
+        st.success("✅ All history cleared!")
         st.rerun()
     
     st.markdown("---")
-
-    st.caption("Made with ❤️ for women with PCOS/PCOD")
-
-
+    
+    st.markdown("""
+    <div style="color: white; text-align: center; padding: 1rem 0;">
+        <h3 style="color: white;">🏆 Built for</h3>
+        <p style="font-size: 1.1rem; font-weight: 600;">Google Cloud Hackathon</p>
+        <p style="opacity: 0.8; margin-top: 1rem;">Made with ❤️ for women with PCOS/PCOD</p>
+    </div>
+    """, unsafe_allow_html=True)
