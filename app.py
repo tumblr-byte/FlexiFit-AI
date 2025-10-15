@@ -132,25 +132,27 @@ def load_pose_model():
     
     return model, device
 
+
+
 @st.cache_resource
 def setup_elasticsearch():
-    es = Elasticsearch(
-        cloud_id=os.getenv("ES_CLOUD_ID"),
-        api_key=os.getenv("ES_API_KEY")
+    return Elasticsearch(
+        cloud_id=os.environ["ES_CLOUD_ID"],
+        api_key=os.environ["ES_API_KEY"]
     )
-    return es
 
 @st.cache_resource
 def setup_vertex_ai():
-    credentials = service_account.Credentials.from_service_account_file(
-        os.getenv("VERTEX_JSON_PATH")
-    )
+    service_account_info = json.loads(os.environ["VERTEX_SERVICE_ACCOUNT"])
+    credentials = service_account.Credentials.from_service_account_info(service_account_info)
     aiplatform.init(
-        project=os.getenv("VERTEX_PROJECT_ID"),
-        location=os.getenv("VERTEX_LOCATION"),
+        project=os.environ["VERTEX_PROJECT_ID"],
+        location=os.environ["VERTEX_LOCATION"],
         credentials=credentials
     )
     return GenerativeModel("gemini-2.5-flash")
+
+
 
 model, device = load_pose_model()
 es = setup_elasticsearch()
@@ -654,4 +656,5 @@ with st.sidebar:
         st.rerun()
     
     st.markdown("---")
+
     st.caption("Made with ❤️ for women with PCOS/PCOD")
