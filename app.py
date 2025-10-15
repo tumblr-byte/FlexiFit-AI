@@ -31,6 +31,38 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+st.markdown("""
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+.icon-light {
+    color: #b0b0b0;
+    font-size: 22px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.icon-primary {
+    color: #4CAF50; /* greenish highlight */
+    font-size: 22px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.icon-accent {
+    color: #ff6b6b; /* reddish accent */
+    font-size: 22px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.icon-hover:hover {
+    transform: scale(1.15);
+    transition: 0.3s;
+}
+</style>
+""", unsafe_allow_html=True)
+
+
 # ==========================================
 # CUSTOM CSS
 # ==========================================
@@ -494,7 +526,7 @@ def analyze_video(video_path, target_pose):
         frame_count += 1
         progress = min(frame_count / total_frames, 1.0)
         progress_bar.progress(progress)
-        status_text.text(f"🔄 Analyzing frame {frame_count}/{total_frames}...")
+        status_text.text(f"Analyzing frame {frame_count}/{total_frames}...")
         
         lm, results = extract_landmarks(frame)
         
@@ -666,26 +698,31 @@ st.markdown("<br>", unsafe_allow_html=True)
 # TABS
 # ==========================================
 tab1, tab2, tab3, tab4 = st.tabs([
-    "🏋️ Exercise Library", 
-    "🎬 Analyze Video", 
-    "💬 AI Coach Chat", 
-    "📊 My Progress"
+ st.markdown('<i class="fa-solid fa-dumbbell"></i> **Workout Tracker**', unsafe_allow_html=True)
+st.markdown('<i class="fa-solid fa-video icon-primary"></i> **Analyze Video**', unsafe_allow_html=True)
+st.markdown('<i class="fa-solid fa-comments icon-accent"></i> **AI Coach Chat**', unsafe_allow_html=True)
+st.markdown('<i class="fa-solid fa-chart-line icon-light icon-hover"></i> **Progress Stats**', unsafe_allow_html=True)
+
 ])
 
 # ==========================================
 # TAB 1: EXERCISE LIBRARY
 # ==========================================
 with tab1:
-    st.markdown("## 📚 PCOS/PCOD Exercise Library")
+    st.markdown("""
+<h2><i class="fa-solid fa-book icon-title"></i> PCOS/PCOD Exercise Library</h2>
+""", unsafe_allow_html=True)
     st.markdown("Browse our curated collection of exercises specifically designed for PCOS/PCOD management")
     
-    search_query = st.text_input("🔍 Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
+    search_query = st.text_input("Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
     
     if search_query:
         exercises = search_exercises(search_query)
         
         if exercises:
-            st.markdown(f"### 🎯 Found {len(exercises)} exercises")
+           st.markdown(f"""
+<h3><i class="fa-solid fa-bullseye icon"></i> Found {len(exercises)} exercises</h3>
+""", unsafe_allow_html=True)
             
             cols = st.columns(2)
             
@@ -704,7 +741,7 @@ with tab1:
                         <div style="background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%); 
                                     height: 180px; display: flex; align-items: center; justify-content: center;
                                     border-radius: 10px; color: white; font-size: 1.3rem;">
-                            🧘‍♀️
+                            
                         </div>
                         """, unsafe_allow_html=True)
                     
@@ -718,9 +755,14 @@ with tab1:
                     
                     st.markdown(f"**Reps:** {ex['reps']}")
                     
-                    with st.expander("📖 View Details"):
-                        st.markdown(f"**Description:**\n{ex['description']}")
-                        st.markdown("**🌟 PCOS/PCOD Benefits:**")
+                   with st.expander('<i class="fa-solid fa-book-open icon"></i> View Details', expanded=False):
+                    st.markdown(f"""
+                         <p><i class="fa-solid fa-align-left icon"></i> <b>Description:</b><br>{ex['description']}</p>
+                                   """, unsafe_allow_html=True)
+    
+                    st.markdown("""
+                          <p><i class="fa-solid fa-heart-pulse icon-benefit"></i> <b>PCOS/PCOD Benefits:</b></p>
+                                   """, unsafe_allow_html=True)
                         for benefit in ex['pcos_benefits']:
                             st.markdown(f"• {benefit}")
                     
@@ -728,7 +770,7 @@ with tab1:
         else:
             st.markdown("""
             <div class="info-box" style="text-align: center; padding: 2rem;">
-                <h3>🔍 No exercises found</h3>
+                <h3> No exercises found</h3>
                 <p style="font-size: 1rem; margin: 1rem 0;">
                 Try different keywords like "balance", "beginner", "stress relief", or "hormonal balance"
                 </p>
@@ -737,7 +779,7 @@ with tab1:
     else:
         st.markdown("""
         <div class="info-box" style="text-align: center; padding: 2rem;">
-            <h3>🔍 Search for PCOS/PCOD Exercises</h3>
+            <h3> Search for PCOS/PCOD Exercises</h3>
             <p style="font-size: 1rem; margin: 1rem 0;">
             Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!
             </p>
@@ -1189,4 +1231,5 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("✅ All history cleared!")
         st.rerun()
+
 
