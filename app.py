@@ -15,6 +15,7 @@ import warnings
 from datetime import datetime
 from PIL import Image
 import json
+from collections import Counter
 
 # Suppress warnings
 warnings.filterwarnings('ignore')
@@ -31,39 +32,35 @@ st.set_page_config(
 )
 
 # ==========================================
-# PREMIUM CUSTOM CSS
+# CUSTOM CSS
 # ==========================================
 st.markdown("""
 <style>
-    /* Import modern font */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
     
     * {
         font-family: 'Poppins', sans-serif;
     }
     
-    /* Hide Streamlit branding */
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Main container styling */
     .main {
         background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
         padding: 2rem 1rem;
     }
     
-    /* Glassmorphism header */
-   .main-header {
-    font-size: 3.5rem;
-    font-weight: 700;
-    text-align: center;
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    padding: 2rem 0;
-    animation: fadeInDown 1s ease-out;
-}
+    .main-header {
+        font-size: 3.5rem;
+        font-weight: 700;
+        text-align: center;
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        padding: 2rem 0;
+        animation: fadeInDown 1s ease-out;
+    }
     
     .sub-header {
         font-size: 1.3rem;
@@ -74,7 +71,6 @@ st.markdown("""
         animation: fadeInUp 1s ease-out;
     }
     
-    /* Premium card design */
     .exercise-card {
         background: rgba(255, 255, 255, 0.95);
         border-radius: 20px;
@@ -109,7 +105,6 @@ st.markdown("""
         border-color: #11998e;
     }
     
-    /* Success and warning boxes with gradient */
     .success-box {
         background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
         border: none;
@@ -143,7 +138,6 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
     }
     
-    /* Premium buttons */
     .stButton>button {
         width: 100%;
         border-radius: 15px;
@@ -165,7 +159,6 @@ st.markdown("""
         background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
     }
     
-    /* Animated metric cards */
     .metric-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -198,25 +191,24 @@ st.markdown("""
         font-weight: 700;
     }
     
- .video-container {
-    width: 400px;
-    height: 400px;
-    margin: 1rem auto;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    border: 3px solid white;
-    background: white;
-}
-
-.video-container video {
-    width: 400px !important;
-    height: 400px !important;
-    object-fit: cover !important;
-    display: block;
-}
+    .video-container {
+        width: 400px;
+        height: 400px;
+        margin: 1rem auto;
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        border: 3px solid white;
+        background: white;
+    }
     
-    /* Chat message styling */
+    .video-container video {
+        width: 400px !important;
+        height: 400px !important;
+        object-fit: cover !important;
+        display: block;
+    }
+    
     .chat-user {
         background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
         padding: 1.5rem;
@@ -235,7 +227,6 @@ st.markdown("""
         animation: slideInLeft 0.3s ease-out;
     }
     
-    /* Tab styling */
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
         background: rgba(255, 255, 255, 0.5);
@@ -259,13 +250,11 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
     }
     
-    /* Progress bar styling */
     .stProgress > div > div > div > div {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border-radius: 10px;
     }
     
-    /* Input field styling */
     .stTextInput>div>div>input {
         border-radius: 10px;
         border: 2px solid #e0e0e0;
@@ -279,7 +268,6 @@ st.markdown("""
         box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
     }
     
-    /* Expander styling */
     .streamlit-expanderHeader {
         background: rgba(102, 126, 234, 0.1);
         border-radius: 10px;
@@ -287,7 +275,6 @@ st.markdown("""
         color: #667eea;
     }
     
-    /* Animations */
     @keyframes fadeIn {
         from {
             opacity: 0;
@@ -343,7 +330,6 @@ st.markdown("""
         }
     }
     
-    /* Sidebar styling */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
         color: white;
@@ -359,7 +345,6 @@ st.markdown("""
         color: white;
     }
     
-    /* Badge styling */
     .badge {
         display: inline-block;
         padding: 0.5rem 1rem;
@@ -388,7 +373,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ==========================================
-# SESSION STATE
+# SESSION STATE INITIALIZATION
 # ==========================================
 if 'exercise_history' not in st.session_state:
     st.session_state.exercise_history = []
@@ -398,33 +383,31 @@ if 'analyzed_video_path' not in st.session_state:
     st.session_state.analyzed_video_path = None
 
 # ==========================================
-# LOAD MODELS
+# MODEL CLASSES AND LOADING
 # ==========================================
+class PoseClassifier(nn.Module):
+    def __init__(self, num_classes):
+        super(PoseClassifier, self).__init__()
+        self.model = nn.Sequential(
+            nn.Linear(99, 128),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(128, 64),
+            nn.ReLU(),
+            nn.Dropout(0.2),
+            nn.Linear(64, num_classes)
+        )
+    
+    def forward(self, x):
+        return self.model(x)
+
 @st.cache_resource
 def load_pose_model():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    
-    class PoseClassifier(nn.Module):
-        def __init__(self, num_classes):
-            super(PoseClassifier, self).__init__()
-            self.model = nn.Sequential(
-                nn.Linear(99, 128),
-                nn.ReLU(),
-                nn.Dropout(0.3),
-                nn.Linear(128, 64),
-                nn.ReLU(),
-                nn.Dropout(0.2),
-                nn.Linear(64, num_classes)
-            )
-        
-        def forward(self, x):
-            return self.model(x)
-    
     model = PoseClassifier(num_classes=5)
     model.load_state_dict(torch.load("best.pth", map_location=device))
     model.to(device)
     model.eval()
-    
     return model, device
 
 @st.cache_resource
@@ -448,6 +431,7 @@ def setup_vertex_ai():
     )
     return GenerativeModel("gemini-2.5-flash")
 
+# Load resources
 model, device = load_pose_model()
 es = setup_elasticsearch()
 gemini_model = setup_vertex_ai()
@@ -461,6 +445,7 @@ class_names = ["Downdog", "Plank", "Warrior2", "Modified_Tree", "Standard_Tree"]
 # HELPER FUNCTIONS
 # ==========================================
 def extract_landmarks(frame):
+    """Extract pose landmarks from frame"""
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     with mp_pose.Pose(static_image_mode=False) as pose_detector:
         results = pose_detector.process(frame_rgb)
@@ -470,6 +455,7 @@ def extract_landmarks(frame):
         return [[l.x, l.y, l.z] for l in lm], results
 
 def detect_class(lm):
+    """Detect exercise class from landmarks"""
     lm_flat = [coord for point in lm for coord in point]
     input_tensor = torch.tensor(lm_flat, dtype=torch.float32).unsqueeze(0).to(device)
     with torch.no_grad():
@@ -480,6 +466,7 @@ def detect_class(lm):
         return class_names[predicted], confidence
 
 def analyze_video(video_path, target_pose):
+    """Analyze video and detect poses"""
     cap = cv2.VideoCapture(video_path)
     
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
@@ -545,10 +532,8 @@ def analyze_video(video_path, target_pose):
     out.release()
     progress_bar.empty()
     status_text.empty()
-    os.unlink(tfile.name)  # ADD THIS LINE
     
     if detected_poses:
-        from collections import Counter
         most_common = Counter(detected_poses).most_common(1)[0]
         detected_pose = most_common[0]
         avg_confidence = np.mean(confidences)
@@ -566,6 +551,7 @@ def analyze_video(video_path, target_pose):
     return None
 
 def search_exercises(query):
+    """Search exercises in Elasticsearch"""
     result = es.search(
         index="pcos_exercises",
         body={
@@ -581,6 +567,7 @@ def search_exercises(query):
     return [hit['_source'] for hit in result['hits']['hits']]
 
 def get_all_exercises():
+    """Get all exercises from Elasticsearch"""
     result = es.search(
         index="pcos_exercises",
         body={"query": {"match_all": {}}, "size": 10}
@@ -588,6 +575,7 @@ def get_all_exercises():
     return [hit['_source'] for hit in result['hits']['hits']]
 
 def chat_with_ai(user_message):
+    """Chat with AI coach using Vertex AI"""
     exercises = get_all_exercises()
     exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in exercises])
     
@@ -606,14 +594,32 @@ Provide a helpful, personalized response. If suggesting exercises, explain why t
     response = gemini_model.generate_content(prompt)
     return response.text
 
+def get_exercise_image_path(exercise_name, exercise_id):
+    """Get the correct image path for an exercise"""
+    exercise_name_lower = exercise_name.lower()
+    
+    if 'downward' in exercise_name_lower or 'down dog' in exercise_name_lower or 'downdog' in exercise_name_lower:
+        return "Downdog.jpg"
+    elif 'plank' in exercise_name_lower:
+        return "Plank.jpg"
+    elif 'warrior' in exercise_name_lower:
+        return "Warrior2.jpg"
+    elif 'modified' in exercise_name_lower and 'tree' in exercise_name_lower:
+        return "Modified_Tree.jpg"
+    elif 'tree' in exercise_name_lower:
+        return "Standard_Tree.jpg"
+    else:
+        return f"{exercise_id}.jpg"
+
 # ==========================================
-# MAIN APP
+# MAIN APP LAYOUT
 # ==========================================
 col_logo, col_title = st.columns([1, 9])
 with col_logo:
     st.image("logo.png", width=100)
 with col_title:
     st.markdown('<h1 class="main-header">FlexiFit AI</h1>', unsafe_allow_html=True)
+
 st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
 
 # ==========================================
@@ -673,82 +679,63 @@ with tab1:
     st.markdown("## 📚 PCOS/PCOD Exercise Library")
     st.markdown("Browse our curated collection of exercises specifically designed for PCOS/PCOD management")
     
-  search_query = st.text_input("🔍 Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
-
-if search_query:
-    exercises = search_exercises(search_query)
-else:
-    exercises = get_all_exercises()
-
-st.markdown(f"### 🎯 Found {len(exercises)} exercises")
-
-cols = st.columns(2)
-
-for idx, ex in enumerate(exercises):
+    search_query = st.text_input("🔍 Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
+    
+    if search_query:
+        exercises = search_exercises(search_query)
     else:
-    st.markdown("""
-    <div class="info-box" style="text-align: center; padding: 3rem;">
-        <h2>🔍 Search for PCOS/PCOD Exercises</h2>
-        <p style="font-size: 1.2rem; margin: 1rem 0;">
-        Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!
-        </p>
-    </div>
-    """, unsafe_allow_html=True)
-        with cols[idx % 2]:
-            st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
-            
-            # Map exercise names to image filenames
-            exercise_name = ex.get('name', '').lower()
-            image_name = None
-            
-            # Try to find matching image
-           # Try to find matching image
-if 'downward' in exercise_name or 'down dog' in exercise_name or 'downdog' in exercise_name:
-    image_name = "Downdog.jpg"
-elif 'plank' in exercise_name:
-    image_name = "Plank.jpg"
-elif 'warrior' in exercise_name:
-    image_name = "Warrior2.jpg"
-elif 'modified' in exercise_name and 'tree' in exercise_name:
-    image_name = "Modified_Tree.jpg"
-elif 'tree' in exercise_name:
-    image_name = "Standard_Tree.jpg"
-            
-            # Also try the exercise_id directly
-            if image_name is None:
-                image_name = ex.get('exercise_id', '') + ".jpg"
-            
-            if image_name and os.path.exists(image_name):
-    img = Image.open(image_name)
-    img = img.resize((400, 400))
-    st.image(img, width=400)
-            else:
-                # Show placeholder if image not found
-                st.markdown("""
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                            height: 200px; display: flex; align-items: center; justify-content: center;
-                            border-radius: 10px; color: white; font-size: 1.5rem;">
-                    🧘‍♀️
-                </div>
+        exercises = get_all_exercises()
+    
+    if exercises:
+        st.markdown(f"### 🎯 Found {len(exercises)} exercises")
+        
+        cols = st.columns(2)
+        
+        for idx, ex in enumerate(exercises):
+            with cols[idx % 2]:
+                st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
+                
+                image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
+                
+                if os.path.exists(image_name):
+                    img = Image.open(image_name)
+                    img = img.resize((400, 400))
+                    st.image(img, width=400)
+                else:
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                height: 200px; display: flex; align-items: center; justify-content: center;
+                                border-radius: 10px; color: white; font-size: 1.5rem;">
+                        🧘‍♀️
+                    </div>
+                    """, unsafe_allow_html=True)
+                
+                st.markdown(f"### {ex['name']}")
+                
+                st.markdown(f"""
+                <span class="badge badge-primary">{ex['category']}</span>
+                <span class="badge badge-warning">{ex['difficulty']}</span>
+                <span class="badge badge-success">{ex['duration_seconds']}s</span>
                 """, unsafe_allow_html=True)
-            
-            st.markdown(f"### {ex['name']}")
-            
-            st.markdown(f"""
-            <span class="badge badge-primary">{ex['category']}</span>
-            <span class="badge badge-warning">{ex['difficulty']}</span>
-            <span class="badge badge-success">{ex['duration_seconds']}s</span>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"**Reps:** {ex['reps']}")
-            
-            with st.expander("📖 View Details"):
-                st.markdown(f"**Description:**\n{ex['description']}")
-                st.markdown("**🌟 PCOS/PCOD Benefits:**")
-                for benefit in ex['pcos_benefits']:
-                    st.markdown(f"• {benefit}")
-            
-            st.markdown('</div>', unsafe_allow_html=True)
+                
+                st.markdown(f"**Reps:** {ex['reps']}")
+                
+                with st.expander("📖 View Details"):
+                    st.markdown(f"**Description:**\n{ex['description']}")
+                    st.markdown("**🌟 PCOS/PCOD Benefits:**")
+                    for benefit in ex['pcos_benefits']:
+                        st.markdown(f"• {benefit}")
+                
+                st.markdown('</div>', unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="info-box" style="text-align: center; padding: 3rem;">
+            <h2>🔍 Search for PCOS/PCOD Exercises</h2>
+            <p style="font-size: 1.2rem; margin: 1rem 0;">
+            Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!
+            </p>
+        </div>
+        """, unsafe_allow_html=True)
 
 # ==========================================
 # TAB 2: ANALYZE VIDEO
@@ -833,9 +820,13 @@ with tab2:
                 with st.spinner("🤖 AI is analyzing your video... This may take a moment!"):
                     results = analyze_video(tfile.name, target_pose)
                 
+                # Clean up temporary file
+                os.unlink(tfile.name)
+                
                 if results:
                     st.session_state.analyzed_video_path = results['output_path']
                     
+                    # Add to history
                     st.session_state.exercise_history.append({
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'target_pose': selected_display,
@@ -843,10 +834,11 @@ with tab2:
                         'accuracy': results['accuracy'],
                         'confidence': results['confidence']
                     })
-
-
+                    
+                    # Keep only last 50 entries
                     if len(st.session_state.exercise_history) > 50:
-                      st.session_state.exercise_history = st.session_state.exercise_history[-50:]
+                        st.session_state.exercise_history = st.session_state.exercise_history[-50:]
+                    
                     st.markdown("---")
                     st.markdown("## 📊 Analysis Results")
                     
@@ -998,10 +990,10 @@ with tab3:
                     'role': 'user',
                     'content': user_input
                 })
-
+                
+                # Keep only last 100 messages
                 if len(st.session_state.chat_history) > 100:
-                  st.session_state.chat_history = st.session_state.chat_history[-100:]
-
+                    st.session_state.chat_history = st.session_state.chat_history[-100:]
                 
                 with st.spinner("🤖 AI Coach is thinking..."):
                     response = chat_with_ai(user_input)
@@ -1021,7 +1013,7 @@ with tab3:
             st.rerun()
 
 # ==========================================
-# TAB 4: HISTORY
+# TAB 4: PROGRESS HISTORY
 # ==========================================
 with tab4:
     st.markdown("## 📊 Your Progress & History")
@@ -1118,7 +1110,7 @@ with tab4:
         if st.session_state.chat_history:
             st.markdown(f"### 💬 Total Conversations: {len(st.session_state.chat_history) // 2}")
             
-            for idx, message in enumerate(st.session_state.chat_history):
+            for message in st.session_state.chat_history:
                 if message['role'] == 'user':
                     st.markdown(f"""
                     <div class="chat-user">
@@ -1141,7 +1133,9 @@ with tab4:
             </div>
             """, unsafe_allow_html=True)
 
-
+# ==========================================
+# SIDEBAR
+# ==========================================
 with st.sidebar:
     st.markdown("""
     <div style="text-align: center; padding: 1rem 0; margin-bottom: 2rem;">
@@ -1170,7 +1164,7 @@ with st.sidebar:
                 <span style="opacity: 0.8;">92% accuracy classification</span>
             </li>
             <li style="padding: 0.5rem 0;">
-                <b> Elasticsearch</b><br>
+                <b>Elasticsearch</b><br>
                 <span style="opacity: 0.8;">Smart exercise search</span>
             </li>
             <li style="padding: 0.5rem 0;">
@@ -1183,16 +1177,8 @@ with st.sidebar:
     
     st.markdown("---")
     
-
-    
-    st.markdown("---")
-    
     if st.button("🗑️ Clear All History", use_container_width=True):
         st.session_state.exercise_history = []
         st.session_state.chat_history = []
         st.success("✅ All history cleared!")
         st.rerun()
-    
-    st.markdown("---")
-    
-
