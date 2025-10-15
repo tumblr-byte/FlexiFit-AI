@@ -790,11 +790,14 @@ with tab1:
 # TAB 2: ANALYZE VIDEO
 # ==========================================
 with tab2:
-    st.markdown("## 🎬 Upload & Analyze Your Exercise Video")
+    st.markdown("""
+<h2><i class="fa-solid fa-video icon-title"></i> Upload & Analyze Your Exercise Video</h2>
+""", unsafe_allow_html=True)
+
     
     st.markdown("""
     <div class="info-box">
-    <h3 style="margin-top: 0;">📹 How it works:</h3>
+    <h3 style="margin-top: 0;">How it works:</h3>
     <ol style="font-size: 1.1rem; line-height: 2;">
         <li><b>Choose</b> the exercise you're performing from the dropdown</li>
         <li><b>Upload</b> your video (MP4, MOV, AVI format)</li>
@@ -807,14 +810,17 @@ with tab2:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-        st.markdown("### 1️⃣ Select Target Exercise")
+      st.markdown("""
+<h3><i class="fa-solid fa-dumbbell icon"></i> Select Target Exercise</h3>
+""", unsafe_allow_html=True)
+
         
         exercise_mapping = {
-            "Downdog": "Downward Facing Dog 🐕",
-            "Plank": "Plank Pose 💪",
-            "Warrior2": "Warrior 2 ⚔️",
-            "Modified_Tree": "Modified Tree Pose 🌳",
-            "Standard_Tree": "Standard Tree Pose 🌲"
+            "Downdog": "Downdog",
+            "Plank": "Plank Pose",
+            "Warrior2": "Warrior 2 ",
+            "Modified_Tree": "Modified Tree Pose ",
+            "Standard_Tree": "Standard Tree Pose "
         }
         
         display_names = list(exercise_mapping.values())
@@ -825,13 +831,16 @@ with tab2:
         
         st.markdown(f"""
         <div class="success-box">
-        <h3 style="margin: 0;">✅ Target Exercise Selected</h3>
+        <h3 style="margin: 0;">Target Exercise Selected</h3>
         <h2 style="margin: 0.5rem 0 0 0; color: #28a745;">{selected_display}</h2>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("### 2️⃣ Upload Your Video")
+        st.markdown("""
+<h3><i class="fa-solid fa-upload icon"></i> Upload Your Video</h3>
+""", unsafe_allow_html=True)
+
         uploaded_video = st.file_uploader(
             "Choose a video file",
             type=['mp4', 'mov', 'avi'],
@@ -844,13 +853,19 @@ with tab2:
         col_preview, col_analyze = st.columns([1, 1])
         
         with col_preview:
-            st.markdown("### 📹 Your Uploaded Video")
+           st.markdown("""
+<h3><i class="fa-solid fa-video icon"></i> Your Uploaded Video</h3>
+""", unsafe_allow_html=True)
+
             st.markdown('<div class="video-container">', unsafe_allow_html=True)
             st.video(uploaded_video)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col_analyze:
-            st.markdown("### 🔍 Ready to Analyze!")
+           st.markdown("""
+<h3><i class="fa-solid fa-magnifying-glass icon"></i> Ready to Analyze!</h3>
+""", unsafe_allow_html=True)
+
             st.markdown(f"""
             <div class="info-box">
             <h3 style="margin-top: 0;">Analysis Details</h3>
@@ -861,12 +876,14 @@ with tab2:
             </div>
             """, unsafe_allow_html=True)
             
-            if st.button("🚀 Start AI Analysis", type="primary", use_container_width=True):
+            if st.button("Start AI Analysis", type="primary", use_container_width=True):
                 tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                 tfile.write(uploaded_video.read())
                 tfile.close()
                 
-                with st.spinner("🤖 AI is analyzing your video... This may take a moment!"):
+                with st.spinner(" <i class='fa-solid fa-robot'></i> AI is analyzing your video... Please wait! "):
+    results = analyze_video(tfile.name, target_pose)
+
                     results = analyze_video(tfile.name, target_pose)
                 
                 # Clean up temporary file
@@ -889,12 +906,20 @@ with tab2:
                         st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                     
                     st.markdown("---")
-                    st.markdown("## 📊 Analysis Results")
+                    st.markdown("""
+<h2><i class="fa-solid fa-chart-simple icon"></i> Analysis Results</h2>
+""", unsafe_allow_html=True)
+
                     
                     if results['match']:
                         st.markdown("""
                         <div class="success-box">
-                        <h2 style="color: #28a745; margin: 0;">🎉 PERFECT MATCH!</h2>
+                        st.markdown("""
+<h2 style="color: #28a745; margin: 0;">
+    <i class="fa-solid fa-check-circle"></i> PERFECT MATCH!
+</h2>
+""", unsafe_allow_html=True)
+
                         <p style="margin: 1rem 0 0 0; font-size: 1.2rem;">
                         Excellent work! Your pose matches the target exercise perfectly. Keep up the great form!
                         </p>
@@ -903,7 +928,7 @@ with tab2:
                     else:
                         st.markdown(f"""
                         <div class="warning-box">
-                        <h2 style="color: #856404; margin: 0;">⚠️ Different Pose Detected</h2>
+                        <h2 style="color: #856404; margin: 0;">Different Pose Detected</h2>
                         <p style="margin: 1rem 0 0 0; font-size: 1.1rem;">
                         <b>Target Exercise:</b> {selected_display}<br>
                         <b>Detected Exercise:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}<br><br>
@@ -940,7 +965,10 @@ with tab2:
                         """, unsafe_allow_html=True)
                     
                     st.markdown("---")
-                    st.markdown("### 🎥 Annotated Video with AI Feedback")
+                    st.markdown("""
+<h3><i class="fa-solid fa-video icon"></i> Annotated Video with AI Feedback</h3>
+""", unsafe_allow_html=True)
+
                     st.markdown("**Green** = Correct Pose | **Red** = Incorrect Pose")
                     
                     st.markdown('<div class="video-container">', unsafe_allow_html=True)
@@ -955,7 +983,7 @@ with tab2:
                         with open(results['output_path'], 'rb') as video_file:
                             video_bytes = video_file.read()
                             st.download_button(
-                                label="📥 Download Annotated Video",
+                                label="Download Annotated Video",
                                 data=video_bytes,
                                 file_name=f"flexifit_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
                                 mime="video/mp4",
@@ -963,7 +991,7 @@ with tab2:
                             )
                     
                     with col_action2:
-                        if st.button("🔄 Analyze Another Video", use_container_width=True):
+                        if st.button("Analyze Another Video", use_container_width=True):
                             st.session_state.analyzed_video_path = None
                             st.rerun()
 
@@ -971,14 +999,20 @@ with tab2:
 # TAB 3: AI CHAT
 # ==========================================
 with tab3:
-    st.markdown("## 💬 Chat with Your AI Exercise Coach")
+  st.markdown("""
+<h2><i class="fa-solid fa-comments icon"></i> Chat with Your AI Exercise Coach</h2>
+""", unsafe_allow_html=True)
+
     
     st.markdown("""
     <div class="info-box">
-    <h3 style="margin-top: 0;">💡 Ask me anything about PCOS/PCOD exercises!</h3>
+    <h3 style="margin-top: 0;">Ask me anything about PCOS/PCOD exercises!</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
         <div>
-            <b>🏋️ Exercise Questions:</b>
+           st.markdown("""
+<b><i class="fa-solid fa-dumbbell icon"></i> Exercise Questions:</b>
+""", unsafe_allow_html=True)
+
             <ul style="margin: 0.5rem 0;">
                 <li>"What exercises help with PCOS?"</li>
                 <li>"How to improve my plank form?"</li>
@@ -986,7 +1020,10 @@ with tab3:
             </ul>
         </div>
         <div>
-            <b>🌟 Health & Wellness:</b>
+           st.markdown("""
+<b><i class="fa-solid fa-heart-pulse icon"></i> Health & Wellness:</b>
+""", unsafe_allow_html=True)
+
             <ul style="margin: 0.5rem 0;">
                 <li>"Benefits of Tree Pose?"</li>
                 <li>"How often should I exercise?"</li>
@@ -1004,7 +1041,7 @@ with tab3:
         if not st.session_state.chat_history:
             st.markdown("""
             <div style="text-align: center; padding: 3rem; color: #999;">
-                <h2>👋 Welcome to AI Coach Chat!</h2>
+                <h2>Welcome to AI Coach Chat!</h2>
                 <p style="font-size: 1.2rem;">Start a conversation by typing your question below.</p>
             </div>
             """, unsafe_allow_html=True)
@@ -1028,12 +1065,12 @@ with tab3:
     st.markdown("---")
     
     # Chat input
-    user_input = st.text_input("💭 Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
+    user_input = st.text_input(" Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
     
     col_send, col_clear = st.columns([3, 1])
     
     with col_send:
-        if st.button("📤 Send Message", use_container_width=True, type="primary"):
+        if st.button(" Send Message", use_container_width=True, type="primary"):
             if user_input:
                 st.session_state.chat_history.append({
                     'role': 'user',
@@ -1044,7 +1081,7 @@ with tab3:
                 if len(st.session_state.chat_history) > 100:
                     st.session_state.chat_history = st.session_state.chat_history[-100:]
                 
-                with st.spinner("🤖 AI Coach is thinking..."):
+                with st.spinner(" AI Coach is thinking..."):
                     response = chat_with_ai(user_input)
                 
                 st.session_state.chat_history.append({
@@ -1054,10 +1091,10 @@ with tab3:
                 
                 st.rerun()
             else:
-                st.warning("⚠️ Please type a message first!")
+                st.warning(" Please type a message first!")
     
     with col_clear:
-        if st.button("🗑️ Clear Chat", use_container_width=True):
+        if st.button(" Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
 
@@ -1065,13 +1102,16 @@ with tab3:
 # TAB 4: PROGRESS HISTORY
 # ==========================================
 with tab4:
-    st.markdown("## 📊 Your Progress & History")
+   st.markdown("""
+<h2><i class="fa-solid fa-chart-line icon"></i> Your Progress & History</h2>
+""", unsafe_allow_html=True)
+
     
-    history_tab1, history_tab2 = st.tabs(["🏋️ Exercise Analytics", "💬 Chat History"])
+    history_tab1, history_tab2 = st.tabs([" Exercise Analytics", "Chat History"])
     
     with history_tab1:
         if st.session_state.exercise_history:
-            st.markdown(f"### 📈 Total Workouts Completed: {len(st.session_state.exercise_history)}")
+            st.markdown(f"### Total Workouts Completed: {len(st.session_state.exercise_history)}")
             
             # Summary stats
             col1, col2, col3 = st.columns(3)
@@ -1105,8 +1145,10 @@ with tab4:
                 """, unsafe_allow_html=True)
             
             st.markdown("---")
-            st.markdown("### 📜 Workout History")
-            
+           st.markdown("""
+<h3><i class="fa-solid fa-file-lines icon"></i> Workout History</h3>
+""", unsafe_allow_html=True)
+
             for idx, record in enumerate(reversed(st.session_state.exercise_history)):
                 match_status = record['target_pose'] == record['detected_pose']
                 
@@ -1126,9 +1168,19 @@ with tab4:
                     with col3:
                         st.markdown("**Result**")
                         if match_status:
-                            st.markdown('<h3 style="color: #28a745;">✅ Perfect Match</h3>', unsafe_allow_html=True)
+                           st.markdown("""
+<h3 style="color: #28a745;">
+    <i class="fa-solid fa-circle-check icon"></i> Perfect Match
+</h3>
+""", unsafe_allow_html=True)
+
                         else:
-                            st.markdown('<h3 style="color: #ffc107;">⚠️ Different Pose</h3>', unsafe_allow_html=True)
+                            st.markdown("""
+<h3 style="color: #ffc107;">
+    <i class="fa-solid fa-xmark"></i>Different Pose
+</h3>
+""", unsafe_allow_html=True)
+
                     
                     st.markdown("---")
                     
@@ -1175,7 +1227,7 @@ with tab4:
         else:
             st.markdown("""
             <div class="info-box" style="text-align: center; padding: 3rem;">
-                <h2>💬 No Chat History Yet</h2>
+                <h2> No Chat History Yet</h2>
                 <p style="font-size: 1.2rem; margin: 1rem 0;">
                 Start a conversation with the AI Coach in the "AI Coach Chat" tab!
                 </p>
@@ -1226,10 +1278,11 @@ with st.sidebar:
     
     st.markdown("---")
     
-    if st.button("🗑️ Clear All History", use_container_width=True):
+    if st.button("Clear All History", use_container_width=True):
         st.session_state.exercise_history = []
         st.session_state.chat_history = []
-        st.success("✅ All history cleared!")
+        st.success(" All history cleared!")
         st.rerun()
+
 
 
