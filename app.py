@@ -210,69 +210,69 @@ st.markdown("""
     }
     
     .chat-user {
-        background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-        padding: 1.5rem;
-        border-radius: 20px 20px 5px 20px;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.2);
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        padding: 1.2rem;
+        border-radius: 15px 15px 5px 15px;
+        margin: 0.8rem 0;
+        box-shadow: 0 3px 10px rgba(45, 106, 79, 0.15);
         animation: slideInRight 0.3s ease-out;
     }
     
     .chat-assistant {
-        background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%);
-        padding: 1.5rem;
-        border-radius: 20px 20px 20px 5px;
-        margin: 1rem 0;
-        box-shadow: 0 4px 15px rgba(156, 39, 176, 0.2);
+        background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
+        padding: 1.2rem;
+        border-radius: 15px 15px 15px 5px;
+        margin: 0.8rem 0;
+        box-shadow: 0 3px 10px rgba(82, 183, 136, 0.15);
         animation: slideInLeft 0.3s ease-out;
     }
     
     .stTabs [data-baseweb="tab-list"] {
-        gap: 2rem;
+        gap: 1.5rem;
         background: rgba(255, 255, 255, 0.5);
-        padding: 1rem;
-        border-radius: 15px;
+        padding: 0.8rem;
+        border-radius: 12px;
     }
     
     .stTabs [data-baseweb="tab"] {
-        height: 4rem;
-        padding: 0 2rem;
-        font-size: 1.1rem;
+        height: 3.5rem;
+        padding: 0 1.5rem;
+        font-size: 1rem;
         font-weight: 600;
         border-radius: 10px;
-        color: #667eea;
+        color: #2d6a4f;
         transition: all 0.3s ease;
     }
     
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
         color: white;
-        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 3px 12px rgba(45, 106, 79, 0.3);
     }
     
     .stProgress > div > div > div > div {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
         border-radius: 10px;
     }
     
     .stTextInput>div>div>input {
         border-radius: 10px;
         border: 2px solid #e0e0e0;
-        padding: 1rem;
-        font-size: 1rem;
+        padding: 0.8rem;
+        font-size: 0.95rem;
         transition: all 0.3s ease;
     }
     
     .stTextInput>div>div>input:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #52b788;
+        box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.1);
     }
     
     .streamlit-expanderHeader {
-        background: rgba(102, 126, 234, 0.1);
+        background: rgba(82, 183, 136, 0.1);
         border-radius: 10px;
         font-weight: 600;
-        color: #667eea;
+        color: #2d6a4f;
     }
     
     @keyframes fadeIn {
@@ -331,7 +331,7 @@ st.markdown("""
     }
     
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(180deg, #2d6a4f 0%, #52b788 100%);
         color: white;
     }
     
@@ -347,21 +347,21 @@ st.markdown("""
     
     .badge {
         display: inline-block;
-        padding: 0.5rem 1rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+        border-radius: 15px;
+        font-size: 0.85rem;
         font-weight: 600;
-        margin: 0.25rem;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin: 0.2rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     }
     
     .badge-primary {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
         color: white;
     }
     
     .badge-success {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
         color: white;
     }
     
@@ -683,55 +683,62 @@ with tab1:
     
     if search_query:
         exercises = search_exercises(search_query)
-    else:
-        exercises = get_all_exercises()
-    
-    if exercises:
-        st.markdown(f"### 🎯 Found {len(exercises)} exercises")
         
-        cols = st.columns(2)
-        
-        for idx, ex in enumerate(exercises):
-            with cols[idx % 2]:
-                st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
-                
-                image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
-                
-                if os.path.exists(image_name):
-                    img = Image.open(image_name)
-                    img = img.resize((400, 400))
-                    st.image(img, width=400)
-                else:
-                    st.markdown("""
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
-                                height: 200px; display: flex; align-items: center; justify-content: center;
-                                border-radius: 10px; color: white; font-size: 1.5rem;">
-                        🧘‍♀️
-                    </div>
+        if exercises:
+            st.markdown(f"### 🎯 Found {len(exercises)} exercises")
+            
+            cols = st.columns(2)
+            
+            for idx, ex in enumerate(exercises):
+                with cols[idx % 2]:
+                    st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
+                    
+                    image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
+                    
+                    if os.path.exists(image_name):
+                        img = Image.open(image_name)
+                        img = img.resize((350, 350))
+                        st.image(img, width=350)
+                    else:
+                        st.markdown("""
+                        <div style="background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%); 
+                                    height: 180px; display: flex; align-items: center; justify-content: center;
+                                    border-radius: 10px; color: white; font-size: 1.3rem;">
+                            🧘‍♀️
+                        </div>
+                        """, unsafe_allow_html=True)
+                    
+                    st.markdown(f"### {ex['name']}")
+                    
+                    st.markdown(f"""
+                    <span class="badge badge-primary">{ex['category']}</span>
+                    <span class="badge badge-warning">{ex['difficulty']}</span>
+                    <span class="badge badge-success">{ex['duration_seconds']}s</span>
                     """, unsafe_allow_html=True)
-                
-                st.markdown(f"### {ex['name']}")
-                
-                st.markdown(f"""
-                <span class="badge badge-primary">{ex['category']}</span>
-                <span class="badge badge-warning">{ex['difficulty']}</span>
-                <span class="badge badge-success">{ex['duration_seconds']}s</span>
-                """, unsafe_allow_html=True)
-                
-                st.markdown(f"**Reps:** {ex['reps']}")
-                
-                with st.expander("📖 View Details"):
-                    st.markdown(f"**Description:**\n{ex['description']}")
-                    st.markdown("**🌟 PCOS/PCOD Benefits:**")
-                    for benefit in ex['pcos_benefits']:
-                        st.markdown(f"• {benefit}")
-                
-                st.markdown('</div>', unsafe_allow_html=True)
+                    
+                    st.markdown(f"**Reps:** {ex['reps']}")
+                    
+                    with st.expander("📖 View Details"):
+                        st.markdown(f"**Description:**\n{ex['description']}")
+                        st.markdown("**🌟 PCOS/PCOD Benefits:**")
+                        for benefit in ex['pcos_benefits']:
+                            st.markdown(f"• {benefit}")
+                    
+                    st.markdown('</div>', unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div class="info-box" style="text-align: center; padding: 2rem;">
+                <h3>🔍 No exercises found</h3>
+                <p style="font-size: 1rem; margin: 1rem 0;">
+                Try different keywords like "balance", "beginner", "stress relief", or "hormonal balance"
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="info-box" style="text-align: center; padding: 3rem;">
-            <h2>🔍 Search for PCOS/PCOD Exercises</h2>
-            <p style="font-size: 1.2rem; margin: 1rem 0;">
+        <div class="info-box" style="text-align: center; padding: 2rem;">
+            <h3>🔍 Search for PCOS/PCOD Exercises</h3>
+            <p style="font-size: 1rem; margin: 1rem 0;">
             Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!
             </p>
         </div>
