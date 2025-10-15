@@ -2,7 +2,7 @@ import streamlit as st
 import cv2
 import numpy as np
 import torch
-
+import base64
 import torch.nn as nn
 import mediapipe as mp
 from elasticsearch import Elasticsearch
@@ -135,20 +135,33 @@ def load_pose_model():
 
 @st.cache_resource
 def setup_elasticsearch():
-    return Elasticsearch(
+    es = Elasticsearch(
         cloud_id=os.environ["ES_CLOUD_ID"],
         api_key=os.environ["ES_API_KEY"]
     )
+    return es
+
+
+
 
 @st.cache_resource
 def setup_vertex_ai():
-    service_account_info = json.loads(os.environ["VERTEX_SERVICE_ACCOUNT"])
+    # Decode the base64-encoded JSON
+    b64_string = os.environ["VERTEX_SERVICE_ACCOUNT_B64"]
+    service_account_json = base64.b64decode(b64_string)
+    service_account_info = json.loads(service_account_json)
+
+    # Create credentials
     credentials = service_account.Credentials.from_service_account_info(service_account_info)
+
+    # Initialize Vertex AI
     aiplatform.init(
         project=os.environ["VERTEX_PROJECT_ID"],
         location=os.environ["VERTEX_LOCATION"],
         credentials=credentials
     )
+
+    # Return the model
     return GenerativeModel("gemini-2.5-flash")
 
 
@@ -657,4 +670,5 @@ with st.sidebar:
     st.markdown("---")
 
     st.caption("Made with ❤️ for women with PCOS/PCOD")
+
 
