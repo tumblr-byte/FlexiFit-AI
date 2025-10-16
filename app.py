@@ -52,7 +52,7 @@ st.markdown("""
     header {visibility: hidden;}
     
     .main {
-        background: #ffffff;
+      background: linear-gradient(135deg, #dee276 0%, #f0ee9a 50%, #dee276 100%);
         padding: 2rem 1.5rem;
     }
     
@@ -65,16 +65,8 @@ st.markdown("""
 .main-header {
     font-size: 4.5rem;
     font-weight: 900;
-    text-align: center;
-    background: linear-gradient(135deg, #dee276 0%, #f0ee9a 50%, #dee276 100%);
-    background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: shimmer 3s linear infinite, float 3s ease-in-out infinite;
-    text-shadow: 0 0 40px rgba(222, 226, 118, 0.5);
-    letter-spacing: 3px;
-    margin: 1rem 0;
+    color: #000000;
+
 }
 
 .sub-header {
@@ -1278,5 +1270,6 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
