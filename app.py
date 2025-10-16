@@ -52,7 +52,6 @@ st.markdown("""
     header {visibility: hidden;}
     
     .main {
-      background: linear-gradient(135deg, #dee276 0%, #f0ee9a 50%, #dee276 100%);
         padding: 2rem 1.5rem;
     }
     
@@ -292,7 +291,7 @@ st.markdown("""
 }
 
 .chat-assistant {
-    background: linear-gradient(135deg, rgba(149, 163, 179, 0.08) 0%, rgba(30, 30, 46, 0.6) 100%);
+    background: #DEE276;
     backdrop-filter: blur(15px);
     padding: 1.5rem;
     border-radius: 18px 18px 18px 5px;
@@ -301,7 +300,7 @@ st.markdown("""
     animation: slideInLeft 0.4s ease-out;
     font-size: 1rem;
     border: 1px solid rgba(149, 163, 179, 0.2);
-    color: #e8e8e8;
+  color: #e8e8e8;
 }
 
 /* Tabs with brand color */
@@ -372,18 +371,18 @@ st.markdown("""
 /* Sidebar with brand color gradient */
 [data-testid="stSidebar"] {
     background: linear-gradient(135deg, #dee276 0%, #f0ee9a 50%, #dee276 100%);
-    color: #1a1a2e;
+    color: #FFFFFF;
     border-right: 2px solid rgba(222, 226, 118, 0.4);
 }
 
 [data-testid="stSidebar"] .element-container {
-    color: #1a1a2e;
+    color: #FFFFFF;
 }
 
 [data-testid="stSidebar"] h1, 
 [data-testid="stSidebar"] h2, 
 [data-testid="stSidebar"] h3 {
-    color: #1a1a2e;
+    color:#FFFFFF;
 }
 
 /* Badges with brand color */
@@ -406,7 +405,7 @@ h1, h2, h3 {
 
 p, li, span {
     font-size: 1rem;
-    color: #e8e8e8;
+    color:  #ffffff;
     line-height: 1.7;
 }
 
@@ -445,9 +444,9 @@ label {
 }
     
     .result-mismatch {
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+        background:linear-gradient(135deg, rgba(222, 226, 118, 0.25) 0%, rgba(240, 238, 154, 0.18) 100%);
         border: 2px solid rgba(255, 107, 107, 0.4);
-        color: #ff9a9a;
+        color:  #ffffff;
         box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3);
     }
 </style>
@@ -1270,6 +1269,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
