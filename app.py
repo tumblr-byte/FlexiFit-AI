@@ -61,13 +61,7 @@ st.markdown("""
     }
     
     /* Main header with brand color */
-    .main-header {
-        font-size: 7.5rem;
-        font-weight: 900;
-        color #919c08;
-        text-shadow: 0 4px 20px rgba(222, 226, 118, 0.3);
-        text-align: center;
-    }
+
 
     .sub-header {
         font-size: 1.1rem;
@@ -815,11 +809,24 @@ def get_exercise_image_path(exercise_name, exercise_id):
 # ==========================================
 # MAIN APP LAYOUT
 # ==========================================
-col_logo, col_title = st.columns([3.5, 9.5])
-with col_logo:
-    st.image("logo.png", width=120)
-with col_title:
-    st.markdown('<h1 class="main-header">FLEXIFIT AI</h1>', unsafe_allow_html=True)
+st.markdown("""
+<div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+    <img src="logo.png" width="120">
+    <h1 style="
+        font-size: 7.5rem;
+        font-weight: 900;
+        color: #919c08;
+        text-shadow: 0 4px 20px rgba(222, 226, 118, 0.3);
+        margin: 0;
+    ">
+        FLEXIFIT AI
+    </h1>
+</div>
+<p style="text-align: center; font-size: 1.5rem; color: #555;">
+    Your AI-Powered PCOS/PCOD Exercise Coach with Real-Time Pose Detection
+</p>
+""", unsafe_allow_html=True)
+
 
 st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
 
@@ -1390,6 +1397,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
