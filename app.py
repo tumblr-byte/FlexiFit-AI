@@ -1356,7 +1356,7 @@ with st.sidebar:
     st.image("logo.png", width=100)
     
     st.markdown("""
-        <h2 style="color: #E0E786; margin: 1rem 0; font-weight: 900; font-size: 1.8rem;">FLEXIFIT AI</h2>
+        <h2 style="color: #919c08; margin: 1rem 0; font-weight: 900; font-size: 1.8rem;">FLEXIFIT AI</h2>
         <p style="color: #262626; margin: 0; font-size: 1rem;">PCOS/PCOD Exercise Coach</p>
     </div>
     """, unsafe_allow_html=True)
@@ -1365,7 +1365,7 @@ with st.sidebar:
     
     st.markdown("""
     <div style="color: #E0E786;">
-        <h3 style="color: #E0E786; margin-bottom: 1.5rem;"><i class="fa-solid fa-bolt icon-primary"></i> Powered By</h3>
+        <h3 style="color: #919c08; margin-bottom: 1.5rem;"><i class="fa-solid fa-bolt icon-primary"></i> Powered By</h3>
         <ul style="list-style: none; padding: 0;">
             <li style="padding: 0.8rem 0;">
                 <b style="font-size: 1.05rem;"><i class="fa-solid fa-person-running icon-primary"></i> MediaPipe</b><br>
@@ -1394,6 +1394,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
