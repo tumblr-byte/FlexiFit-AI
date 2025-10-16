@@ -62,11 +62,11 @@ st.markdown("""
     
     /* Main header with brand color */
     .main-header {
-        font-size: 4.5rem;
+        font-size: 7.5rem;
         font-weight: 900;
-        background: #919c08;
+        color #919c08;
         text-shadow: 0 4px 20px rgba(222, 226, 118, 0.3);
-        text-align: left;
+        text-align: center;
     }
 
     .sub-header {
@@ -815,7 +815,7 @@ def get_exercise_image_path(exercise_name, exercise_id):
 # ==========================================
 # MAIN APP LAYOUT
 # ==========================================
-col_logo, col_title = st.columns([0.5, 9.5])
+col_logo, col_title = st.columns([3.5, 9.5])
 with col_logo:
     st.image("logo.png", width=120)
 with col_title:
@@ -1390,6 +1390,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
