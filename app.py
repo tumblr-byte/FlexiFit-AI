@@ -1171,15 +1171,15 @@ with tab3:
             if message['role'] == 'user':
                 st.markdown(f"""
                 <div class="chat-user">
-                <b style="color: #E0E786; font-size: 1.1rem;"><i class="fa-solid fa-user icon-primary"></i> You:</b><br>
-                <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; color: #E0E786; line-height: 1.7;">{message['content']}</p>
+                <b style="color: #262626; font-size: 1.1rem;"><i class="fa-solid fa-user icon-primary"></i> You:</b><br>
+                <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; color: #262626; line-height: 1.7;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
                 <div class="chat-assistant">
-                <b style="color: #b8c5d6; font-size: 1.1rem;"><i class="fa-solid fa-robot"></i> AI Coach:</b><br>
-                <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; color: #b8c5d6; line-height: 1.7;">{message['content']}</p>
+                <b style="color: #262626; font-size: 1.1rem;"><i class="fa-solid fa-robot"></i> AI Coach:</b><br>
+                <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; color:#262626; line-height: 1.7;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
     
@@ -1392,6 +1392,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
