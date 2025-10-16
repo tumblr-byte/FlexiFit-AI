@@ -36,22 +36,22 @@ st.markdown("""
 <style>
 .icon-light {
     color: #b0b0b0;
-    font-size: 22px;
-    margin-right: 8px;
+    font-size: 18px;
+    margin-right: 6px;
     vertical-align: middle;
 }
 
 .icon-primary {
-    color: #4CAF50; /* greenish highlight */
-    font-size: 22px;
-    margin-right: 8px;
+    color: #a8b848;
+    font-size: 18px;
+    margin-right: 6px;
     vertical-align: middle;
 }
 
 .icon-accent {
-    color: #ff6b6b; /* reddish accent */
-    font-size: 22px;
-    margin-right: 8px;
+    color: #ff6b6b;
+    font-size: 18px;
+    margin-right: 6px;
     vertical-align: middle;
 }
 
@@ -79,38 +79,38 @@ st.markdown("""
     header {visibility: hidden;}
     
     .main {
-        background: linear-gradient(135deg, ##dee276 0%, #c3cfe2 100%);
-        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #dee276 0%, #f4f6e8 50%, #e8ead5 100%);
+        padding: 1.5rem 1rem;
     }
     
     .main-header {
-        font-size: 2.5rem;
+        font-size: 2rem;
         font-weight: 700;
         text-align: center;
-        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        background: linear-gradient(135deg, #a8b848 0%, #dee276 50%, #c5ce5e 100%);
         -webkit-background-clip: text;
         background-clip: text;
         -webkit-text-fill-color: transparent;
-        padding: 1.5rem 0;
+        padding: 1rem 0;
         animation: fadeInDown 1s ease-out;
     }
     
     .sub-header {
-        font-size: 1.1rem;
+        font-size: 0.95rem;
         text-align: center;
-        color: ##dee276;
-        margin-bottom: 2rem;
-        font-weight: 300;
+        color: #6b7a1f;
+        margin-bottom: 1.5rem;
+        font-weight: 400;
         animation: fadeInUp 1s ease-out;
     }
     
     .exercise-card {
         background: rgba(255, 255, 255, 0.95);
-        border-radius: 15px;
-        padding: 1.5rem;
-        margin: 1rem 0;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+        padding: 1.2rem;
+        margin: 0.8rem 0;
+        box-shadow: 0 3px 15px rgba(168, 184, 72, 0.1);
+        border: 1px solid rgba(222, 226, 118, 0.3);
         backdrop-filter: blur(10px);
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
@@ -124,7 +124,7 @@ st.markdown("""
         left: -100%;
         width: 100%;
         height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(45, 106, 79, 0.1), transparent);
+        background: linear-gradient(90deg, transparent, rgba(222, 226, 118, 0.15), transparent);
         transition: left 0.5s;
     }
     
@@ -133,105 +133,105 @@ st.markdown("""
     }
     
     .exercise-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 30px rgba(45, 106, 79, 0.2);
-        border-color: #52b788;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 25px rgba(168, 184, 72, 0.25);
+        border-color: #dee276;
     }
     
     .success-box {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        background: linear-gradient(135deg, #f0f5d8 0%, #e8f0c6 100%);
         border: none;
-        border-left: 5px solid #2d6a4f;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-        font-size: 1rem;
-        box-shadow: 0 3px 12px rgba(45, 106, 79, 0.15);
+        border-left: 4px solid #a8b848;
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin: 1.2rem 0;
+        font-size: 0.9rem;
+        box-shadow: 0 2px 10px rgba(168, 184, 72, 0.15);
         animation: slideInLeft 0.5s ease-out;
     }
     
     .warning-box {
-        background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
         border: none;
-        border-left: 5px solid #ffc107;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 3px 12px rgba(255, 193, 7, 0.15);
+        border-left: 4px solid #ffc107;
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin: 1.2rem 0;
+        box-shadow: 0 2px 10px rgba(255, 193, 7, 0.15);
         animation: slideInLeft 0.5s ease-out;
     }
     
     .info-box {
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        background: linear-gradient(135deg, #f5f8e8 0%, #edf2d8 100%);
         border: none;
-        border-left: 5px solid #52b788;
-        border-radius: 12px;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-        box-shadow: 0 3px 12px rgba(82, 183, 136, 0.15);
+        border-left: 4px solid #c5ce5e;
+        border-radius: 10px;
+        padding: 1.2rem;
+        margin: 1.2rem 0;
+        box-shadow: 0 2px 10px rgba(197, 206, 94, 0.15);
     }
     
     .stButton>button {
         width: 100%;
-        border-radius: 12px;
-        height: 3rem;
+        border-radius: 10px;
+        height: 2.8rem;
         font-weight: 600;
-        font-size: 1rem;
+        font-size: 0.9rem;
         border: none;
-        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
-        color: white;
+        background: linear-gradient(135deg, #a8b848 0%, #dee276 100%);
+        color: #2d3a0a;
         transition: all 0.3s ease;
-        box-shadow: 0 3px 12px rgba(45, 106, 79, 0.3);
+        box-shadow: 0 2px 10px rgba(168, 184, 72, 0.3);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
     
     .stButton>button:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 20px rgba(45, 106, 79, 0.5);
-        background: linear-gradient(135deg, #52b788 0%, #2d6a4f 100%);
+        box-shadow: 0 4px 18px rgba(168, 184, 72, 0.5);
+        background: linear-gradient(135deg, #dee276 0%, #a8b848 100%);
     }
     
     .metric-card {
-        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 15px;
+        background: linear-gradient(135deg, #a8b848 0%, #c5ce5e 50%, #dee276 100%);
+        color: #2d3a0a;
+        padding: 1.2rem;
+        border-radius: 12px;
         text-align: center;
-        margin: 0.8rem 0;
-        box-shadow: 0 4px 20px rgba(45, 106, 79, 0.3);
+        margin: 0.6rem 0;
+        box-shadow: 0 3px 15px rgba(168, 184, 72, 0.3);
         transition: all 0.3s ease;
         animation: fadeIn 0.8s ease-out;
     }
     
     .metric-card:hover {
         transform: scale(1.03);
-        box-shadow: 0 6px 25px rgba(45, 106, 79, 0.5);
+        box-shadow: 0 5px 20px rgba(168, 184, 72, 0.5);
     }
     
     .metric-card h3 {
         margin: 0;
-        font-size: 0.85rem;
-        font-weight: 400;
-        opacity: 0.9;
+        font-size: 0.75rem;
+        font-weight: 500;
+        opacity: 0.85;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
+        letter-spacing: 1.2px;
     }
     
     .metric-card h1 {
-        margin: 0.8rem 0 0 0;
-        font-size: 2.5rem;
+        margin: 0.6rem 0 0 0;
+        font-size: 2rem;
         font-weight: 700;
     }
     
     .video-container {
         width: 100%;
         max-width: 400px;
-        margin: 1rem auto;
-        border-radius: 15px;
+        margin: 0.8rem auto;
+        border-radius: 12px;
         overflow: hidden;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-        border: 2px solid #52b788;
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.15);
+        border: 2px solid #dee276;
         background: #f8f9fa;
     }
     
@@ -242,75 +242,78 @@ st.markdown("""
     }
     
     .chat-user {
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        padding: 1.2rem;
-        border-radius: 15px 15px 5px 15px;
-        margin: 0.8rem 0;
-        box-shadow: 0 3px 10px rgba(45, 106, 79, 0.15);
+        background: linear-gradient(135deg, #f0f5d8 0%, #e8f0c6 100%);
+        padding: 1rem;
+        border-radius: 12px 12px 4px 12px;
+        margin: 0.6rem 0;
+        box-shadow: 0 2px 8px rgba(168, 184, 72, 0.15);
         animation: slideInRight 0.3s ease-out;
+        font-size: 0.9rem;
     }
     
     .chat-assistant {
-        background: linear-gradient(135deg, #f1f8e9 0%, #dcedc8 100%);
-        padding: 1.2rem;
-        border-radius: 15px 15px 15px 5px;
-        margin: 0.8rem 0;
-        box-shadow: 0 3px 10px rgba(82, 183, 136, 0.15);
+        background: linear-gradient(135deg, #f8fae8 0%, #f0f5d8 100%);
+        padding: 1rem;
+        border-radius: 12px 12px 12px 4px;
+        margin: 0.6rem 0;
+        box-shadow: 0 2px 8px rgba(197, 206, 94, 0.15);
         animation: slideInLeft 0.3s ease-out;
+        font-size: 0.9rem;
     }
     
     .stTabs [data-baseweb="tab-list"] {
-        gap: 1.5rem;
+        gap: 1rem;
         background: rgba(255, 255, 255, 0.5);
-        padding: 0.8rem;
-        border-radius: 12px;
+        padding: 0.6rem;
+        border-radius: 10px;
     }
     
     .stTabs [data-baseweb="tab"] {
-        height: 3.5rem;
-        padding: 0 1.5rem;
-        font-size: 1rem;
+        height: 3rem;
+        padding: 0 1.2rem;
+        font-size: 0.85rem;
         font-weight: 600;
-        border-radius: 10px;
-        color: #2d6a4f;
+        border-radius: 8px;
+        color: #6b7a1f;
         transition: all 0.3s ease;
     }
     
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
-        color: white;
-        box-shadow: 0 3px 12px rgba(45, 106, 79, 0.3);
+        background: linear-gradient(135deg, #a8b848 0%, #dee276 100%);
+        color: #2d3a0a;
+        box-shadow: 0 2px 10px rgba(168, 184, 72, 0.3);
     }
     
     .stProgress > div > div > div > div {
-        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
+        background: linear-gradient(135deg, #a8b848 0%, #dee276 100%);
         border-radius: 10px;
     }
     
     .stTextInput>div>div>input {
-        border-radius: 10px;
+        border-radius: 8px;
         border: 2px solid #e0e0e0;
-        padding: 0.8rem;
-        font-size: 0.95rem;
+        padding: 0.7rem;
+        font-size: 0.85rem;
         transition: all 0.3s ease;
     }
     
     .stTextInput>div>div>input:focus {
-        border-color: #52b788;
-        box-shadow: 0 0 0 3px rgba(82, 183, 136, 0.1);
+        border-color: #c5ce5e;
+        box-shadow: 0 0 0 3px rgba(197, 206, 94, 0.1);
     }
     
     .streamlit-expanderHeader {
-        background: rgba(82, 183, 136, 0.1);
-        border-radius: 10px;
+        background: rgba(222, 226, 118, 0.15);
+        border-radius: 8px;
         font-weight: 600;
-        color: #2d6a4f;
+        color: #6b7a1f;
+        font-size: 0.9rem;
     }
     
     @keyframes fadeIn {
         from {
             opacity: 0;
-            transform: translateY(20px);
+            transform: translateY(15px);
         }
         to {
             opacity: 1;
@@ -321,7 +324,7 @@ st.markdown("""
     @keyframes fadeInDown {
         from {
             opacity: 0;
-            transform: translateY(-30px);
+            transform: translateY(-20px);
         }
         to {
             opacity: 1;
@@ -332,7 +335,7 @@ st.markdown("""
     @keyframes fadeInUp {
         from {
             opacity: 0;
-            transform: translateY(30px);
+            transform: translateY(20px);
         }
         to {
             opacity: 1;
@@ -343,7 +346,7 @@ st.markdown("""
     @keyframes slideInLeft {
         from {
             opacity: 0;
-            transform: translateX(-50px);
+            transform: translateX(-30px);
         }
         to {
             opacity: 1;
@@ -354,7 +357,7 @@ st.markdown("""
     @keyframes slideInRight {
         from {
             opacity: 0;
-            transform: translateX(50px);
+            transform: translateX(30px);
         }
         to {
             opacity: 1;
@@ -363,43 +366,59 @@ st.markdown("""
     }
     
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #2d6a4f 0%, #52b788 100%);
-        color: white;
+        background: linear-gradient(180deg, #a8b848 0%, #c5ce5e 50%, #dee276 100%);
+        color: #2d3a0a;
     }
     
     [data-testid="stSidebar"] .element-container {
-        color: white;
+        color: #2d3a0a;
     }
     
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3 {
-        color: white;
+        color: #2d3a0a;
     }
     
     .badge {
         display: inline-block;
-        padding: 0.4rem 0.8rem;
-        border-radius: 15px;
-        font-size: 0.85rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
         font-weight: 600;
         margin: 0.2rem;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     }
     
     .badge-primary {
-        background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%);
-        color: white;
+        background: linear-gradient(135deg, #a8b848 0%, #c5ce5e 100%);
+        color: #2d3a0a;
     }
     
     .badge-success {
-        background: linear-gradient(135deg, #1b4332 0%, #2d6a4f 100%);
+        background: linear-gradient(135deg, #8a9a36 0%, #a8b848 100%);
         color: white;
     }
     
     .badge-warning {
         background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
         color: white;
+    }
+    
+    h1, h2, h3 {
+        font-size: 1.5rem;
+    }
+    
+    h2 {
+        font-size: 1.3rem;
+    }
+    
+    h3 {
+        font-size: 1.1rem;
+    }
+    
+    p, li, span {
+        font-size: 0.9rem;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -648,7 +667,7 @@ def get_exercise_image_path(exercise_name, exercise_id):
 # ==========================================
 col_logo, col_title = st.columns([1, 9])
 with col_logo:
-    st.image("logo.png", width=100)
+    st.image("logo.png", width=80)
 with col_title:
     st.markdown('<h1 class="main-header">FlexiFit AI</h1>', unsafe_allow_html=True)
 
@@ -698,20 +717,17 @@ st.markdown("<br>", unsafe_allow_html=True)
 # TABS
 # ==========================================
 tab1, tab2, tab3, tab4 = st.tabs([
- st.markdown('<i class="fa-solid fa-dumbbell"></i> **Workout Tracker**', unsafe_allow_html=True)
-st.markdown('<i class="fa-solid fa-video icon-primary"></i> **Analyze Video**', unsafe_allow_html=True)
-st.markdown('<i class="fa-solid fa-comments icon-accent"></i> **AI Coach Chat**', unsafe_allow_html=True)
-st.markdown('<i class="fa-solid fa-chart-line icon-light icon-hover"></i> **Progress Stats**', unsafe_allow_html=True)
-
+    "Workout Tracker",
+    "Analyze Video",
+    "AI Coach Chat",
+    "Progress Stats"
 ])
 
 # ==========================================
 # TAB 1: EXERCISE LIBRARY
 # ==========================================
 with tab1:
-    st.markdown("""
-<h2><i class="fa-solid fa-book icon-title"></i> PCOS/PCOD Exercise Library</h2>
-""", unsafe_allow_html=True)
+    st.markdown('<h2><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
     st.markdown("Browse our curated collection of exercises specifically designed for PCOS/PCOD management")
     
     search_query = st.text_input("Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
@@ -720,9 +736,7 @@ with tab1:
         exercises = search_exercises(search_query)
         
         if exercises:
-           st.markdown(f"""
-<h3><i class="fa-solid fa-bullseye icon"></i> Found {len(exercises)} exercises</h3>
-""", unsafe_allow_html=True)
+            st.markdown(f'<h3><i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises</h3>', unsafe_allow_html=True)
             
             cols = st.columns(2)
             
@@ -734,14 +748,14 @@ with tab1:
                     
                     if os.path.exists(image_name):
                         img = Image.open(image_name)
-                        img = img.resize((350, 350))
-                        st.image(img, width=350)
+                        img = img.resize((300, 300))
+                        st.image(img, width=300)
                     else:
                         st.markdown("""
-                        <div style="background: linear-gradient(135deg, #2d6a4f 0%, #52b788 100%); 
-                                    height: 180px; display: flex; align-items: center; justify-content: center;
-                                    border-radius: 10px; color: white; font-size: 1.3rem;">
-                            
+                        <div style="background: linear-gradient(135deg, #a8b848 0%, #dee276 100%); 
+                                    height: 150px; display: flex; align-items: center; justify-content: center;
+                                    border-radius: 8px; color: #2d3a0a; font-size: 1.1rem;">
+                            <i class="fa-solid fa-image icon-primary"></i> No Image
                         </div>
                         """, unsafe_allow_html=True)
                     
@@ -755,34 +769,25 @@ with tab1:
                     
                     st.markdown(f"**Reps:** {ex['reps']}")
                     
-                   with st.expander('<i class="fa-solid fa-book-open icon"></i> View Details', expanded=False):
-                    st.markdown(f"""
-                         <p><i class="fa-solid fa-align-left icon"></i> <b>Description:</b><br>{ex['description']}</p>
-                                   """, unsafe_allow_html=True)
-    
-                    st.markdown("""
-                          <p><i class="fa-solid fa-heart-pulse icon-benefit"></i> <b>PCOS/PCOD Benefits:</b></p>
-                                   """, unsafe_allow_html=True)
+                    with st.expander("View Details", expanded=False):
+                        st.markdown(f"**Description:**\n{ex['description']}")
+                        st.markdown("**PCOS/PCOD Benefits:**")
                         for benefit in ex['pcos_benefits']:
                             st.markdown(f"• {benefit}")
                     
                     st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div class="info-box" style="text-align: center; padding: 2rem;">
-                <h3> No exercises found</h3>
-                <p style="font-size: 1rem; margin: 1rem 0;">
-                Try different keywords like "balance", "beginner", "stress relief", or "hormonal balance"
-                </p>
+            <div class="info-box" style="text-align: center; padding: 1.5rem;">
+                <h3><i class="fa-solid fa-magnifying-glass icon-primary"></i> No exercises found</h3>
+                <p>Try different keywords like "balance", "beginner", "stress relief", or "hormonal balance"</p>
             </div>
             """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="info-box" style="text-align: center; padding: 2rem;">
-            <h3> Search for PCOS/PCOD Exercises</h3>
-            <p style="font-size: 1rem; margin: 1rem 0;">
-            Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!
-            </p>
+        <div class="info-box" style="text-align: center; padding: 1.5rem;">
+            <h3><i class="fa-solid fa-search icon-primary"></i> Search for PCOS/PCOD Exercises</h3>
+            <p>Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -790,15 +795,12 @@ with tab1:
 # TAB 2: ANALYZE VIDEO
 # ==========================================
 with tab2:
-    st.markdown("""
-<h2><i class="fa-solid fa-video icon-title"></i> Upload & Analyze Your Exercise Video</h2>
-""", unsafe_allow_html=True)
-
+    st.markdown('<h2><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-box">
     <h3 style="margin-top: 0;">How it works:</h3>
-    <ol style="font-size: 1.1rem; line-height: 2;">
+    <ol style="font-size: 0.9rem; line-height: 1.8;">
         <li><b>Choose</b> the exercise you're performing from the dropdown</li>
         <li><b>Upload</b> your video (MP4, MOV, AVI format)</li>
         <li><b>Analyze</b> - Our AI will detect your pose in real-time</li>
@@ -810,17 +812,14 @@ with tab2:
     col1, col2 = st.columns([1, 1])
     
     with col1:
-      st.markdown("""
-<h3><i class="fa-solid fa-dumbbell icon"></i> Select Target Exercise</h3>
-""", unsafe_allow_html=True)
-
+        st.markdown('<h3><i class="fa-solid fa-dumbbell icon-primary"></i> Select Target Exercise</h3>', unsafe_allow_html=True)
         
         exercise_mapping = {
             "Downdog": "Downdog",
             "Plank": "Plank Pose",
-            "Warrior2": "Warrior 2 ",
-            "Modified_Tree": "Modified Tree Pose ",
-            "Standard_Tree": "Standard Tree Pose "
+            "Warrior2": "Warrior 2",
+            "Modified_Tree": "Modified Tree Pose",
+            "Standard_Tree": "Standard Tree Pose"
         }
         
         display_names = list(exercise_mapping.values())
@@ -832,15 +831,12 @@ with tab2:
         st.markdown(f"""
         <div class="success-box">
         <h3 style="margin: 0;">Target Exercise Selected</h3>
-        <h2 style="margin: 0.5rem 0 0 0; color: #28a745;">{selected_display}</h2>
+        <h2 style="margin: 0.5rem 0 0 0; color: #6b7a1f;">{selected_display}</h2>
         </div>
         """, unsafe_allow_html=True)
     
     with col2:
-        st.markdown("""
-<h3><i class="fa-solid fa-upload icon"></i> Upload Your Video</h3>
-""", unsafe_allow_html=True)
-
+        st.markdown('<h3><i class="fa-solid fa-upload icon-primary"></i> Upload Your Video</h3>', unsafe_allow_html=True)
         uploaded_video = st.file_uploader(
             "Choose a video file",
             type=['mp4', 'mov', 'avi'],
@@ -853,19 +849,13 @@ with tab2:
         col_preview, col_analyze = st.columns([1, 1])
         
         with col_preview:
-           st.markdown("""
-<h3><i class="fa-solid fa-video icon"></i> Your Uploaded Video</h3>
-""", unsafe_allow_html=True)
-
+            st.markdown('<h3><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h3>', unsafe_allow_html=True)
             st.markdown('<div class="video-container">', unsafe_allow_html=True)
             st.video(uploaded_video)
             st.markdown('</div>', unsafe_allow_html=True)
         
         with col_analyze:
-           st.markdown("""
-<h3><i class="fa-solid fa-magnifying-glass icon"></i> Ready to Analyze!</h3>
-""", unsafe_allow_html=True)
-
+            st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Ready to Analyze!</h3>', unsafe_allow_html=True)
             st.markdown(f"""
             <div class="info-box">
             <h3 style="margin-top: 0;">Analysis Details</h3>
@@ -881,18 +871,14 @@ with tab2:
                 tfile.write(uploaded_video.read())
                 tfile.close()
                 
-                with st.spinner(" <i class='fa-solid fa-robot'></i> AI is analyzing your video... Please wait! "):
-    results = analyze_video(tfile.name, target_pose)
-
+                with st.spinner("AI is analyzing your video... Please wait!"):
                     results = analyze_video(tfile.name, target_pose)
                 
-                # Clean up temporary file
                 os.unlink(tfile.name)
                 
                 if results:
                     st.session_state.analyzed_video_path = results['output_path']
                     
-                    # Add to history
                     st.session_state.exercise_history.append({
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'target_pose': selected_display,
@@ -901,26 +887,19 @@ with tab2:
                         'confidence': results['confidence']
                     })
                     
-                    # Keep only last 50 entries
                     if len(st.session_state.exercise_history) > 50:
                         st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                     
                     st.markdown("---")
-                    st.markdown("""
-<h2><i class="fa-solid fa-chart-simple icon"></i> Analysis Results</h2>
-""", unsafe_allow_html=True)
-
+                    st.markdown('<h2><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
                     
                     if results['match']:
                         st.markdown("""
                         <div class="success-box">
-                        st.markdown("""
-<h2 style="color: #28a745; margin: 0;">
-    <i class="fa-solid fa-check-circle"></i> PERFECT MATCH!
-</h2>
-""", unsafe_allow_html=True)
-
-                        <p style="margin: 1rem 0 0 0; font-size: 1.2rem;">
+                        <h2 style="color: #6b7a1f; margin: 0;">
+                            <i class="fa-solid fa-check-circle icon-primary"></i> PERFECT MATCH!
+                        </h2>
+                        <p style="margin: 1rem 0 0 0; font-size: 1rem;">
                         Excellent work! Your pose matches the target exercise perfectly. Keep up the great form!
                         </p>
                         </div>
@@ -929,7 +908,7 @@ with tab2:
                         st.markdown(f"""
                         <div class="warning-box">
                         <h2 style="color: #856404; margin: 0;">Different Pose Detected</h2>
-                        <p style="margin: 1rem 0 0 0; font-size: 1.1rem;">
+                        <p style="margin: 1rem 0 0 0; font-size: 0.95rem;">
                         <b>Target Exercise:</b> {selected_display}<br>
                         <b>Detected Exercise:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}<br><br>
                         Don't worry! Check the annotated video below to see where adjustments are needed.
@@ -937,7 +916,6 @@ with tab2:
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    # Metrics
                     metric_col1, metric_col2, metric_col3 = st.columns(3)
                     
                     with metric_col1:
@@ -965,10 +943,7 @@ with tab2:
                         """, unsafe_allow_html=True)
                     
                     st.markdown("---")
-                    st.markdown("""
-<h3><i class="fa-solid fa-video icon"></i> Annotated Video with AI Feedback</h3>
-""", unsafe_allow_html=True)
-
+                    st.markdown('<h3><i class="fa-solid fa-video icon-primary"></i> Annotated Video with AI Feedback</h3>', unsafe_allow_html=True)
                     st.markdown("**Green** = Correct Pose | **Red** = Incorrect Pose")
                     
                     st.markdown('<div class="video-container">', unsafe_allow_html=True)
@@ -999,20 +974,14 @@ with tab2:
 # TAB 3: AI CHAT
 # ==========================================
 with tab3:
-  st.markdown("""
-<h2><i class="fa-solid fa-comments icon"></i> Chat with Your AI Exercise Coach</h2>
-""", unsafe_allow_html=True)
-
+    st.markdown('<h2><i class="fa-solid fa-comments icon-primary"></i> Chat with Your AI Exercise Coach</h2>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-box">
     <h3 style="margin-top: 0;">Ask me anything about PCOS/PCOD exercises!</h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
         <div>
-           st.markdown("""
-<b><i class="fa-solid fa-dumbbell icon"></i> Exercise Questions:</b>
-""", unsafe_allow_html=True)
-
+            <b><i class="fa-solid fa-dumbbell icon-primary"></i> Exercise Questions:</b>
             <ul style="margin: 0.5rem 0;">
                 <li>"What exercises help with PCOS?"</li>
                 <li>"How to improve my plank form?"</li>
@@ -1020,10 +989,7 @@ with tab3:
             </ul>
         </div>
         <div>
-           st.markdown("""
-<b><i class="fa-solid fa-heart-pulse icon"></i> Health & Wellness:</b>
-""", unsafe_allow_html=True)
-
+            <b><i class="fa-solid fa-heart-pulse icon-primary"></i> Health & Wellness:</b>
             <ul style="margin: 0.5rem 0;">
                 <li>"Benefits of Tree Pose?"</li>
                 <li>"How often should I exercise?"</li>
@@ -1034,15 +1000,14 @@ with tab3:
     </div>
     """, unsafe_allow_html=True)
     
-    # Display chat history
     chat_container = st.container()
     
     with chat_container:
         if not st.session_state.chat_history:
             st.markdown("""
-            <div style="text-align: center; padding: 3rem; color: #999;">
+            <div style="text-align: center; padding: 2.5rem; color: #999;">
                 <h2>Welcome to AI Coach Chat!</h2>
-                <p style="font-size: 1.2rem;">Start a conversation by typing your question below.</p>
+                <p style="font-size: 1rem;">Start a conversation by typing your question below.</p>
             </div>
             """, unsafe_allow_html=True)
         
@@ -1050,38 +1015,36 @@ with tab3:
             if message['role'] == 'user':
                 st.markdown(f"""
                 <div class="chat-user">
-                <b style="color: #2196f3; font-size: 1.1rem;">👤 You:</b><br>
-                <p style="margin: 0.5rem 0 0 0; font-size: 1.05rem;">{message['content']}</p>
+                <b style="color: #2196f3; font-size: 0.95rem;"><i class="fa-solid fa-user icon-primary"></i> You:</b><br>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
                 <div class="chat-assistant">
-                <b style="color: #9c27b0; font-size: 1.1rem;">🤖 AI Coach:</b><br>
-                <p style="margin: 0.5rem 0 0 0; font-size: 1.05rem;">{message['content']}</p>
+                <b style="color: #9c27b0; font-size: 0.95rem;"><i class="fa-solid fa-robot icon-primary"></i> AI Coach:</b><br>
+                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
     
     st.markdown("---")
     
-    # Chat input
-    user_input = st.text_input(" Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
+    user_input = st.text_input("Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
     
     col_send, col_clear = st.columns([3, 1])
     
     with col_send:
-        if st.button(" Send Message", use_container_width=True, type="primary"):
+        if st.button("Send Message", use_container_width=True, type="primary"):
             if user_input:
                 st.session_state.chat_history.append({
                     'role': 'user',
                     'content': user_input
                 })
                 
-                # Keep only last 100 messages
                 if len(st.session_state.chat_history) > 100:
                     st.session_state.chat_history = st.session_state.chat_history[-100:]
                 
-                with st.spinner(" AI Coach is thinking..."):
+                with st.spinner("AI Coach is thinking..."):
                     response = chat_with_ai(user_input)
                 
                 st.session_state.chat_history.append({
@@ -1091,10 +1054,10 @@ with tab3:
                 
                 st.rerun()
             else:
-                st.warning(" Please type a message first!")
+                st.warning("Please type a message first!")
     
     with col_clear:
-        if st.button(" Clear Chat", use_container_width=True):
+        if st.button("Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
 
@@ -1102,18 +1065,14 @@ with tab3:
 # TAB 4: PROGRESS HISTORY
 # ==========================================
 with tab4:
-   st.markdown("""
-<h2><i class="fa-solid fa-chart-line icon"></i> Your Progress & History</h2>
-""", unsafe_allow_html=True)
-
+    st.markdown('<h2><i class="fa-solid fa-chart-line icon-primary"></i> Your Progress & History</h2>', unsafe_allow_html=True)
     
-    history_tab1, history_tab2 = st.tabs([" Exercise Analytics", "Chat History"])
+    history_tab1, history_tab2 = st.tabs(["Exercise Analytics", "Chat History"])
     
     with history_tab1:
         if st.session_state.exercise_history:
             st.markdown(f"### Total Workouts Completed: {len(st.session_state.exercise_history)}")
             
-            # Summary stats
             col1, col2, col3 = st.columns(3)
             
             with col1:
@@ -1145,14 +1104,14 @@ with tab4:
                 """, unsafe_allow_html=True)
             
             st.markdown("---")
-           st.markdown("""
-<h3><i class="fa-solid fa-file-lines icon"></i> Workout History</h3>
-""", unsafe_allow_html=True)
-
+            st.markdown('<h3><i class="fa-solid fa-file-lines icon-primary"></i> Workout History</h3>', unsafe_allow_html=True)
+            
             for idx, record in enumerate(reversed(st.session_state.exercise_history)):
                 match_status = record['target_pose'] == record['detected_pose']
                 
-                with st.expander(f"{'✅' if match_status else '⚠️'} {record['timestamp']} - {record['target_pose']}", expanded=(idx==0)):
+                status_icon = '<i class="fa-solid fa-check-circle" style="color: #6b7a1f;"></i>' if match_status else '<i class="fa-solid fa-circle-xmark" style="color: #ffc107;"></i>'
+                
+                with st.expander(f"{record['timestamp']} - {record['target_pose']}", expanded=(idx==0)):
                     st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
                     
                     col1, col2, col3 = st.columns(3)
@@ -1168,19 +1127,9 @@ with tab4:
                     with col3:
                         st.markdown("**Result**")
                         if match_status:
-                           st.markdown("""
-<h3 style="color: #28a745;">
-    <i class="fa-solid fa-circle-check icon"></i> Perfect Match
-</h3>
-""", unsafe_allow_html=True)
-
+                            st.markdown(f'<h3 style="color: #6b7a1f;">{status_icon} Perfect Match</h3>', unsafe_allow_html=True)
                         else:
-                            st.markdown("""
-<h3 style="color: #ffc107;">
-    <i class="fa-solid fa-xmark"></i>Different Pose
-</h3>
-""", unsafe_allow_html=True)
-
+                            st.markdown(f'<h3 style="color: #ffc107;">{status_icon} Different Pose</h3>', unsafe_allow_html=True)
                     
                     st.markdown("---")
                     
@@ -1199,9 +1148,9 @@ with tab4:
                     st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div class="info-box" style="text-align: center; padding: 3rem;">
-                <h2>📊 No Exercise History Yet</h2>
-                <p style="font-size: 1.2rem; margin: 1rem 0;">
+            <div class="info-box" style="text-align: center; padding: 2.5rem;">
+                <h2><i class="fa-solid fa-chart-bar icon-primary"></i> No Exercise History Yet</h2>
+                <p style="font-size: 1rem; margin: 1rem 0;">
                 Upload and analyze a video in the "Analyze Video" tab to start tracking your progress!
                 </p>
             </div>
@@ -1209,26 +1158,26 @@ with tab4:
     
     with history_tab2:
         if st.session_state.chat_history:
-            st.markdown(f"### 💬 Total Conversations: {len(st.session_state.chat_history) // 2}")
+            st.markdown(f"### Total Conversations: {len(st.session_state.chat_history) // 2}")
             
             for message in st.session_state.chat_history:
                 if message['role'] == 'user':
                     st.markdown(f"""
                     <div class="chat-user">
-                    <b style="color: #2196f3;">👤 You:</b> {message['content']}
+                    <b style="color: #2196f3;"><i class="fa-solid fa-user icon-primary"></i> You:</b> {message['content']}
                     </div>
                     """, unsafe_allow_html=True)
                 else:
                     st.markdown(f"""
                     <div class="chat-assistant">
-                    <b style="color: #9c27b0;">🤖 AI Coach:</b> {message['content']}
+                    <b style="color: #9c27b0;"><i class="fa-solid fa-robot icon-primary"></i> AI Coach:</b> {message['content']}
                     </div>
                     """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div class="info-box" style="text-align: center; padding: 3rem;">
-                <h2> No Chat History Yet</h2>
-                <p style="font-size: 1.2rem; margin: 1rem 0;">
+            <div class="info-box" style="text-align: center; padding: 2.5rem;">
+                <h2><i class="fa-solid fa-comment icon-primary"></i> No Chat History Yet</h2>
+                <p style="font-size: 1rem; margin: 1rem 0;">
                 Start a conversation with the AI Coach in the "AI Coach Chat" tab!
                 </p>
             </div>
@@ -1245,16 +1194,16 @@ with st.sidebar:
     st.image("logo.png", width=80)
     
     st.markdown("""
-        <h2 style="color: white; margin: 0.5rem 0;">FlexiFit AI</h2>
-        <p style="color: rgba(255,255,255,0.8); margin: 0;">PCOS/PCOD Exercise Coach</p>
+        <h2 style="color: #2d3a0a; margin: 0.5rem 0;">FlexiFit AI</h2>
+        <p style="color: rgba(45, 58, 10, 0.8); margin: 0;">PCOS/PCOD Exercise Coach</p>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("---")
     
     st.markdown("""
-    <div style="color: white;">
-        <h3 style="color: white;">Powered By</h3>
+    <div style="color: #2d3a0a;">
+        <h3 style="color: #2d3a0a;">Powered By</h3>
         <ul style="list-style: none; padding: 0;">
             <li style="padding: 0.5rem 0;">
                 <b>MediaPipe</b><br>
@@ -1281,8 +1230,5 @@ with st.sidebar:
     if st.button("Clear All History", use_container_width=True):
         st.session_state.exercise_history = []
         st.session_state.chat_history = []
-        st.success(" All history cleared!")
+        st.success("All history cleared!")
         st.rerun()
-
-
-
