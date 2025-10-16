@@ -83,7 +83,7 @@ st.markdown("""
 
 /* Glassmorphism cards with brand color accents */
 .glass-card {
-    background: rgba(222, 226, 118, 0.08);
+    background: #1A1A2E;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border-radius: 20px;
@@ -1269,6 +1269,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
