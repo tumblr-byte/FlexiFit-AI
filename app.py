@@ -387,18 +387,18 @@ st.markdown("""
     /* Sidebar with brand color gradient */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #ffffff 0%, #fefff5 100%);
-        color: #2c3e50;
+        color: #1C1C1C;
         border-right: 3px solid rgba(222, 226, 118, 0.4);
     }
 
     [data-testid="stSidebar"] .element-container {
-        color: #2c3e50;
+        color: #1C1C1C;
     }
 
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3 {
-        color: #2c3e50;
+        color: #1C1C1C;
     }
 
     /* Badges with brand color */
@@ -1394,6 +1394,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
