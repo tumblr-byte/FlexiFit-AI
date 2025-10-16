@@ -1357,7 +1357,7 @@ with st.sidebar:
     
     st.markdown("""
         <h2 style="color: #E0E786; margin: 1rem 0; font-weight: 900; font-size: 1.8rem;">FLEXIFIT AI</h2>
-        <p style="color: #b8c5d6; margin: 0; font-size: 1rem;">PCOS/PCOD Exercise Coach</p>
+        <p style="color: #262626; margin: 0; font-size: 1rem;">PCOS/PCOD Exercise Coach</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -1394,6 +1394,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
