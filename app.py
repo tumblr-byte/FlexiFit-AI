@@ -271,19 +271,28 @@ text-align: center; }
         background-clip: text;
     }
 
-    /* Video container with brand color border */
-    .video-container {
-        width: 100%;
-        max-width: 500px;
-        margin: 1.5rem auto;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 15px 50px rgba(222, 226, 118, 0.3),
-                    0 4px 12px rgba(0, 0, 0, 0.08);
-        border: 3px solid rgba(222, 226, 118, 0.5);
-        background: #ffffff;
-        backdrop-filter: blur(10px);
-    }
+ .video-container {
+  width: 400px;
+  height: 400px;
+  margin: 1.5rem auto;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 15px 50px rgba(222, 226, 118, 0.3),
+              0 4px 12px rgba(0, 0, 0, 0.08);
+  border: 3px solid rgba(222, 226, 118, 0.5);
+  background: #ffffff;
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* crop and fill container */
+}
+
 
     /* Chat messages with updated colors */
     .chat-user {
@@ -1178,7 +1187,7 @@ with tab3:
             else:
                 st.markdown(f"""
                 <div class="chat-assistant">
-                <b style="color: #262626; font-size: 1.1rem;"><i class="fa-solid fa-robot"></i> AI Coach:</b><br>
+                <b style="color: #262626; font-size: 1.1rem;"><i class="fa-solid fa-robot" style="color:#919c08;"></i> AI Coach:</b><br>
                 <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; color:#262626; line-height: 1.7;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1392,6 +1401,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
