@@ -33,40 +33,11 @@ st.set_page_config(
 
 st.markdown("""
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
    """, unsafe_allow_html=True)
-st.markdown("""
-   <style>
-.icon-light {
-    color: #95a3b3;
-    font-size: 18px;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-.icon-primary {
-    color: #dee276;
-    font-size: 18px;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-.icon-accent {
-    color: #ff6b6b;
-    font-size: 18px;
-    margin-right: 8px;
-    vertical-align: middle;
-}
-
-.icon-hover:hover {
-    transform: scale(1.15);
-    transition: 0.3s;
-}
-</style>
-""", unsafe_allow_html=True)
-
 
 # ==========================================
-# CUSTOM CSS
+# CUSTOM CSS WITH GLASSMORPHISM
 # ==========================================
 st.markdown("""
 <style>
@@ -81,171 +52,266 @@ st.markdown("""
     header {visibility: hidden;}
     
     .main {
-        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 25%, #0f3460 50%, #1a1a2e 75%, #16213e 100%);
-        padding: 1.5rem 1rem;
+        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0a 100%);
+        padding: 2rem 1.5rem;
     }
     
-   .main-header {
-       font-size: 3.5rem;
-       font-weight: 900;
-       text-align: center;
-       color: #dee276;
+    /* Beautiful animated header */
+    .main-header {
+        font-size: 4.5rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(135deg, #C7D06C 0%, #E0E786 50%, #C7D06C 100%);
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: shimmer 3s linear infinite, float 3s ease-in-out infinite;
+        text-shadow: 0 0 40px rgba(199, 208, 108, 0.5);
+        letter-spacing: 3px;
+        margin: 1rem 0;
+        filter: drop-shadow(0 0 30px rgba(224, 231, 134, 0.6));
+    }
     
-    @keyframes glow {
-        from {
-            filter: drop-shadow(0 0 10px rgba(222, 226, 118, 0.5));
-        }
-        to {
-            filter: drop-shadow(0 0 20px rgba(222, 226, 118, 0.8));
-        }
+    @keyframes shimmer {
+        0% { background-position: 0% center; }
+        100% { background-position: 200% center; }
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
     }
     
     .sub-header {
-        font-size: 1rem;
+        font-size: 1.1rem;
         text-align: center;
-        color: #dee276;
-        margin-bottom: 1.5rem;
-        font-weight: 400;
+        background: linear-gradient(135deg, #C7D06C, #E0E786);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 2rem;
+        font-weight: 500;
         animation: fadeInUp 1s ease-out;
-        text-shadow: 0 0 10px rgba(222, 226, 118, 0.3);
+        letter-spacing: 2px;
     }
     
-    .exercise-card {
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.1) 0%, rgba(30, 30, 46, 0.9) 100%);
-        border-radius: 12px;
-        padding: 1.2rem;
-        margin: 0.8rem 0;
-        box-shadow: 0 3px 15px rgba(222, 226, 118, 0.2), inset 0 1px 0 rgba(222, 226, 118, 0.1);
-        border: 1px solid rgba(222, 226, 118, 0.3);
-        backdrop-filter: blur(10px);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    /* Glassmorphism cards */
+    .glass-card {
+        background: rgba(199, 208, 108, 0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-radius: 20px;
+        border: 1px solid rgba(224, 231, 134, 0.18);
+        padding: 2rem;
+        margin: 1.5rem 0;
+        box-shadow: 0 8px 32px rgba(199, 208, 108, 0.15),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         overflow: hidden;
     }
     
-    .exercise-card::before {
+    .glass-card::before {
         content: '';
         position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(222, 226, 118, 0.2), transparent);
-        transition: left 0.5s;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(224, 231, 134, 0.1) 0%, transparent 70%);
+        animation: rotate 10s linear infinite;
     }
     
-    .exercise-card:hover::before {
-        left: 100%;
+    @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .glass-card:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 12px 40px rgba(199, 208, 108, 0.25),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+        border-color: rgba(224, 231, 134, 0.4);
+    }
+    
+    /* Exercise cards with glassmorphism */
+    .exercise-card {
+        background: rgba(199, 208, 108, 0.06);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 18px;
+        padding: 1.8rem;
+        margin: 1rem 0;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(224, 231, 134, 0.15);
+        transition: all 0.3s ease;
+        position: relative;
     }
     
     .exercise-card:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 6px 25px rgba(222, 226, 118, 0.4), inset 0 1px 0 rgba(222, 226, 118, 0.2);
-        border-color: #dee276;
+        transform: translateY(-5px);
+        box-shadow: 0 15px 45px rgba(199, 208, 108, 0.3);
+        border-color: rgba(224, 231, 134, 0.3);
     }
     
+    /* Beautiful success box */
     .success-box {
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.15) 0%, rgba(168, 184, 72, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.15) 0%, rgba(224, 231, 134, 0.1) 100%);
+        backdrop-filter: blur(15px);
         border: none;
-        border-left: 4px solid #dee276;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin: 1.2rem 0;
-        font-size: 0.9rem;
-        box-shadow: 0 2px 10px rgba(222, 226, 118, 0.2);
-        animation: slideInLeft 0.5s ease-out;
-        color: #dee276;
+        border-left: 5px solid #C7D06C;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 8px 25px rgba(199, 208, 108, 0.2);
+        animation: slideInLeft 0.6s ease-out;
+        color: #E0E786;
     }
     
     .warning-box {
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 193, 7, 0.1) 100%);
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.12) 0%, rgba(255, 152, 0, 0.08) 100%);
+        backdrop-filter: blur(15px);
         border: none;
-        border-left: 4px solid #ff6b6b;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin: 1.2rem 0;
-        box-shadow: 0 2px 10px rgba(255, 107, 107, 0.2);
-        animation: slideInLeft 0.5s ease-out;
-        color: #ff6b6b;
+        border-left: 5px solid #ff6b6b;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 8px 25px rgba(255, 107, 107, 0.2);
+        animation: slideInLeft 0.6s ease-out;
+        color: #ff9a9a;
     }
     
     .info-box {
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.1) 0%, rgba(149, 163, 179, 0.05) 100%);
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.1) 0%, rgba(224, 231, 134, 0.05) 100%);
+        backdrop-filter: blur(15px);
         border: none;
-        border-left: 4px solid #dee276;
-        border-radius: 10px;
-        padding: 1.2rem;
-        margin: 1.2rem 0;
-        box-shadow: 0 2px 10px rgba(222, 226, 118, 0.15);
-        color: #dee276;
+        border-left: 5px solid #E0E786;
+        border-radius: 15px;
+        padding: 2rem;
+        margin: 2rem 0;
+        box-shadow: 0 8px 25px rgba(224, 231, 134, 0.15);
+        color: #E0E786;
     }
     
+    /* Beautiful buttons */
     .stButton>button {
         width: 100%;
-        border-radius: 10px;
-        height: 2.8rem;
+        border-radius: 12px;
+        height: 3.2rem;
         font-weight: 700;
-        font-size: 0.9rem;
-        border: 2px solid #dee276;
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.2) 0%, rgba(168, 184, 72, 0.3) 100%);
-        color: #dee276;
+        font-size: 1rem;
+        border: 2px solid rgba(224, 231, 134, 0.3);
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.15) 0%, rgba(224, 231, 134, 0.2) 100%);
+        backdrop-filter: blur(10px);
+        color: #E0E786;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 10px rgba(222, 226, 118, 0.3);
+        box-shadow: 0 4px 15px rgba(199, 208, 108, 0.2);
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stButton>button::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(224, 231, 134, 0.3);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+    
+    .stButton>button:hover::before {
+        width: 300px;
+        height: 300px;
     }
     
     .stButton>button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(222, 226, 118, 0.6);
-        background: linear-gradient(135deg, #dee276 0%, #a8b848 100%);
-        color: #1a1a2e;
-        border-color: #fff9a6;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 30px rgba(199, 208, 108, 0.5);
+        background: linear-gradient(135deg, #C7D06C 0%, #E0E786 100%);
+        color: #0a0a0a;
+        border-color: #E0E786;
     }
     
+    /* Beautiful metric cards */
     .metric-card {
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.2) 0%, rgba(168, 184, 72, 0.15) 50%, rgba(197, 206, 94, 0.2) 100%);
-        color: #dee276;
-        padding: 1.2rem;
-        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.12) 0%, rgba(224, 231, 134, 0.08) 100%);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        color: #E0E786;
+        padding: 2rem;
+        border-radius: 18px;
         text-align: center;
-        margin: 0.6rem 0;
-        box-shadow: 0 3px 15px rgba(222, 226, 118, 0.3), inset 0 1px 0 rgba(222, 226, 118, 0.2);
-        border: 1px solid rgba(222, 226, 118, 0.3);
-        transition: all 0.3s ease;
-        animation: fadeIn 0.8s ease-out;
+        margin: 1rem 0;
+        box-shadow: 0 8px 32px rgba(199, 208, 108, 0.2),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(224, 231, 134, 0.2);
+        transition: all 0.4s ease;
+        animation: fadeIn 1s ease-out;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .metric-card::after {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(224, 231, 134, 0.15) 0%, transparent 70%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 0.5; }
+        50% { opacity: 1; }
     }
     
     .metric-card:hover {
-        transform: scale(1.03);
-        box-shadow: 0 5px 25px rgba(222, 226, 118, 0.5);
-        border-color: #dee276;
+        transform: translateY(-8px) scale(1.05);
+        box-shadow: 0 15px 50px rgba(199, 208, 108, 0.4);
+        border-color: #E0E786;
     }
     
     .metric-card h3 {
         margin: 0;
-        font-size: 0.75rem;
-        font-weight: 500;
+        font-size: 0.85rem;
+        font-weight: 600;
         opacity: 0.9;
         text-transform: uppercase;
-        letter-spacing: 1.5px;
+        letter-spacing: 2px;
+        color: #C7D06C;
     }
     
     .metric-card h1 {
-        margin: 0.6rem 0 0 0;
-        font-size: 2rem;
+        margin: 1rem 0 0 0;
+        font-size: 2.8rem;
         font-weight: 900;
+        background: linear-gradient(135deg, #C7D06C, #E0E786);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
     
+    /* Video container with glassmorphism */
     .video-container {
         width: 100%;
-        max-width: 400px;
-        margin: 0.8rem auto;
-        border-radius: 12px;
+        max-width: 500px;
+        margin: 1.5rem auto;
+        border-radius: 20px;
         overflow: hidden;
-        box-shadow: 0 3px 15px rgba(222, 226, 118, 0.3);
-        border: 2px solid #dee276;
-        background: #1a1a2e;
+        box-shadow: 0 15px 50px rgba(199, 208, 108, 0.3);
+        border: 2px solid rgba(224, 231, 134, 0.3);
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
     }
     
     .video-container video {
@@ -254,110 +320,100 @@ st.markdown("""
         display: block;
     }
     
+    /* Beautiful chat messages */
     .chat-user {
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.15) 0%, rgba(168, 184, 72, 0.1) 100%);
-        padding: 1rem;
-        border-radius: 12px 12px 4px 12px;
-        margin: 0.6rem 0;
-        box-shadow: 0 2px 8px rgba(222, 226, 118, 0.2);
-        animation: slideInRight 0.3s ease-out;
-        font-size: 0.9rem;
-        border: 1px solid rgba(222, 226, 118, 0.2);
-        color: #dee276;
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.15) 0%, rgba(224, 231, 134, 0.1) 100%);
+        backdrop-filter: blur(15px);
+        padding: 1.5rem;
+        border-radius: 18px 18px 5px 18px;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(199, 208, 108, 0.2);
+        animation: slideInRight 0.4s ease-out;
+        font-size: 1rem;
+        border: 1px solid rgba(224, 231, 134, 0.2);
+        color: #E0E786;
     }
     
     .chat-assistant {
-        background: linear-gradient(135deg, rgba(149, 163, 179, 0.1) 0%, rgba(30, 30, 46, 0.8) 100%);
-        padding: 1rem;
-        border-radius: 12px 12px 12px 4px;
-        margin: 0.6rem 0;
-        box-shadow: 0 2px 8px rgba(149, 163, 179, 0.2);
-        animation: slideInLeft 0.3s ease-out;
-        font-size: 0.9rem;
+        background: linear-gradient(135deg, rgba(149, 163, 179, 0.08) 0%, rgba(30, 30, 46, 0.6) 100%);
+        backdrop-filter: blur(15px);
+        padding: 1.5rem;
+        border-radius: 18px 18px 18px 5px;
+        margin: 1rem 0;
+        box-shadow: 0 4px 15px rgba(149, 163, 179, 0.2);
+        animation: slideInLeft 0.4s ease-out;
+        font-size: 1rem;
         border: 1px solid rgba(149, 163, 179, 0.2);
-        color: #95a3b3;
+        color: #b8c5d6;
     }
     
+    /* Beautiful tabs */
     .stTabs [data-baseweb="tab-list"] {
-        gap: 1rem;
-        background: rgba(26, 26, 46, 0.5);
-        padding: 0.6rem;
-        border-radius: 10px;
-        border: 1px solid rgba(222, 226, 118, 0.2);
+        gap: 1.5rem;
+        background: rgba(26, 26, 46, 0.4);
+        backdrop-filter: blur(10px);
+        padding: 1rem;
+        border-radius: 15px;
+        border: 1px solid rgba(224, 231, 134, 0.15);
     }
     
     .stTabs [data-baseweb="tab"] {
-        height: 3rem;
-        padding: 0 1.2rem;
-        font-size: 0.85rem;
+        height: 3.5rem;
+        padding: 0 2rem;
+        font-size: 0.95rem;
         font-weight: 700;
-        border-radius: 8px;
-        color: #dee276;
+        border-radius: 12px;
+        color: #C7D06C;
         transition: all 0.3s ease;
         text-transform: uppercase;
-        letter-spacing: 1px;
+        letter-spacing: 1.5px;
     }
     
     .stTabs [aria-selected="true"] {
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.3) 0%, rgba(168, 184, 72, 0.2) 100%);
-        color: #fff9a6;
-        box-shadow: 0 2px 10px rgba(222, 226, 118, 0.3);
-        border: 1px solid rgba(222, 226, 118, 0.4);
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.25) 0%, rgba(224, 231, 134, 0.15) 100%);
+        backdrop-filter: blur(15px);
+        color: #E0E786;
+        box-shadow: 0 4px 20px rgba(199, 208, 108, 0.3);
+        border: 1px solid rgba(224, 231, 134, 0.3);
     }
     
+    /* Beautiful progress bar */
     .stProgress > div > div > div > div {
-        background: linear-gradient(135deg, #dee276 0%, #a8b848 100%);
+        background: linear-gradient(135deg, #C7D06C 0%, #E0E786 100%);
         border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(199, 208, 108, 0.4);
     }
     
+    /* Beautiful input fields */
     .stTextInput>div>div>input {
-        border-radius: 8px;
-        border: 2px solid rgba(222, 226, 118, 0.3);
-        padding: 0.7rem;
-        font-size: 0.85rem;
+        border-radius: 12px;
+        border: 2px solid rgba(224, 231, 134, 0.2);
+        padding: 1rem;
+        font-size: 1rem;
         transition: all 0.3s ease;
-        background: rgba(26, 26, 46, 0.5);
-        color: #dee276;
+        background: rgba(26, 26, 46, 0.4);
+        backdrop-filter: blur(10px);
+        color: #E0E786;
     }
     
     .stTextInput>div>div>input:focus {
-        border-color: #dee276;
-        box-shadow: 0 0 0 3px rgba(222, 226, 118, 0.2);
-        background: rgba(26, 26, 46, 0.8);
+        border-color: #E0E786;
+        box-shadow: 0 0 0 4px rgba(224, 231, 134, 0.15);
+        background: rgba(26, 26, 46, 0.6);
     }
     
     .streamlit-expanderHeader {
-        background: rgba(222, 226, 118, 0.1);
-        border-radius: 8px;
+        background: rgba(199, 208, 108, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 12px;
         font-weight: 700;
-        color: #dee276;
-        font-size: 0.9rem;
-        border: 1px solid rgba(222, 226, 118, 0.2);
+        color: #E0E786;
+        font-size: 1rem;
+        border: 1px solid rgba(224, 231, 134, 0.2);
     }
     
+    /* Animations */
     @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(15px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-    
-    @keyframes fadeInUp {
         from {
             opacity: 0;
             transform: translateY(20px);
@@ -368,10 +424,21 @@ st.markdown("""
         }
     }
     
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
     @keyframes slideInLeft {
         from {
             opacity: 0;
-            transform: translateX(-30px);
+            transform: translateX(-40px);
         }
         to {
             opacity: 1;
@@ -382,7 +449,7 @@ st.markdown("""
     @keyframes slideInRight {
         from {
             opacity: 0;
-            transform: translateX(30px);
+            transform: translateX(40px);
         }
         to {
             opacity: 1;
@@ -390,79 +457,138 @@ st.markdown("""
         }
     }
     
+    /* Sidebar styling */
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        color: #dee276;
-        border-right: 2px solid rgba(222, 226, 118, 0.2);
+        background: linear-gradient(180deg, #0a0a0a 0%, #1a1a2e 50%, #0f3460 100%);
+        color: #E0E786;
+        border-right: 2px solid rgba(224, 231, 134, 0.2);
     }
     
     [data-testid="stSidebar"] .element-container {
-        color: #dee276;
+        color: #E0E786;
     }
     
     [data-testid="stSidebar"] h1, 
     [data-testid="stSidebar"] h2, 
     [data-testid="stSidebar"] h3 {
-        color: #dee276;
+        color: #E0E786;
     }
     
+    /* Beautiful badges */
     .badge {
         display: inline-block;
-        padding: 0.3rem 0.6rem;
-        border-radius: 12px;
-        font-size: 0.75rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
         font-weight: 700;
-        margin: 0.2rem;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        margin: 0.3rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 1px;
+        backdrop-filter: blur(10px);
     }
     
     .badge-primary {
-        background: linear-gradient(135deg, rgba(222, 226, 118, 0.3) 0%, rgba(168, 184, 72, 0.2) 100%);
-        color: #dee276;
-        border: 1px solid rgba(222, 226, 118, 0.4);
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.25) 0%, rgba(224, 231, 134, 0.15) 100%);
+        color: #E0E786;
+        border: 1px solid rgba(224, 231, 134, 0.3);
     }
     
     .badge-success {
-        background: linear-gradient(135deg, rgba(168, 184, 72, 0.3) 0%, rgba(138, 154, 54, 0.2) 100%);
-        color: #a8b848;
-        border: 1px solid rgba(168, 184, 72, 0.4);
+        background: linear-gradient(135deg, rgba(168, 184, 72, 0.25) 0%, rgba(138, 154, 54, 0.15) 100%);
+        color: #C7D06C;
+        border: 1px solid rgba(199, 208, 108, 0.3);
     }
     
     .badge-warning {
-        background: linear-gradient(135deg, rgba(255, 107, 107, 0.3) 0%, rgba(255, 152, 0, 0.2) 100%);
-        color: #ff6b6b;
-        border: 1px solid rgba(255, 107, 107, 0.4);
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.25) 0%, rgba(255, 152, 0, 0.15) 100%);
+        color: #ff9a9a;
+        border: 1px solid rgba(255, 107, 107, 0.3);
     }
     
+    /* Typography */
     h1, h2, h3 {
-        color: #dee276;
+        color: #E0E786;
     }
     
     h1 {
-        font-size: 1.8rem;
+        font-size: 2rem;
         font-weight: 700;
     }
     
     h2 {
-        font-size: 1.5rem;
+        font-size: 1.6rem;
         font-weight: 700;
     }
     
     h3 {
-        font-size: 1.2rem;
+        font-size: 1.3rem;
         font-weight: 700;
     }
     
     p, li, span {
-        font-size: 0.9rem;
-        color: #95a3b3;
+        font-size: 1rem;
+        color: #b8c5d6;
+        line-height: 1.7;
     }
     
     label {
-        color: #dee276 !important;
-        font-weight: 500;
+        color: #E0E786 !important;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    /* Icon styling */
+    .icon-primary {
+        color: #C7D06C;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    .icon-accent {
+        color: #ff6b6b;
+        font-size: 1.2rem;
+        margin-right: 0.5rem;
+        vertical-align: middle;
+    }
+    
+    /* Result display styling */
+    .result-header {
+        font-size: 2.5rem;
+        font-weight: 900;
+        text-align: center;
+        background: linear-gradient(135deg, #C7D06C 0%, #E0E786 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin: 2rem 0;
+        animation: fadeIn 0.8s ease-out;
+    }
+    
+    .result-status {
+        font-size: 1.8rem;
+        font-weight: 700;
+        text-align: center;
+        padding: 2rem;
+        border-radius: 18px;
+        margin: 1.5rem 0;
+        backdrop-filter: blur(15px);
+        animation: slideInLeft 0.6s ease-out;
+    }
+    
+    .result-perfect {
+        background: linear-gradient(135deg, rgba(199, 208, 108, 0.2) 0%, rgba(224, 231, 134, 0.15) 100%);
+        border: 2px solid rgba(199, 208, 108, 0.4);
+        color: #E0E786;
+        box-shadow: 0 10px 40px rgba(199, 208, 108, 0.3);
+    }
+    
+    .result-mismatch {
+        background: linear-gradient(135deg, rgba(255, 107, 107, 0.15) 0%, rgba(255, 152, 0, 0.1) 100%);
+        border: 2px solid rgba(255, 107, 107, 0.4);
+        color: #ff9a9a;
+        box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3);
     }
 </style>
 """, unsafe_allow_html=True)
@@ -711,7 +837,7 @@ def get_exercise_image_path(exercise_name, exercise_id):
 # ==========================================
 col_logo, col_title = st.columns([0.5, 9.5])
 with col_logo:
-    st.image("logo.png", width=100)
+    st.image("logo.png", width=120)
 with col_title:
     st.markdown('<h1 class="main-header">FLEXIFIT AI</h1>', unsafe_allow_html=True)
 
@@ -771,8 +897,8 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # TAB 1: EXERCISE LIBRARY
 # ==========================================
 with tab1:
-    st.markdown('<h2><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
-    st.markdown("Browse our curated collection of exercises specifically designed for PCOS/PCOD management")
+    st.markdown('<h2 class="result-header"><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #b8c5d6; margin-bottom: 2rem;">Browse our curated collection of exercises specifically designed for PCOS/PCOD management</p>', unsafe_allow_html=True)
     
     search_query = st.text_input("Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
     
@@ -780,30 +906,31 @@ with tab1:
         exercises = search_exercises(search_query)
         
         if exercises:
-            st.markdown(f'<h3><i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises</h3>', unsafe_allow_html=True)
+            st.markdown(f'<h3 style="text-align: center; margin: 2rem 0;"><i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises</h3>', unsafe_allow_html=True)
             
             cols = st.columns(2)
             
             for idx, ex in enumerate(exercises):
                 with cols[idx % 2]:
-                    st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
+                    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                     
                     image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
                     
                     if os.path.exists(image_name):
                         img = Image.open(image_name)
-                        img = img.resize((300, 300))
-                        st.image(img, width=300)
+                        img = img.resize((350, 350))
+                        st.image(img, width=350)
                     else:
                         st.markdown("""
-                        <div style="background: linear-gradient(135deg, rgba(222, 226, 118, 0.2) 0%, rgba(168, 184, 72, 0.1) 100%); 
-                                    height: 150px; display: flex; align-items: center; justify-content: center;
-                                    border-radius: 8px; color: #dee276; font-size: 1.1rem; border: 2px solid rgba(222, 226, 118, 0.3);">
-                            <i class="fa-solid fa-image icon-primary" style="font-size: 2rem;"></i>
+                        <div style="background: linear-gradient(135deg, rgba(199, 208, 108, 0.15) 0%, rgba(224, 231, 134, 0.08) 100%); 
+                                    height: 200px; display: flex; align-items: center; justify-content: center;
+                                    border-radius: 12px; color: #E0E786; font-size: 1.2rem; border: 2px solid rgba(224, 231, 134, 0.2);
+                                    backdrop-filter: blur(10px);">
+                            <i class="fa-solid fa-image icon-primary" style="font-size: 3rem;"></i>
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    st.markdown(f"### {ex['name']}")
+                    st.markdown(f"### <i class='fa-solid fa-heart-pulse icon-primary'></i> {ex['name']}")
                     
                     st.markdown(f"""
                     <span class="badge badge-primary"><i class="fa-solid fa-layer-group icon-primary"></i> {ex['category']}</span>
@@ -811,27 +938,29 @@ with tab1:
                     <span class="badge badge-success"><i class="fa-solid fa-clock icon-primary"></i> {ex['duration_seconds']}s</span>
                     """, unsafe_allow_html=True)
                     
-                    st.markdown(f"**Reps:** {ex['reps']}")
+                    st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}")
                     
-                    with st.expander("View Details", expanded=False):
-                        st.markdown(f"**Description:**\n{ex['description']}")
-                        st.markdown("**PCOS/PCOD Benefits:**")
+                    with st.expander(" View Details", expanded=False):
+                        st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}")
+                        st.markdown("**<i class='fa-solid fa-star icon-primary'></i> PCOS/PCOD Benefits:**")
                         for benefit in ex['pcos_benefits']:
                             st.markdown(f"• {benefit}")
                     
                     st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div class="info-box" style="text-align: center; padding: 1.5rem;">
-                <h3><i class="fa-solid fa-magnifying-glass icon-primary"></i> No exercises found</h3>
-                <p>Try different keywords like "balance", "beginner", "stress relief", or "hormonal balance"</p>
+            <div class="info-box" style="text-align: center; padding: 2rem;">
+                <h3><i class="fa-solid fa-magnifying-glass icon-primary" style="font-size: 2.5rem;"></i></h3>
+                <h3>No exercises found</h3>
+                <p style="font-size: 1.1rem;">Try different keywords like "balance", "beginner", "stress relief", or "hormonal balance"</p>
             </div>
             """, unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="info-box" style="text-align: center; padding: 1.5rem;">
-            <h3><i class="fa-solid fa-search icon-primary"></i> Search for PCOS/PCOD Exercises</h3>
-            <p>Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!</p>
+        <div class="info-box" style="text-align: center; padding: 2.5rem;">
+            <h3><i class="fa-solid fa-search icon-primary" style="font-size: 3rem;"></i></h3>
+            <h2>Search for PCOS/PCOD Exercises</h2>
+            <p style="font-size: 1.1rem;">Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -839,16 +968,16 @@ with tab1:
 # TAB 2: ANALYZE VIDEO
 # ==========================================
 with tab2:
-    st.markdown('<h2><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="result-header"><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-box">
     <h3 style="margin-top: 0;"><i class="fa-solid fa-lightbulb icon-primary"></i> How it works:</h3>
-    <ol style="font-size: 0.9rem; line-height: 1.8;">
-        <li><b>Choose</b> the exercise you're performing from the dropdown</li>
-        <li><b>Upload</b> your video (MP4, MOV, AVI format)</li>
-        <li><b>Analyze</b> - Our AI will detect your pose in real-time</li>
-        <li><b>Download</b> the annotated video with visual feedback!</li>
+    <ol style="font-size: 1rem; line-height: 2;">
+        <li><b><i class="fa-solid fa-hand-pointer icon-primary"></i> Choose</b> the exercise you're performing from the dropdown</li>
+        <li><b><i class="fa-solid fa-upload icon-primary"></i> Upload</b> your video (MP4, MOV, AVI format)</li>
+        <li><b><i class="fa-solid fa-robot icon-primary"></i> Analyze</b> - Our AI will detect your pose in real-time</li>
+        <li><b><i class="fa-solid fa-download icon-primary"></i> Download</b> the annotated video with visual feedback!</li>
     </ol>
     </div>
     """, unsafe_allow_html=True)
@@ -875,7 +1004,7 @@ with tab2:
         st.markdown(f"""
         <div class="success-box">
         <h3 style="margin: 0;"><i class="fa-solid fa-check-circle icon-primary"></i> Target Exercise Selected</h3>
-        <h2 style="margin: 0.5rem 0 0 0; color: #dee276;">{selected_display}</h2>
+        <h2 style="margin: 1rem 0 0 0; color: #E0E786; font-size: 1.8rem;">{selected_display}</h2>
         </div>
         """, unsafe_allow_html=True)
     
@@ -902,11 +1031,11 @@ with tab2:
             st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Ready to Analyze!</h3>', unsafe_allow_html=True)
             st.markdown(f"""
             <div class="info-box">
-            <h3 style="margin-top: 0;">Analysis Details</h3>
-            <p><b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}</p>
-            <p><b><i class="fa-solid fa-brain icon-primary"></i> AI Model:</b> Custom Pose Classifier</p>
-            <p><b><i class="fa-solid fa-chart-line icon-primary"></i> Accuracy:</b> 92% on validation set</p>
-            <p><b><i class="fa-solid fa-gauge-high icon-primary"></i> Processing:</b> Real-time frame analysis</p>
+            <h3 style="margin-top: 0;"><i class="fa-solid fa-chart-line icon-primary"></i> Analysis Details</h3>
+            <p style="font-size: 1rem;"><b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}</p>
+            <p style="font-size: 1rem;"><b><i class="fa-solid fa-brain icon-primary"></i> AI Model:</b> Custom Pose Classifier</p>
+            <p style="font-size: 1rem;"><b><i class="fa-solid fa-chart-line icon-primary"></i> Accuracy:</b> 92% on validation set</p>
+            <p style="font-size: 1rem;"><b><i class="fa-solid fa-gauge-high icon-primary"></i> Processing:</b> Real-time frame analysis</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -935,26 +1064,26 @@ with tab2:
                         st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                     
                     st.markdown("---")
-                    st.markdown('<h2><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
+                    st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
                     
                     if results['match']:
                         st.markdown("""
-                        <div class="success-box">
-                        <h2 style="color: #dee276; margin: 0;">
-                            <i class="fa-solid fa-check-circle icon-primary"></i> PERFECT MATCH!
+                        <div class="result-status result-perfect">
+                        <h2 style="margin: 0; font-size: 2.2rem;">
+                            <i class="fa-solid fa-check-circle icon-primary" style="font-size: 2.5rem;"></i> PERFECT MATCH!
                         </h2>
-                        <p style="margin: 1rem 0 0 0; font-size: 1rem;">
+                        <p style="margin: 1.5rem 0 0 0; font-size: 1.2rem; line-height: 1.8;">
                         Excellent work! Your pose matches the target exercise perfectly. Keep up the great form!
                         </p>
                         </div>
                         """, unsafe_allow_html=True)
                     else:
                         st.markdown(f"""
-                        <div class="warning-box">
-                        <h2 style="color: #ff6b6b; margin: 0;"><i class="fa-solid fa-triangle-exclamation icon-accent"></i> Different Pose Detected</h2>
-                        <p style="margin: 1rem 0 0 0; font-size: 0.95rem;">
-                        <b>Target Exercise:</b> {selected_display}<br>
-                        <b>Detected Exercise:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}<br><br>
+                        <div class="result-status result-mismatch">
+                        <h2 style="margin: 0; font-size: 2.2rem;"><i class="fa-solid fa-triangle-exclamation icon-accent" style="font-size: 2.5rem;"></i> Different Pose Detected</h2>
+                        <p style="margin: 1.5rem 0 0 0; font-size: 1.1rem; line-height: 1.8;">
+                        <b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}<br>
+                        <b><i class="fa-solid fa-eye icon-accent"></i> Detected Exercise:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}<br><br>
                         Don't worry! Check the annotated video below to see where adjustments are needed.
                         </p>
                         </div>
@@ -987,8 +1116,8 @@ with tab2:
                         """, unsafe_allow_html=True)
                     
                     st.markdown("---")
-                    st.markdown('<h3><i class="fa-solid fa-video icon-primary"></i> Annotated Video with AI Feedback</h3>', unsafe_allow_html=True)
-                    st.markdown("**Green** = Correct Pose | **Red** = Incorrect Pose")
+                    st.markdown('<h3 style="text-align: center;"><i class="fa-solid fa-video icon-primary"></i> Annotated Video with AI Feedback</h3>', unsafe_allow_html=True)
+                    st.markdown('<p style="text-align: center; font-size: 1.1rem; margin-bottom: 1.5rem;"><span style="color: #4CAF50; font-weight: 700;">■ Green</span> = Correct Pose | <span style="color: #f44336; font-weight: 700;">■ Red</span> = Incorrect Pose</p>', unsafe_allow_html=True)
                     
                     st.markdown('<div class="video-container">', unsafe_allow_html=True)
                     st.video(results['output_path'])
@@ -1002,7 +1131,7 @@ with tab2:
                         with open(results['output_path'], 'rb') as video_file:
                             video_bytes = video_file.read()
                             st.download_button(
-                                label="Download Annotated Video",
+                                label=" Download Annotated Video",
                                 data=video_bytes,
                                 file_name=f"flexifit_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
                                 mime="video/mp4",
@@ -1010,7 +1139,7 @@ with tab2:
                             )
                     
                     with col_action2:
-                        if st.button("Analyze Another Video", use_container_width=True):
+                        if st.button(" Analyze Another Video", use_container_width=True):
                             st.session_state.analyzed_video_path = None
                             st.rerun()
 
@@ -1018,23 +1147,23 @@ with tab2:
 # TAB 3: AI CHAT
 # ==========================================
 with tab3:
-    st.markdown('<h2><i class="fa-solid fa-comments icon-primary"></i> Chat with Your AI Exercise Coach</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="result-header"><i class="fa-solid fa-comments icon-primary"></i> Chat with Your AI Exercise Coach</h2>', unsafe_allow_html=True)
     
     st.markdown("""
     <div class="info-box">
     <h3 style="margin-top: 0;"><i class="fa-solid fa-question-circle icon-primary"></i> Ask me anything about PCOS/PCOD exercises!</h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
         <div>
-            <b><i class="fa-solid fa-dumbbell icon-primary"></i> Exercise Questions:</b>
-            <ul style="margin: 0.5rem 0;">
+            <b style="font-size: 1.1rem;"><i class="fa-solid fa-dumbbell icon-primary"></i> Exercise Questions:</b>
+            <ul style="margin: 1rem 0; font-size: 1rem;">
                 <li>"What exercises help with PCOS?"</li>
                 <li>"How to improve my plank form?"</li>
                 <li>"Best poses for stress relief?"</li>
             </ul>
         </div>
         <div>
-            <b><i class="fa-solid fa-heart-pulse icon-accent"></i> Health & Wellness:</b>
-            <ul style="margin: 0.5rem 0;">
+            <b style="font-size: 1.1rem;"><i class="fa-solid fa-heart-pulse icon-accent"></i> Health & Wellness:</b>
+            <ul style="margin: 1rem 0; font-size: 1rem;">
                 <li>"Benefits of Tree Pose?"</li>
                 <li>"How often should I exercise?"</li>
                 <li>"Tips for better hormonal balance?"</li>
@@ -1049,10 +1178,10 @@ with tab3:
     with chat_container:
         if not st.session_state.chat_history:
             st.markdown("""
-            <div style="text-align: center; padding: 2.5rem; color: #95a3b3;">
-                <h2><i class="fa-solid fa-robot icon-primary" style="font-size: 3rem;"></i></h2>
-                <h2 style="color: #dee276;">Welcome to AI Coach Chat!</h2>
-                <p style="font-size: 1rem;">Start a conversation by typing your question below.</p>
+            <div style="text-align: center; padding: 3rem; color: #b8c5d6;">
+                <h2><i class="fa-solid fa-robot icon-primary" style="font-size: 4rem;"></i></h2>
+                <h2 style="color: #E0E786; margin-top: 1rem;">Welcome to AI Coach Chat!</h2>
+                <p style="font-size: 1.2rem; margin-top: 1rem;">Start a conversation by typing your question below.</p>
             </div>
             """, unsafe_allow_html=True)
         
@@ -1060,21 +1189,21 @@ with tab3:
             if message['role'] == 'user':
                 st.markdown(f"""
                 <div class="chat-user">
-                <b style="color: #dee276; font-size: 0.95rem;"><i class="fa-solid fa-user icon-primary"></i> You:</b><br>
-                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #dee276;">{message['content']}</p>
+                <b style="color: #E0E786; font-size: 1.1rem;"><i class="fa-solid fa-user icon-primary"></i> You:</b><br>
+                <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; color: #E0E786; line-height: 1.7;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
                 <div class="chat-assistant">
-                <b style="color: #95a3b3; font-size: 0.95rem;"><i class="fa-solid fa-robot icon-light"></i> AI Coach:</b><br>
-                <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #95a3b3;">{message['content']}</p>
+                <b style="color: #b8c5d6; font-size: 1.1rem;"><i class="fa-solid fa-robot"></i> AI Coach:</b><br>
+                <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; color: #b8c5d6; line-height: 1.7;">{message['content']}</p>
                 </div>
                 """, unsafe_allow_html=True)
     
     st.markdown("---")
     
-    user_input = st.text_input("Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
+    user_input = st.text_input(" Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
     
     col_send, col_clear = st.columns([3, 1])
     
@@ -1089,7 +1218,7 @@ with tab3:
                 if len(st.session_state.chat_history) > 100:
                     st.session_state.chat_history = st.session_state.chat_history[-100:]
                 
-                with st.spinner("AI Coach is thinking..."):
+                with st.spinner(" AI Coach is thinking..."):
                     response = chat_with_ai(user_input)
                 
                 st.session_state.chat_history.append({
@@ -1099,10 +1228,10 @@ with tab3:
                 
                 st.rerun()
             else:
-                st.warning("Please type a message first!")
+                st.warning(" Please type a message first!")
     
     with col_clear:
-        if st.button("Clear Chat", use_container_width=True):
+        if st.button(" Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
             st.rerun()
 
@@ -1110,13 +1239,13 @@ with tab3:
 # TAB 4: PROGRESS HISTORY
 # ==========================================
 with tab4:
-    st.markdown('<h2><i class="fa-solid fa-chart-line icon-primary"></i> Your Progress & History</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-line icon-primary"></i> Your Progress & History</h2>', unsafe_allow_html=True)
     
     history_tab1, history_tab2 = st.tabs(["Exercise Analytics", "Chat History"])
     
     with history_tab1:
         if st.session_state.exercise_history:
-            st.markdown(f"### <i class='fa-solid fa-dumbbell icon-primary'></i> Total Workouts Completed: {len(st.session_state.exercise_history)}", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='text-align: center; margin: 2rem 0;'><i class='fa-solid fa-dumbbell icon-primary'></i> Total Workouts Completed: {len(st.session_state.exercise_history)}</h3>", unsafe_allow_html=True)
             
             col1, col2, col3 = st.columns(3)
             
@@ -1149,30 +1278,30 @@ with tab4:
                 """, unsafe_allow_html=True)
             
             st.markdown("---")
-            st.markdown('<h3><i class="fa-solid fa-file-lines icon-primary"></i> Workout History</h3>', unsafe_allow_html=True)
+            st.markdown('<h3 style="text-align: center;"><i class="fa-solid fa-file-lines icon-primary"></i> Workout History</h3>', unsafe_allow_html=True)
             
             for idx, record in enumerate(reversed(st.session_state.exercise_history)):
                 match_status = record['target_pose'] == record['detected_pose']
                 
-                status_icon = '<i class="fa-solid fa-check-circle" style="color: #dee276;"></i>' if match_status else '<i class="fa-solid fa-circle-xmark" style="color: #ff6b6b;"></i>'
+                status_icon = '<i class="fa-solid fa-check-circle" style="color: #C7D06C;"></i>' if match_status else '<i class="fa-solid fa-circle-xmark" style="color: #ff6b6b;"></i>'
                 
                 with st.expander(f"{status_icon} {record['timestamp']} - {record['target_pose']}", expanded=(idx==0)):
-                    st.markdown('<div class="exercise-card">', unsafe_allow_html=True)
+                    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                     
                     col1, col2, col3 = st.columns(3)
                     
                     with col1:
-                        st.markdown("**Target Exercise**")
-                        st.markdown(f"<h3>{record['target_pose']}</h3>", unsafe_allow_html=True)
+                        st.markdown("**<i class='fa-solid fa-bullseye icon-primary'></i> Target Exercise**")
+                        st.markdown(f"<h3 style='color: #E0E786;'>{record['target_pose']}</h3>", unsafe_allow_html=True)
                     
                     with col2:
-                        st.markdown("**Detected Exercise**")
-                        st.markdown(f"<h3>{record['detected_pose']}</h3>", unsafe_allow_html=True)
+                        st.markdown("**<i class='fa-solid fa-eye icon-primary'></i> Detected Exercise**")
+                        st.markdown(f"<h3 style='color: #E0E786;'>{record['detected_pose']}</h3>", unsafe_allow_html=True)
                     
                     with col3:
-                        st.markdown("**Result**")
+                        st.markdown("**<i class='fa-solid fa-chart-bar icon-primary'></i> Result**")
                         if match_status:
-                            st.markdown(f'<h3 style="color: #dee276;">{status_icon} Perfect Match</h3>', unsafe_allow_html=True)
+                            st.markdown(f'<h3 style="color: #C7D06C;">{status_icon} Perfect Match</h3>', unsafe_allow_html=True)
                         else:
                             st.markdown(f'<h3 style="color: #ff6b6b;">{status_icon} Different Pose</h3>', unsafe_allow_html=True)
                     
@@ -1181,22 +1310,22 @@ with tab4:
                     progress_col1, progress_col2 = st.columns(2)
                     
                     with progress_col1:
-                        st.markdown("**Accuracy Score**")
+                        st.markdown("**<i class='fa-solid fa-bullseye icon-primary'></i> Accuracy Score**")
                         st.progress(record['accuracy'] / 100)
                         st.caption(f"{record['accuracy']:.1f}%")
                     
                     with progress_col2:
-                        st.markdown("**AI Confidence**")
+                        st.markdown("**<i class='fa-solid fa-brain icon-primary'></i> AI Confidence**")
                         st.progress(record['confidence'])
                         st.caption(f"{record['confidence']*100:.1f}%")
                     
                     st.markdown('</div>', unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div class="info-box" style="text-align: center; padding: 2.5rem;">
-                <h2><i class="fa-solid fa-chart-bar icon-primary" style="font-size: 3rem;"></i></h2>
-                <h2 style="color: #dee276;">No Exercise History Yet</h2>
-                <p style="font-size: 1rem; margin: 1rem 0;">
+            <div class="info-box" style="text-align: center; padding: 3rem;">
+                <h2><i class="fa-solid fa-chart-bar icon-primary" style="font-size: 4rem;"></i></h2>
+                <h2 style="color: #E0E786; margin-top: 1rem;">No Exercise History Yet</h2>
+                <p style="font-size: 1.2rem; margin: 1.5rem 0;">
                 Upload and analyze a video in the "Analyze Video" tab to start tracking your progress!
                 </p>
             </div>
@@ -1204,27 +1333,29 @@ with tab4:
     
     with history_tab2:
         if st.session_state.chat_history:
-            st.markdown(f"### <i class='fa-solid fa-message icon-primary'></i> Total Conversations: {len(st.session_state.chat_history) // 2}", unsafe_allow_html=True)
+            st.markdown(f"<h3 style='text-align: center; margin: 2rem 0;'><i class='fa-solid fa-message icon-primary'></i> Total Conversations: {len(st.session_state.chat_history) // 2}</h3>", unsafe_allow_html=True)
             
             for message in st.session_state.chat_history:
                 if message['role'] == 'user':
                     st.markdown(f"""
                     <div class="chat-user">
-                    <b style="color: #dee276;"><i class="fa-solid fa-user icon-primary"></i> You:</b> {message['content']}
+                    <b style="color: #E0E786; font-size: 1.1rem;"><i class="fa-solid fa-user icon-primary"></i> You:</b><br>
+                    <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; line-height: 1.7;">{message['content']}</p>
                     </div>
                     """, unsafe_allow_html=True)
                 else:
                     st.markdown(f"""
                     <div class="chat-assistant">
-                    <b style="color: #95a3b3;"><i class="fa-solid fa-robot icon-light"></i> AI Coach:</b> {message['content']}
+                    <b style="color: #b8c5d6; font-size: 1.1rem;"><i class="fa-solid fa-robot"></i> AI Coach:</b><br>
+                    <p style="margin: 0.8rem 0 0 0; font-size: 1.05rem; line-height: 1.7;">{message['content']}</p>
                     </div>
                     """, unsafe_allow_html=True)
         else:
             st.markdown("""
-            <div class="info-box" style="text-align: center; padding: 2.5rem;">
-                <h2><i class="fa-solid fa-comment icon-primary" style="font-size: 3rem;"></i></h2>
-                <h2 style="color: #dee276;">No Chat History Yet</h2>
-                <p style="font-size: 1rem; margin: 1rem 0;">
+            <div class="info-box" style="text-align: center; padding: 3rem;">
+                <h2><i class="fa-solid fa-comment icon-primary" style="font-size: 4rem;"></i></h2>
+                <h2 style="color: #E0E786; margin-top: 1rem;">No Chat History Yet</h2>
+                <p style="font-size: 1.2rem; margin: 1.5rem 0;">
                 Start a conversation with the AI Coach in the "AI Coach Chat" tab!
                 </p>
             </div>
@@ -1235,38 +1366,38 @@ with tab4:
 # ==========================================
 with st.sidebar:
     st.markdown("""
-    <div style="text-align: center; padding: 1rem 0; margin-bottom: 2rem;">
+    <div style="text-align: center; padding: 1.5rem 0; margin-bottom: 2rem;">
     """, unsafe_allow_html=True)
     
     st.image("logo.png", width=100)
     
     st.markdown("""
-        <h2 style="color: #dee276; margin: 0.5rem 0; font-weight: 900;">FLEXIFIT AI</h2>
-        <p style="color: #95a3b3; margin: 0;">PCOS/PCOD Exercise Coach</p>
+        <h2 style="color: #E0E786; margin: 1rem 0; font-weight: 900; font-size: 1.8rem;">FLEXIFIT AI</h2>
+        <p style="color: #b8c5d6; margin: 0; font-size: 1rem;">PCOS/PCOD Exercise Coach</p>
     </div>
     """, unsafe_allow_html=True)
     
     st.markdown("---")
     
     st.markdown("""
-    <div style="color: #dee276;">
-        <h3 style="color: #dee276;"><i class="fa-solid fa-bolt icon-primary"></i> Powered By</h3>
+    <div style="color: #E0E786;">
+        <h3 style="color: #E0E786; margin-bottom: 1.5rem;"><i class="fa-solid fa-bolt icon-primary"></i> Powered By</h3>
         <ul style="list-style: none; padding: 0;">
-            <li style="padding: 0.5rem 0;">
-                <b><i class="fa-solid fa-person-running icon-primary"></i> MediaPipe</b><br>
-                <span style="opacity: 0.8; color: #95a3b3;">Real-time pose detection</span>
+            <li style="padding: 0.8rem 0;">
+                <b style="font-size: 1.05rem;"><i class="fa-solid fa-person-running icon-primary"></i> MediaPipe</b><br>
+                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">Real-time pose detection</span>
             </li>
-            <li style="padding: 0.5rem 0;">
-                <b><i class="fa-solid fa-brain icon-primary"></i> Custom ML Model</b><br>
-                <span style="opacity: 0.8; color: #95a3b3;">92% accuracy classification</span>
+            <li style="padding: 0.8rem 0;">
+                <b style="font-size: 1.05rem;"><i class="fa-solid fa-brain icon-primary"></i> Custom ML Model</b><br>
+                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">92% accuracy classification</span>
             </li>
-            <li style="padding: 0.5rem 0;">
-                <b><i class="fa-solid fa-database icon-primary"></i> Elasticsearch</b><br>
-                <span style="opacity: 0.8; color: #95a3b3;">Smart exercise search</span>
+            <li style="padding: 0.8rem 0;">
+                <b style="font-size: 1.05rem;"><i class="fa-solid fa-database icon-primary"></i> Elasticsearch</b><br>
+                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">Smart exercise search</span>
             </li>
-            <li style="padding: 0.5rem 0;">
-                <b><i class="fa-solid fa-robot icon-primary"></i> Vertex AI Gemini</b><br>
-                <span style="opacity: 0.8; color: #95a3b3;">Intelligent coaching</span>
+            <li style="padding: 0.8rem 0;">
+                <b style="font-size: 1.05rem;"><i class="fa-solid fa-robot icon-primary"></i> Vertex AI Gemini</b><br>
+                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">Intelligent coaching</span>
             </li>
         </ul>
     </div>
@@ -1274,10 +1405,8 @@ with st.sidebar:
     
     st.markdown("---")
     
-    if st.button("Clear All History", use_container_width=True):
+    if st.button(" Clear All History", use_container_width=True):
         st.session_state.exercise_history = []
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
-
-
