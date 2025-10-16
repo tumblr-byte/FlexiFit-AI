@@ -34,8 +34,7 @@ st.set_page_config(
 st.markdown("""
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
    """, unsafe_allow_html=True)
-
-   st.markdown("""
+st.markdown("""
    <style>
 .icon-light {
     color: #95a3b3;
@@ -1280,4 +1279,5 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
