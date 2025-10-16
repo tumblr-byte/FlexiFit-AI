@@ -816,8 +816,10 @@ def get_exercise_image_path(exercise_name, exercise_id):
 # ==========================================
 # MAIN APP LAYOUT
 # ==========================================
-col_logo, col_title = st.columns([3.5, 6.5]) with col_logo: 
-    st.image("logo.png", width=120) with col_title: 
+col_logo, col_title = st.columns([3.5, 6.5]) 
+with col_logo: 
+    st.image("logo.png", width=120) 
+with col_title: 
     st.markdown('<h1 class="main-header">FLEXIFIT AI</h1>', unsafe_allow_html=True)
 
 
@@ -1390,6 +1392,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
