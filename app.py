@@ -52,7 +52,7 @@ st.markdown("""
     header {visibility: hidden;}
     
     .main {
-        background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 25%, #16213e 50%, #0f3460 75%, #0a0a0a 100%);
+       background: #4a4a4a;
         padding: 1.5rem 1rem;
     }
     
@@ -1329,3 +1329,4 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared")
         st.rerun()
+
