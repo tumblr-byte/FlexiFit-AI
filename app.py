@@ -882,7 +882,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
 # ==========================================
 with tab1:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #b8c5d6; margin-bottom: 2rem;">Browse our curated collection of exercises specifically designed for PCOS/PCOD management</p>', unsafe_allow_html=True)
+    st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #262626; margin-bottom: 2rem;">Browse our curated collection of exercises specifically designed for PCOS/PCOD management</p>', unsafe_allow_html=True)
     
     search_query = st.text_input("Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
     
@@ -908,7 +908,7 @@ with tab1:
                         st.markdown("""
                         <div style="background: linear-gradient(135deg, rgba(199, 208, 108, 0.15) 0%, rgba(224, 231, 134, 0.08) 100%); 
                                     height: 200px; display: flex; align-items: center; justify-content: center;
-                                    border-radius: 12px; color: #E0E786; font-size: 1.2rem; border: 2px solid rgba(224, 231, 134, 0.2);
+                                    border-radius: 12px; color: #919c08; font-size: 1.2rem; border: 2px solid rgba(224, 231, 134, 0.2);
                                     backdrop-filter: blur(10px);">
                             <i class="fa-solid fa-image icon-primary" style="font-size: 3rem;"></i>
                         </div>
@@ -1369,19 +1369,19 @@ with st.sidebar:
         <ul style="list-style: none; padding: 0;">
             <li style="padding: 0.8rem 0;">
                 <b style="font-size: 1.05rem;"><i class="fa-solid fa-person-running icon-primary"></i> MediaPipe</b><br>
-                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">Real-time pose detection</span>
+                <span style="opacity: 0.8; color:#262626; font-size: 0.95rem;">Real-time pose detection</span>
             </li>
             <li style="padding: 0.8rem 0;">
                 <b style="font-size: 1.05rem;"><i class="fa-solid fa-brain icon-primary"></i> Custom ML Model</b><br>
-                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">92% accuracy classification</span>
+                <span style="opacity: 0.8; color: #262626; font-size: 0.95rem;">92% accuracy classification</span>
             </li>
             <li style="padding: 0.8rem 0;">
                 <b style="font-size: 1.05rem;"><i class="fa-solid fa-database icon-primary"></i> Elasticsearch</b><br>
-                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">Smart exercise search</span>
+                <span style="opacity: 0.8; color: #262626; font-size: 0.95rem;">Smart exercise search</span>
             </li>
             <li style="padding: 0.8rem 0;">
                 <b style="font-size: 1.05rem;"><i class="fa-solid fa-robot icon-primary"></i> Vertex AI Gemini</b><br>
-                <span style="opacity: 0.8; color: #b8c5d6; font-size: 0.95rem;">Intelligent coaching</span>
+                <span style="opacity: 0.8; color: #262626; font-size: 0.95rem;">Intelligent coaching</span>
             </li>
         </ul>
     </div>
@@ -1394,6 +1394,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
