@@ -64,9 +64,9 @@ st.markdown("""
     .main-header {
         font-size: 4.5rem;
         font-weight: 900;
-        background:  color: #919c08;
+        background: #919c08;
         text-shadow: 0 4px 20px rgba(222, 226, 118, 0.3);
-        text-align: center;
+        text-align: left;
     }
 
     .sub-header {
@@ -1390,6 +1390,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
