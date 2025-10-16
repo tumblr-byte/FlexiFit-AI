@@ -32,8 +32,11 @@ st.set_page_config(
 )
 
 st.markdown("""
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<style>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+   """, unsafe_allow_html=True)
+
+   st.markdown("""
+   <style>
 .icon-light {
     color: #95a3b3;
     font-size: 18px;
@@ -83,20 +86,11 @@ st.markdown("""
         padding: 1.5rem 1rem;
     }
     
-    .main-header {
-        font-size: 3.5rem;
-        font-weight: 900;
-        text-align: center;
-        background: linear-gradient(135deg, #dee276 0%, #f4f095 25%, #fff9a6 50%, #f4f095 75%, #dee276 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        padding: 0.5rem 0;
-        margin: 0;
-        letter-spacing: 2px;
-        text-shadow: 0 0 30px rgba(222, 226, 118, 0.5);
-        animation: fadeInDown 1s ease-out, glow 2s ease-in-out infinite alternate;
-    }
+   .main-header {
+       font-size: 3.5rem;
+       font-weight: 900;
+       text-align: center;
+       color: #dee276;
     
     @keyframes glow {
         from {
@@ -1286,3 +1280,4 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
