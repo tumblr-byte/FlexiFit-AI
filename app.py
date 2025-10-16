@@ -306,7 +306,8 @@ st.markdown("""
 /* Tabs with brand color */
 .stTabs [data-baseweb="tab-list"] {
     gap: 1.5rem;
-    background: rgba(26, 26, 46, 0.4);
+    background:#1A1A2E;
+
     backdrop-filter: blur(10px);
     padding: 1rem;
     border-radius: 15px;
@@ -326,7 +327,8 @@ st.markdown("""
 }
 
 .stTabs [aria-selected="true"] {
-    background: linear-gradient(135deg, rgba(222, 226, 118, 0.3) 0%, rgba(240, 238, 154, 0.2) 100%);
+     background:#1A1A2E;
+
     backdrop-filter: blur(15px);
     color: #ffffff;
     box-shadow: 0 4px 20px rgba(222, 226, 118, 0.4);
@@ -347,7 +349,8 @@ st.markdown("""
     padding: 1rem;
     font-size: 1rem;
     transition: all 0.3s ease;
-    background: rgba(26, 26, 46, 0.4);
+     background:#1A1A2E;
+
     backdrop-filter: blur(10px);
     color: #ffffff;
 }
@@ -370,7 +373,8 @@ st.markdown("""
 
 /* Sidebar with brand color gradient */
 [data-testid="stSidebar"] {
-    background: linear-gradient(135deg, #dee276 0%, #f0ee9a 50%, #dee276 100%);
+   background:#1A1A2E;
+
     color: #FFFFFF;
     border-right: 2px solid rgba(222, 226, 118, 0.4);
 }
@@ -1269,6 +1273,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
