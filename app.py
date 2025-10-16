@@ -64,19 +64,15 @@ st.markdown("""
     .main-header {
         font-size: 4.5rem;
         font-weight: 900;
-        background: linear-gradient(135deg, #dee276 0%, #c5cc3d 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+        background:  color: #919c08;
         text-shadow: 0 4px 20px rgba(222, 226, 118, 0.3);
-        animation: fadeInDown 1s ease-out;
         text-align: center;
     }
 
     .sub-header {
         font-size: 1.1rem;
         text-align: center;
-        background: linear-gradient(135deg, #dee276, #b8c145);
+        background: #919c08;;
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -457,14 +453,14 @@ st.markdown("""
 
     /* Icon colors */
     .icon-primary {
-        color: #dee276;
+        color: #919c08;
         font-size: 1.2rem;
         margin-right: 0.5rem;
         vertical-align: middle;
     }
 
     .icon-accent {
-        color: #ff6b6b;
+        color: #919c08;
         font-size: 1.2rem;
         margin-right: 0.5rem;
         vertical-align: middle;
@@ -1364,7 +1360,7 @@ with st.sidebar:
     st.markdown("---")
     
     st.markdown("""
-    <div style="color: #E0E786;">
+    <div style="color: #919c08;">
         <h3 style="color: #919c08; margin-bottom: 1.5rem;"><i class="fa-solid fa-bolt icon-primary"></i> Powered By</h3>
         <ul style="list-style: none; padding: 0;">
             <li style="padding: 0.8rem 0;">
@@ -1394,6 +1390,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
