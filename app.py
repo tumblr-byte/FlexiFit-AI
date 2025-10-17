@@ -959,6 +959,7 @@ with tab1:
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
+
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
@@ -1014,12 +1015,19 @@ with tab2:
     
     # Handle video upload and state management
     if uploaded_video is not None:
-        # Check if this is a new video upload
-        if 'current_video_name' not in st.session_state or st.session_state.current_video_name != uploaded_video.name:
-            # New video uploaded - reset everything
+        # Check if this is a new video upload - ONLY READ ONCE
+        video_changed = False
+        if 'current_video_name' not in st.session_state:
+            video_changed = True
+            st.session_state.current_video_name = uploaded_video.name
+        elif st.session_state.current_video_name != uploaded_video.name:
+            video_changed = True
+            st.session_state.current_video_name = uploaded_video.name
+        
+        # Only read video bytes if it's a new upload
+        if video_changed:
             video_bytes = uploaded_video.read()
             st.session_state.uploaded_video_bytes = video_bytes
-            st.session_state.current_video_name = uploaded_video.name
             st.session_state.analysis_complete = False
             st.session_state.show_analysis_button = True
             
@@ -1211,7 +1219,6 @@ with tab2:
                     type="primary",
                     key="download_btn"
                 )
-                
                    
 # ==========================================
 # TAB 3: AI CHAT
@@ -1481,6 +1488,7 @@ with st.sidebar:
    
        
         
+
 
 
 
