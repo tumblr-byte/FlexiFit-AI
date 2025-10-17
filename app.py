@@ -962,9 +962,6 @@ with tab1:
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
-# ==========================================
-# TAB 2: ANALYZE VIDEO
-# ==========================================
 with tab2:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>', unsafe_allow_html=True)
     
@@ -1011,20 +1008,28 @@ with tab2:
         uploaded_video = st.file_uploader(
             "Choose a video file",
             type=['mp4', 'mov', 'avi'],
-            help="Upload a video showing your full body performing the exercise"
+            help="Upload a video showing your full body performing the exercise",
+            key="video_uploader"
         )
     
+    # Handle video upload and state management
     if uploaded_video is not None:
-        # Store video bytes in session state to prevent re-reading
-        if 'uploaded_video_bytes' not in st.session_state or st.session_state.get('current_video_name') != uploaded_video.name:
+        # Check if this is a new video upload
+        if 'current_video_name' not in st.session_state or st.session_state.current_video_name != uploaded_video.name:
+            # New video uploaded - reset everything
             st.session_state.uploaded_video_bytes = uploaded_video.read()
             st.session_state.current_video_name = uploaded_video.name
             st.session_state.analysis_started = False
             st.session_state.analysis_complete = False
+            if 'analysis_results' in st.session_state:
+                del st.session_state.analysis_results
         
         st.markdown("---")
         
-        # Show preview and analysis button only if analysis hasn't started
+        # Check if we need to run analysis (only once when button is clicked)
+        run_analysis = False
+        
+        # Show preview and analysis button only if analysis hasn't been done
         if not st.session_state.get('analysis_complete', False):
             col_preview, col_analyze = st.columns([1, 1])
             
@@ -1051,27 +1056,33 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                if st.button("Start AI Analysis", type="primary", use_container_width=True):
-                    st.session_state.analysis_started = True
+                # Button click triggers analysis
+                if st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
+                    run_analysis = True
                     st.session_state.target_pose_for_analysis = target_pose
                     st.session_state.selected_display_for_analysis = selected_display
-
-        # Process analysis outside the button click to avoid nested reruns
-        if st.session_state.get('analysis_started', False) and not st.session_state.get('analysis_complete', False):
+        
+        # Run analysis if button was clicked (outside the button context to avoid rerun issues)
+        if run_analysis:
+            # Create temporary file
             tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
             tfile.write(st.session_state.uploaded_video_bytes)
             tfile.close()
             
-            with st.spinner("AI is analyzing your video... Please wait!"):
+            # Run analysis with spinner
+            with st.spinner(" AI is analyzing your video... Please wait!"):
                 results = analyze_video(tfile.name, st.session_state.target_pose_for_analysis)
             
+            # Clean up temp file
             os.unlink(tfile.name)
             
+            # Store results
             if results:
-                st.session_state.analyzed_video_path = results['output_path']
                 st.session_state.analysis_results = results
                 st.session_state.analysis_complete = True
+                st.session_state.analyzed_video_path = results['output_path']
                 
+                # Add to history
                 st.session_state.exercise_history.append({
                     'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                     'target_pose': st.session_state.selected_display_for_analysis,
@@ -1080,13 +1091,15 @@ with tab2:
                     'confidence': results['confidence']
                 })
                 
+                # Keep only last 50 records
                 if len(st.session_state.exercise_history) > 50:
                     st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                 
+                # Force one rerun to show results
                 st.rerun()
         
         # Display results if analysis is complete - FULL WIDTH BEAUTIFUL LAYOUT
-        if st.session_state.get('analysis_complete', False):
+        if st.session_state.get('analysis_complete', False) and 'analysis_results' in st.session_state:
             results = st.session_state.analysis_results
             selected_display = st.session_state.selected_display_for_analysis
             
@@ -1192,10 +1205,12 @@ with tab2:
                     file_name=f"flexifit_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
                     mime="video/mp4",
                     use_container_width=True,
-                    type="primary"
+                    type="primary",
+                    key="download_btn"
                 )
                 
-                if st.button("Analyze Another Video", use_container_width=True):
+                if st.button(" Analyze Another Video", use_container_width=True, key="reset_btn"):
+                    # Clear all analysis-related session state
                     st.session_state.analyzed_video_path = None
                     st.session_state.uploaded_video_bytes = None
                     st.session_state.current_video_name = None
@@ -1208,6 +1223,7 @@ with tab2:
                     if 'selected_display_for_analysis' in st.session_state:
                         del st.session_state.selected_display_for_analysis
                     st.rerun()
+
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
@@ -1476,6 +1492,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
