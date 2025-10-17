@@ -1021,7 +1021,7 @@ with tab2:
             st.session_state.current_video_name = uploaded_video.name
             st.session_state.analysis_started = False
             st.session_state.analysis_complete = False
-            st.session_state.run_analysis_now = True
+            
             if 'analysis_results' in st.session_state:
                 del st.session_state.analysis_results
         
@@ -1097,11 +1097,17 @@ with tab2:
                 if len(st.session_state.exercise_history) > 50:
                     st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                 
-                # Force one rerun to show results
+  
                 
         
         # Display results if analysis is complete - FULL WIDTH BEAUTIFUL LAYOUT
         if st.session_state.get('analysis_complete', False) and 'analysis_results' in st.session_state:
+            st.markdown("""
+            <script>
+                window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
+            </script>
+            """, unsafe_allow_html=True)
+            
             results = st.session_state.analysis_results
             selected_display = st.session_state.selected_display_for_analysis
             
@@ -1186,14 +1192,15 @@ with tab2:
                 
                 with open(results['output_path'], 'rb') as f:
                     analyzed_video_bytes = f.read()
-                    analyzed_video_base64 = base64.b64encode(analyzed_video_bytes).decode()
-                st.markdown(f"""
-                <div class="video-container">
-                    <video controls muted loop>
-                        <source src="data:video/mp4;base64,{analyzed_video_base64}" type="video/mp4">
-                    </video>
-                </div>
-                """, unsafe_allow_html=True)
+
+                st.markdown("""
+                    <div style="width: 400px; height: 400px; margin: 1.5rem auto; 
+                      border-radius: 20px; overflow: hidden;
+                        box-shadow: 0 15px 50px rgba(222, 226, 118, 0.3);
+                         border: 3px solid rgba(222, 226, 118, 0.5);">
+                       """, unsafe_allow_html=True)
+                st.video(results['output_path'])
+                st.markdown('</div>', unsafe_allow_html=True)
             
             st.markdown("---")
             
@@ -1211,19 +1218,7 @@ with tab2:
                     key="download_btn"
                 )
                 
-                if st.button(" Analyze Another Video", use_container_width=True, key="reset_btn"):
-                    # Clear all analysis-related session state
-                    st.session_state.analyzed_video_path = None
-                    st.session_state.uploaded_video_bytes = None
-                    st.session_state.current_video_name = None
-                    st.session_state.analysis_started = False
-                    st.session_state.analysis_complete = False
-                    if 'analysis_results' in st.session_state:
-                        del st.session_state.analysis_results
-                    if 'target_pose_for_analysis' in st.session_state:
-                        del st.session_state.target_pose_for_analysis
-                    if 'selected_display_for_analysis' in st.session_state:
-                        del st.session_state.selected_display_for_analysis
+                
                    
 # ==========================================
 # TAB 3: AI CHAT
@@ -1290,8 +1285,8 @@ with tab3:
     col_send, col_clear = st.columns([3, 1])
     
     with col_send:
-        if st.button("Send Message", use_container_width=True, type="primary"):
-            if user_input:
+        if st.button("Send Message", use_container_width=True, type="primary", key="send_chat_btn"):
+            if user_input and user_input.strip():  # Check if not empty
                 st.session_state.chat_history.append({
                     'role': 'user',
                     'content': user_input
@@ -1307,6 +1302,8 @@ with tab3:
                     'role': 'assistant',
                     'content': response
                 })
+
+                st.rerun() 
                 
                 
             else:
@@ -1491,8 +1488,9 @@ with st.sidebar:
     if st.button(" Clear All History", use_container_width=True):
         st.session_state.exercise_history = []
         st.session_state.chat_history = []
-        st.success("All history cleared!")
+        st.rerun()
         
+
 
 
 
