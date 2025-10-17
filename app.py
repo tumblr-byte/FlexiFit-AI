@@ -1096,7 +1096,7 @@ with tab2:
                     st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                 
                 # Force one rerun to show results
-                st.rerun()
+                
         
         # Display results if analysis is complete - FULL WIDTH BEAUTIFUL LAYOUT
         if st.session_state.get('analysis_complete', False) and 'analysis_results' in st.session_state:
@@ -1222,8 +1222,7 @@ with tab2:
                         del st.session_state.target_pose_for_analysis
                     if 'selected_display_for_analysis' in st.session_state:
                         del st.session_state.selected_display_for_analysis
-                    st.rerun()
-
+                   
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
@@ -1307,14 +1306,14 @@ with tab3:
                     'content': response
                 })
                 
-                st.rerun()
+                
             else:
                 st.warning(" Please type a message first!")
     
     with col_clear:
         if st.button(" Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
-            st.rerun()
+            
 
 # ==========================================
 # TAB 4: PROGRESS HISTORY
@@ -1491,7 +1490,8 @@ with st.sidebar:
         st.session_state.exercise_history = []
         st.session_state.chat_history = []
         st.success("All history cleared!")
-        st.rerun()
+        
+
 
 
 
