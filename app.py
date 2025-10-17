@@ -1484,11 +1484,10 @@ with st.sidebar:
     
     st.markdown("---")
     
-    if st.button(" Clear All History", use_container_width=True):
-        st.session_state.exercise_history = []
-        st.session_state.chat_history = []
-        st.rerun()
+   
+       
         
+
 
 
 
