@@ -956,7 +956,6 @@ with tab1:
             <p style="font-size: 1.1rem;">Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!</p>
         </div>
         """, unsafe_allow_html=True)
-
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
@@ -1013,22 +1012,17 @@ with tab2:
     # Handle video upload and state management
     if uploaded_video is not None:
         # Check if this is a new video upload
-        
         if 'current_video_name' not in st.session_state or st.session_state.current_video_name != uploaded_video.name:
             # New video uploaded - reset everything
             video_bytes = uploaded_video.read()
             st.session_state.uploaded_video_bytes = video_bytes
             st.session_state.current_video_name = uploaded_video.name
-            st.session_state.analysis_started = False
             st.session_state.analysis_complete = False
             
             if 'analysis_results' in st.session_state:
                 del st.session_state.analysis_results
         
         st.markdown("---")
-        
-        # Check if we need to run analysis (only once when button is clicked)
-        run_analysis = False
         
         # Show preview and analysis button only if analysis hasn't been done
         if not st.session_state.get('analysis_complete', False):
@@ -1058,56 +1052,44 @@ with tab2:
                 """, unsafe_allow_html=True)
                 
                 # Button click triggers analysis
-                if st.session_state.get('run_analysis_now', False) or st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
-                    run_analysis = True
-                    st.session_state.run_analysis_now = False
-                    st.session_state.target_pose_for_analysis = target_pose
-                    st.session_state.selected_display_for_analysis = selected_display
-        
-        # Run analysis if button was clicked (outside the button context to avoid rerun issues)
-        if run_analysis:
-            # Create temporary file
-            tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-            tfile.write(st.session_state.uploaded_video_bytes)
-            tfile.close()
-            
-            # Run analysis with spinner
-            with st.spinner(" AI is analyzing your video... Please wait!"):
-                results = analyze_video(tfile.name, st.session_state.target_pose_for_analysis)
-            
-            # Clean up temp file
-            os.unlink(tfile.name)
-            
-            # Store results
-            if results:
-                st.session_state.analysis_results = results
-                st.session_state.analysis_complete = True
-                st.session_state.analyzed_video_path = results['output_path']
-                
-                # Add to history
-                st.session_state.exercise_history.append({
-                    'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    'target_pose': st.session_state.selected_display_for_analysis,
-                    'detected_pose': exercise_mapping.get(results['detected_pose'], results['detected_pose']),
-                    'accuracy': results['accuracy'],
-                    'confidence': results['confidence']
-                })
-                
-                # Keep only last 50 records
-                if len(st.session_state.exercise_history) > 50:
-                    st.session_state.exercise_history = st.session_state.exercise_history[-50:]
-                
-  
-                
+                if st.button("Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
+                    # Create temporary file
+                    tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+                    tfile.write(st.session_state.uploaded_video_bytes)
+                    tfile.close()
+                    
+                    # Run analysis with spinner
+                    with st.spinner("AI is analyzing your video... Please wait!"):
+                        results = analyze_video(tfile.name, target_pose)
+                    
+                    # Clean up temp file
+                    os.unlink(tfile.name)
+                    
+                    # Store results
+                    if results:
+                        st.session_state.analysis_results = results
+                        st.session_state.analysis_complete = True
+                        st.session_state.analyzed_video_path = results['output_path']
+                        st.session_state.selected_display_for_analysis = selected_display
+                        
+                        # Add to history
+                        st.session_state.exercise_history.append({
+                            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            'target_pose': selected_display,
+                            'detected_pose': exercise_mapping.get(results['detected_pose'], results['detected_pose']),
+                            'accuracy': results['accuracy'],
+                            'confidence': results['confidence']
+                        })
+                        
+                        # Keep only last 50 records
+                        if len(st.session_state.exercise_history) > 50:
+                            st.session_state.exercise_history = st.session_state.exercise_history[-50:]
+                        
+                        # Force rerun to display results
+                        st.rerun()
         
         # Display results if analysis is complete - FULL WIDTH BEAUTIFUL LAYOUT
         if st.session_state.get('analysis_complete', False) and 'analysis_results' in st.session_state:
-            st.markdown("""
-            <script>
-                window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});
-            </script>
-            """, unsafe_allow_html=True)
-            
             results = st.session_state.analysis_results
             selected_display = st.session_state.selected_display_for_analysis
             
@@ -1190,17 +1172,18 @@ with tab2:
                 <span style="color: #f44336; font-weight: 700;">■ Red</span> = Incorrect Pose
                 </p>""", unsafe_allow_html=True)
                 
-        
-            with open(results['output_path'], 'rb') as f:
-                analyzed_video_bytes = f.read()
-                analyzed_video_base64 = base64.b64encode(analyzed_video_bytes).decode()
-            st.markdown(f"""
-                         <div class="video-container">
-                            <video controls muted loop>
-                              <source src="data:video/mp4;base64,{analyzed_video_base64}" type="video/mp4">
-                            </video>
-                             </div>
-            """, unsafe_allow_html=True)
+                with open(results['output_path'], 'rb') as f:
+                    analyzed_video_bytes = f.read()
+                    analyzed_video_base64 = base64.b64encode(analyzed_video_bytes).decode()
+                
+                st.markdown(f"""
+                <div class="video-container">
+                    <video controls muted loop>
+                        <source src="data:video/mp4;base64,{analyzed_video_base64}" type="video/mp4">
+                    </video>
+                </div>
+                """, unsafe_allow_html=True)
+            
             st.markdown("---")
             
             # Action Buttons - Centered Layout
@@ -1208,7 +1191,7 @@ with tab2:
             
             with action_col2:
                 st.download_button(
-                    label=" Download Annotated Video",
+                    label="Download Annotated Video",
                     data=analyzed_video_bytes,
                     file_name=f"flexifit_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
                     mime="video/mp4",
@@ -1216,7 +1199,6 @@ with tab2:
                     type="primary",
                     key="download_btn"
                 )
-                
                 
                    
 # ==========================================
@@ -1487,6 +1469,7 @@ with st.sidebar:
    
        
         
+
 
 
 
