@@ -449,7 +449,7 @@ st.markdown("""
 
     /* Typography */
     h1, h2, h3 {
-        color: #2c3e50;
+        color: #62635e;
     }
 
     p, li, span {
@@ -1491,6 +1491,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         
+
 
 
 
