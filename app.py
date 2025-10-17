@@ -1292,6 +1292,7 @@ with tab4:
                 match_status = record['target_pose'] == record['detected_pose']
                 
                 status_icon = '<i class="fa-solid fa-check-circle" style="color: #C7D06C;"></i>' if match_status else '<i class="fa-solid fa-circle-xmark" style="color: #ff6b6b;"></i>'
+
                 
                 with st.expander(f"{status_icon} {record['timestamp']} - {record['target_pose']}", expanded=(idx==0)):
                     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
@@ -1299,15 +1300,15 @@ with tab4:
                     col1, col2, col3 = st.columns(3)
                     
                     with col1:
-                        st.markdown("**<i class='fa-solid fa-bullseye icon-primary'></i> Target Exercise**")
+                        st.markdown("**<i class='fa-solid fa-bullseye icon-primary'></i> Target Exercise**" , unsafe_allow_html=True)
                         st.markdown(f"<h3 style='color: #E0E786;'>{record['target_pose']}</h3>", unsafe_allow_html=True)
                     
                     with col2:
-                        st.markdown("**<i class='fa-solid fa-eye icon-primary'></i> Detected Exercise**")
+                        st.markdown("**<i class='fa-solid fa-eye icon-primary'></i> Detected Exercise**" , unsafe_allow_html=True)
                         st.markdown(f"<h3 style='color: #E0E786;'>{record['detected_pose']}</h3>", unsafe_allow_html=True)
                     
                     with col3:
-                        st.markdown("**<i class='fa-solid fa-chart-bar icon-primary'></i> Result**")
+                        st.markdown("**<i class='fa-solid fa-chart-bar icon-primary'></i> Result**" , unsafe_allow_html=True)
                         if match_status:
                             st.markdown(f'<h3 style="color: #C7D06C;">{status_icon} Perfect Match</h3>', unsafe_allow_html=True)
                         else:
@@ -1318,12 +1319,12 @@ with tab4:
                     progress_col1, progress_col2 = st.columns(2)
                     
                     with progress_col1:
-                        st.markdown("**<i class='fa-solid fa-bullseye icon-primary'></i> Accuracy Score**")
+                        st.markdown("**<i class='fa-solid fa-bullseye icon-primary'></i> Accuracy Score**" , unsafe_allow_html=True)
                         st.progress(record['accuracy'] / 100)
                         st.caption(f"{record['accuracy']:.1f}%")
                     
                     with progress_col2:
-                        st.markdown("**<i class='fa-solid fa-brain icon-primary'></i> AI Confidence**")
+                        st.markdown("**<i class='fa-solid fa-brain icon-primary'></i> AI Confidence**" , unsafe_allow_html=True)
                         st.progress(record['confidence'])
                         st.caption(f"{record['confidence']*100:.1f}%")
                     
@@ -1418,6 +1419,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
