@@ -959,6 +959,9 @@ with tab1:
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
+# ==========================================
+# TAB 2: ANALYZE VIDEO
+# ==========================================
 with tab2:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>', unsafe_allow_html=True)
     
@@ -1018,14 +1021,17 @@ with tab2:
             st.session_state.uploaded_video_bytes = video_bytes
             st.session_state.current_video_name = uploaded_video.name
             st.session_state.analysis_complete = False
+            st.session_state.show_analysis_button = True
             
             if 'analysis_results' in st.session_state:
                 del st.session_state.analysis_results
+            if 'analyzed_video_bytes' in st.session_state:
+                del st.session_state.analyzed_video_bytes
         
         st.markdown("---")
         
         # Show preview and analysis button only if analysis hasn't been done
-        if not st.session_state.get('analysis_complete', False):
+        if st.session_state.get('show_analysis_button', True) and not st.session_state.get('analysis_complete', False):
             col_preview, col_analyze = st.columns([1, 1])
             
             with col_preview:
@@ -1053,6 +1059,8 @@ with tab2:
                 
                 # Button click triggers analysis
                 if st.button("Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
+                    st.session_state.show_analysis_button = False
+                    
                     # Create temporary file
                     tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                     tfile.write(st.session_state.uploaded_video_bytes)
@@ -1067,10 +1075,15 @@ with tab2:
                     
                     # Store results
                     if results:
+                        # Read analyzed video immediately
+                        with open(results['output_path'], 'rb') as f:
+                            analyzed_video_bytes = f.read()
+                        
                         st.session_state.analysis_results = results
                         st.session_state.analysis_complete = True
                         st.session_state.analyzed_video_path = results['output_path']
                         st.session_state.selected_display_for_analysis = selected_display
+                        st.session_state.analyzed_video_bytes = analyzed_video_bytes
                         
                         # Add to history
                         st.session_state.exercise_history.append({
@@ -1088,10 +1101,11 @@ with tab2:
                         # Force rerun to display results
                         st.rerun()
         
-        # Display results if analysis is complete - FULL WIDTH BEAUTIFUL LAYOUT
+        # Display results if analysis is complete
         if st.session_state.get('analysis_complete', False) and 'analysis_results' in st.session_state:
             results = st.session_state.analysis_results
             selected_display = st.session_state.selected_display_for_analysis
+            analyzed_video_bytes = st.session_state.analyzed_video_bytes
             
             st.markdown("---")
             st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
@@ -1168,13 +1182,11 @@ with tab2:
             with video_col2:
                 st.markdown("""<h4 style="text-align: center; color: #919c08;"><i class="fa-solid fa-brain icon-primary"></i> AI Analyzed Video</h4>
                 <p style="text-align: center; font-size: 0.95rem; margin-bottom: 1rem;">
-                <span style="color: #4CAF50; font-weight: 700;">■ Green</span> = Correct Pose | 
-                <span style="color: #f44336; font-weight: 700;">■ Red</span> = Incorrect Pose
+                <span style="color: #4CAF50; font-weight: 700;">Green</span> = Correct Pose | 
+                <span style="color: #f44336; font-weight: 700;">Red</span> = Incorrect Pose
                 </p>""", unsafe_allow_html=True)
                 
-                with open(results['output_path'], 'rb') as f:
-                    analyzed_video_bytes = f.read()
-                    analyzed_video_base64 = base64.b64encode(analyzed_video_bytes).decode()
+                analyzed_video_base64 = base64.b64encode(analyzed_video_bytes).decode()
                 
                 st.markdown(f"""
                 <div class="video-container">
@@ -1469,6 +1481,7 @@ with st.sidebar:
    
        
         
+
 
 
 
