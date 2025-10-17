@@ -222,7 +222,7 @@ st.markdown("""
         background: linear-gradient(135deg, #ffffff 0%, #fffef5 100%);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        color: #62635e;
+        color: #2e2e2e;;
         padding: 2rem;
         border-radius: 18px;
         text-align: center;
@@ -270,9 +270,10 @@ st.markdown("""
         font-weight: 900;
         background: linear-gradient(135deg, #dee276, #c5cc3d);
         -webkit-background-clip: text;
+        display: inline-block;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        color: #62635e;
+        color:#2e2e2e;;
     }
 
  .video-container {
@@ -896,7 +897,7 @@ with tab1:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
     st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #262626; margin-bottom: 2rem;">Browse our curated collection of exercises specifically designed for PCOS/PCOD management</p>', unsafe_allow_html=True)
     
-    search_query = st.text_input("Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance...")
+    search_query = st.text_input("Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance..." , key="search_exercises_input")
     
     if search_query:
         exercises = search_exercises(search_query)
@@ -1016,12 +1017,15 @@ with tab2:
     # Handle video upload and state management
     if uploaded_video is not None:
         # Check if this is a new video upload
+        
         if 'current_video_name' not in st.session_state or st.session_state.current_video_name != uploaded_video.name:
             # New video uploaded - reset everything
-            st.session_state.uploaded_video_bytes = uploaded_video.read()
+            video_bytes = uploaded_video.read()
+            st.session_state.uploaded_video_bytes = video_bytes
             st.session_state.current_video_name = uploaded_video.name
             st.session_state.analysis_started = False
             st.session_state.analysis_complete = False
+            st.session_state.run_analysis_now = True
             if 'analysis_results' in st.session_state:
                 del st.session_state.analysis_results
         
@@ -1058,8 +1062,9 @@ with tab2:
                 """, unsafe_allow_html=True)
                 
                 # Button click triggers analysis
-                if st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
+                if st.session_state.get('run_analysis_now', False) or st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
                     run_analysis = True
+                    st.session_state.run_analysis_now = False
                     st.session_state.target_pose_for_analysis = target_pose
                     st.session_state.selected_display_for_analysis = selected_display
         
@@ -1492,6 +1497,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         
+
 
 
 
