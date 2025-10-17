@@ -222,7 +222,7 @@ st.markdown("""
         background: linear-gradient(135deg, #ffffff 0%, #fffef5 100%);
         backdrop-filter: blur(20px);
         -webkit-backdrop-filter: blur(20px);
-        color: #2c3e50;
+        color: #62635e;
         padding: 2rem;
         border-radius: 18px;
         text-align: center;
@@ -261,7 +261,7 @@ st.markdown("""
         opacity: 0.8;
         text-transform: uppercase;
         letter-spacing: 2px;
-        color: #dee276;
+        color: #62635e;
     }
 
     .metric-card h1 {
@@ -1491,6 +1491,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         
+
 
 
 
