@@ -1193,14 +1193,7 @@ with tab2:
                 with open(results['output_path'], 'rb') as f:
                     analyzed_video_bytes = f.read()
 
-                st.markdown("""
-                    <div style="width: 400px; height: 400px; margin: 1.5rem auto; 
-                      border-radius: 20px; overflow: hidden;
-                        box-shadow: 0 15px 50px rgba(222, 226, 118, 0.3);
-                         border: 3px solid rgba(222, 226, 118, 0.5);">
-                       """, unsafe_allow_html=True)
-                st.video(results['output_path'])
-                st.markdown('</div>', unsafe_allow_html=True)
+        
             
             st.markdown("---")
             
@@ -1490,6 +1483,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.rerun()
         
+
 
 
 
