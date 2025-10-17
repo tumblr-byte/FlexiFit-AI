@@ -62,12 +62,15 @@ st.markdown("""
     
     /* Main header with brand color */
 
-.main-header { font-size: 4.5rem;
-font-weight: 900; 
-color #919c08;
-  background-clip: text;
-text-shadow: 0 4px 20px rgba(222, 226, 118, 0.3); 
-text-align: center; }
+.main-header { 
+    font-size: 3rem;
+    font-weight: 900; 
+    color: #919c08;
+    text-shadow: 0 4px 20px rgba(222, 226, 118, 0.3); 
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+}
 
 
     .sub-header {
@@ -825,11 +828,12 @@ def get_exercise_image_path(exercise_name, exercise_id):
 # ==========================================
 # MAIN APP LAYOUT
 # ==========================================
-col_logo, col_title = st.columns([3.5, 6.5]) 
-with col_logo: 
-    st.image("logo.png", width=120) 
-with col_title: 
-    st.markdown('<h1 class="main-header">FLEXIFIT AI</h1>', unsafe_allow_html=True)
+st.markdown("""
+<div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 2rem 0;">
+    <img src="data:image/png;base64,{}" style="width: 100px; height: auto;">
+    <h1 class="main-header">FLEXIFIT AI</h1>
+</div>
+""".format(base64.b64encode(open("logo.png", "rb").read()).decode()), unsafe_allow_html=True)
 
 
 st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
@@ -921,7 +925,7 @@ with tab1:
                         </div>
                         """, unsafe_allow_html=True)
                     
-                    st.markdown(f"### <i class='fa-solid fa-heart-pulse icon-primary'></i> {ex['name']}")
+                    st.markdown(f"### <i class='fa-solid fa-heart-pulse icon-primary'></i> {ex['name']}", unsafe_allow_html=True)
                     
                     st.markdown(f"""
                     <span class="badge badge-primary"><i class="fa-solid fa-layer-group icon-primary"></i> {ex['category']}</span>
@@ -929,7 +933,7 @@ with tab1:
                     <span class="badge badge-success"><i class="fa-solid fa-clock icon-primary"></i> {ex['duration_seconds']}s</span>
                     """, unsafe_allow_html=True)
                     
-                    st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}")
+                    st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}", unsafe_allow_html=True)
                     
                     with st.expander(" View Details", expanded=False):
                         st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}", unsafe_allow_html=True)
@@ -1014,9 +1018,17 @@ with tab2:
         
         with col_preview:
             st.markdown('<h3><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h3>', unsafe_allow_html=True)
-            st.markdown('<div class="video-container">', unsafe_allow_html=True)
-            st.video(uploaded_video)
-            st.markdown('</div>', unsafe_allow_html=True)
+            video_bytes = uploaded_video.read()
+            video_base64 = base64.b64encode(video_bytes).decode()
+            st.markdown(f"""
+            <div class="video-container">
+               <video controls autoplay muted loop>
+                  <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+               </video>
+             </div>
+             """, unsafe_allow_html=True)
+             uploaded_video.seek(0)  # Reset file pointer for later use
+           
         
         with col_analyze:
             st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Ready to Analyze!</h3>', unsafe_allow_html=True)
@@ -1110,9 +1122,16 @@ with tab2:
                     st.markdown('<h3 style="text-align: center;"><i class="fa-solid fa-video icon-primary"></i> Annotated Video with AI Feedback</h3>', unsafe_allow_html=True)
                     st.markdown('<p style="text-align: center; font-size: 1.1rem; margin-bottom: 1.5rem;"><span style="color: #4CAF50; font-weight: 700;">■ Green</span> = Correct Pose | <span style="color: #f44336; font-weight: 700;">■ Red</span> = Incorrect Pose</p>', unsafe_allow_html=True)
                     
-                    st.markdown('<div class="video-container">', unsafe_allow_html=True)
-                    st.video(results['output_path'])
-                    st.markdown('</div>', unsafe_allow_html=True)
+                    with open(results['output_path'], 'rb') as f:
+                        video_bytes = f.read()
+                        video_base64 = base64.b64encode(video_bytes).decode()
+                    st.markdown(f"""
+                    <div class="video-container">
+                       <video controls autoplay muted loop>
+                         <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+                        </video>
+                    </div>
+                     """, unsafe_allow_html=True)
                     
                     st.markdown("---")
                     
@@ -1401,6 +1420,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
