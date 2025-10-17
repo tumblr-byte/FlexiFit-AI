@@ -1022,13 +1022,12 @@ with tab2:
             video_base64 = base64.b64encode(video_bytes).decode()
             st.markdown(f"""
             <div class="video-container">
-               <video controls autoplay muted loop>
-                  <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
-               </video>
-             </div>
-             """, unsafe_allow_html=True)
-             uploaded_video.seek(0)  # Reset file pointer for later use
-           
+                <video controls autoplay muted loop>
+                    <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+                </video>
+            </div>
+            """, unsafe_allow_html=True)
+            uploaded_video.seek(0)  # Reset file pointer for later use
         
         with col_analyze:
             st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Ready to Analyze!</h3>', unsafe_allow_html=True)
@@ -1127,11 +1126,11 @@ with tab2:
                         video_base64 = base64.b64encode(video_bytes).decode()
                     st.markdown(f"""
                     <div class="video-container">
-                       <video controls autoplay muted loop>
-                         <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
+                        <video controls autoplay muted loop>
+                            <source src="data:video/mp4;base64,{video_base64}" type="video/mp4">
                         </video>
                     </div>
-                     """, unsafe_allow_html=True)
+                    """, unsafe_allow_html=True)
                     
                     st.markdown("---")
                     
@@ -1152,7 +1151,6 @@ with tab2:
                         if st.button(" Analyze Another Video", use_container_width=True):
                             st.session_state.analyzed_video_path = None
                             st.rerun()
-
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
@@ -1420,6 +1418,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
