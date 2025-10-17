@@ -1190,9 +1190,6 @@ with tab2:
                 <span style="color: #f44336; font-weight: 700;">■ Red</span> = Incorrect Pose
                 </p>""", unsafe_allow_html=True)
                 
-                with open(results['output_path'], 'rb') as f:
-                    analyzed_video_bytes = f.read()
-
         
             
             st.markdown("---")
@@ -1483,6 +1480,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.rerun()
         
+
 
 
 
