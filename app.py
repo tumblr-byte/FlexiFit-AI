@@ -273,7 +273,7 @@ st.markdown("""
         display: inline-block;
         -webkit-text-fill-color: transparent;
         background-clip: text;
-        color:#2e2e2e;;
+
     }
 
  .video-container {
@@ -1497,6 +1497,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         
+
 
 
 
