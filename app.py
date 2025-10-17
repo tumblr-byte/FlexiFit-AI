@@ -1291,10 +1291,10 @@ with tab4:
             for idx, record in enumerate(reversed(st.session_state.exercise_history)):
                 match_status = record['target_pose'] == record['detected_pose']
                 
-                status_icon = '<i class="fa-solid fa-check-circle" style="color: #C7D06C;"></i>' if match_status else '<i class="fa-solid fa-circle-xmark" style="color: #ff6b6b;"></i>'
+                status_text, status_color = ("✓ MATCH", "#C7D06C") if match_status else ("✗ DIFFERENT", "#ff6b6b")
 
                 
-                with st.expander(f"{status_icon} {record['timestamp']} - {record['target_pose']}", expanded=(idx==0)):
+                with st.expander(f"{status_text} | {record['timestamp']} - {record['target_pose']}", expanded=(idx==0)):
                     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                     
                     col1, col2, col3 = st.columns(3)
@@ -1419,6 +1419,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
