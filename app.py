@@ -1029,7 +1029,6 @@ with tab2:
             video_bytes = uploaded_video.read()
             st.session_state.uploaded_video_bytes = video_bytes
             st.session_state.analysis_complete = False
-            st.session_state.show_analysis_button = True
             
             if 'analysis_results' in st.session_state:
                 del st.session_state.analysis_results
@@ -1039,7 +1038,7 @@ with tab2:
         st.markdown("---")
         
         # Show preview and analysis button only if analysis hasn't been done
-        if st.session_state.get('show_analysis_button', True) and not st.session_state.get('analysis_complete', False):
+        if not st.session_state.get('analysis_complete', False):
             col_preview, col_analyze = st.columns([1, 1])
             
             with col_preview:
@@ -1065,9 +1064,12 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Button click triggers analysis
-                if st.button("Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
-                    st.session_state.show_analysis_button = False
+                # Button click triggers analysis - PREVENT DOUBLE CLICK
+                analyze_button = st.button("Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn")
+                
+                if analyze_button and not st.session_state.get('processing', False):
+                    # Set processing flag immediately
+                    st.session_state.processing = True
                     
                     # Create temporary file
                     tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
@@ -1105,6 +1107,9 @@ with tab2:
                         # Keep only last 50 records
                         if len(st.session_state.exercise_history) > 50:
                             st.session_state.exercise_history = st.session_state.exercise_history[-50:]
+                        
+                        # Clear processing flag
+                        st.session_state.processing = False
                         
                         # Force rerun to display results
                         st.rerun()
@@ -1488,6 +1493,7 @@ with st.sidebar:
    
        
         
+
 
 
 
