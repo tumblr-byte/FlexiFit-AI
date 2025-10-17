@@ -932,10 +932,10 @@ with tab1:
                     st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}")
                     
                     with st.expander(" View Details", expanded=False):
-                        st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}")
-                        st.markdown("**<i class='fa-solid fa-star icon-primary'></i> PCOS/PCOD Benefits:**")
+                        st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}", unsafe_allow_html=True)
+                        st.markdown("**<i class='fa-solid fa-star icon-primary'></i> PCOS/PCOD Benefits:**", unsafe_allow_html=True)
                         for benefit in ex['pcos_benefits']:
-                            st.markdown(f"• {benefit}")
+                            st.markdown(f"• {benefit}", unsafe_allow_html=True)
                     
                     st.markdown('</div>', unsafe_allow_html=True)
         else:
@@ -1401,6 +1401,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
