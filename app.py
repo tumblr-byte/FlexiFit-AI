@@ -268,11 +268,7 @@ st.markdown("""
         margin: 1rem 0 0 0;
         font-size: 2.8rem;
         font-weight: 900;
-        background: linear-gradient(135deg, #dee276, #c5cc3d);
-        -webkit-background-clip: text;
-        display: inline-block;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
+       color:#2e2e2e;
 
     }
 
@@ -1497,6 +1493,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         
+
 
 
 
