@@ -1043,7 +1043,7 @@ with tab2:
             
             if st.button("Start AI Analysis", type="primary", use_container_width=True):
                 tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-                tfile.write(uploaded_video.read())
+                tfile.write(video_bytes)
                 tfile.close()
                 
                 with st.spinner("AI is analyzing your video... Please wait!"):
@@ -1310,9 +1310,9 @@ with tab4:
                     with col3:
                         st.markdown("**<i class='fa-solid fa-chart-bar icon-primary'></i> Result**" , unsafe_allow_html=True)
                         if match_status:
-                            st.markdown(f'<h3 style="color: #C7D06C;">{status_icon} Perfect Match</h3>', unsafe_allow_html=True)
+                            st.markdown(f'<h3 style="color: #C7D06C;">✓ Perfect Match</h3>', unsafe_allow_html=True)
                         else:
-                            st.markdown(f'<h3 style="color: #ff6b6b;">{status_icon} Different Pose</h3>', unsafe_allow_html=True)
+                            st.markdown(f'<h3 style="color: #ff6b6b;">✗ Different Pose</h3>', unsafe_allow_html=True)
                     
                     st.markdown("---")
                     
@@ -1419,6 +1419,7 @@ with st.sidebar:
         st.session_state.chat_history = []
         st.success("All history cleared!")
         st.rerun()
+
 
 
 
