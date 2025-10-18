@@ -1240,42 +1240,40 @@ with tab2:
         # -----------------------
         # Section 1: Show Uploaded Video + Analyze Button
         # -----------------------
-        if not st.session_state.video_analyzed:
-            col_preview, col_analyze = st.columns([1, 1])
+        col_preview, col_analyze = st.columns([1, 1])
 
-            with col_preview:
-                st.markdown('<h3><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h3>', unsafe_allow_html=True)
-                vb64 = base64.b64encode(st.session_state.original_video_data).decode()
-                st.markdown(f"""
-                <div class="video-container">
-                    <video controls muted loop>
-                        <source src="data:video/mp4;base64,{vb64}" type="video/mp4">
-                    </video>
-                </div>
-                """, unsafe_allow_html=True)
+        with col_preview:
+            st.markdown('<h3><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h3>', unsafe_allow_html=True)
+            vb64 = base64.b64encode(st.session_state.original_video_data).decode()
+            st.markdown(f"""
+            <div class="video-container">
+                <video controls muted loop>
+                    <source src="data:video/mp4;base64,{vb64}" type="video/mp4">
+                </video>
+            </div>
+            """, unsafe_allow_html=True)
 
-            with col_analyze:
-                st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Ready to Analyze!</h3>', unsafe_allow_html=True)
-                st.markdown(f"""
-                <div class="info-box">
-                    <h3 style="margin-top: 0;"><i class="fa-solid fa-chart-line icon-primary"></i> Analysis Details</h3>
-                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}</p>
-                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-brain icon-primary"></i> AI Model:</b> Custom Pose Classifier</p>
-                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-chart-line icon-primary"></i> Accuracy:</b> 92% on validation set</p>
-                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-gauge-high icon-primary"></i> Processing:</b> Real-time frame analysis</p>
-                </div>
-                """, unsafe_allow_html=True)
+        with col_analyze:
+            st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Ready to Analyze!</h3>', unsafe_allow_html=True)
+            st.markdown(f"""
+            <div class="info-box">
+                <h3 style="margin-top: 0;"><i class="fa-solid fa-chart-line icon-primary"></i> Analysis Details</h3>
+                <p style="font-size: 1rem;"><b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}</p>
+                <p style="font-size: 1rem;"><b><i class="fa-solid fa-brain icon-primary"></i> AI Model:</b> Custom Pose Classifier</p>
+                <p style="font-size: 1rem;"><b><i class="fa-solid fa-chart-line icon-primary"></i> Accuracy:</b> 92% on validation set</p>
+                <p style="font-size: 1rem;"><b><i class="fa-solid fa-gauge-high icon-primary"></i> Processing:</b> Real-time frame analysis</p>
+            </div>
+            """, unsafe_allow_html=True)
 
-                analyze_clicked = st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn")
-
-                if analyze_clicked and not st.session_state.video_analyzed and not st.session_state.analysis_in_progress:
-                    st.session_state.analysis_in_progress = True
+            analyze_clicked = st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn")
 
         # -----------------------
-        # Section 1.5: Run Analysis Once
+        # Section 1.5: Run Analysis Once (no rerun)
         # -----------------------
+        if analyze_clicked and not st.session_state.video_analyzed:
+            st.session_state.analysis_in_progress = True
+
         if st.session_state.analysis_in_progress and not st.session_state.video_analyzed:
-            st.session_state.analysis_in_progress = False
             with st.spinner("Analyzing your video... This may take a minute."):
                 tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                 tfile.write(st.session_state.original_video_data)
@@ -1286,11 +1284,11 @@ with tab2:
 
                 if results:
                     with open(results['output_path'], 'rb') as f:
-                        analyzed_data = f.read()
+                        st.session_state.analyzed_video_data = f.read()
 
                     st.session_state.analysis_results = results
-                    st.session_state.analyzed_video_data = analyzed_data
                     st.session_state.video_analyzed = True
+                    st.session_state.analysis_in_progress = False
 
                     st.session_state.exercise_history.append({
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -1308,19 +1306,17 @@ with tab2:
                     except:
                         pass
 
-                st.experimental_rerun()
-
         # -----------------------
         # Section 2: Show Analysis Results + Download
         # -----------------------
         if st.session_state.video_analyzed and st.session_state.analysis_results:
             results = st.session_state.analysis_results
-            
+
             st.markdown("---")
             st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
 
             if results['match']:
-                st.markdown("""
+                st.markdown(f"""
                 <div class="result-status result-perfect">
                     <h2 style="margin: 0; font-size: 2.2rem;">
                         <i class="fa-solid fa-check-circle icon-primary" style="font-size: 2.5rem;"></i> PERFECT MATCH!
@@ -1344,9 +1340,7 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
 
-            # -----------------------
             # Metrics
-            # -----------------------
             m1, m2, m3 = st.columns(3)
             with m1:
                 st.markdown(f"""
@@ -1413,6 +1407,7 @@ with tab2:
                     type="primary",
                     key="download_video_btn"
                 )
+
 
 
 
@@ -1977,6 +1972,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
