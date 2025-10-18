@@ -959,7 +959,6 @@ with tab1:
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
-
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
@@ -1013,42 +1012,34 @@ with tab2:
             key="video_uploader"
         )
     
-    # Initialize session state variables if they don't exist
+    # Initialize session state variables
     if 'current_video_name' not in st.session_state:
         st.session_state.current_video_name = None
     if 'uploaded_video_bytes' not in st.session_state:
         st.session_state.uploaded_video_bytes = None
     if 'analysis_complete' not in st.session_state:
         st.session_state.analysis_complete = False
-    if 'video_processed' not in st.session_state:
-        st.session_state.video_processed = False
+    if 'show_analyze_button' not in st.session_state:
+        st.session_state.show_analyze_button = True
     
-    # Handle new video upload - ONLY PROCESS ONCE
-    if uploaded_video is not None and not st.session_state.video_processed:
-        # Check if this is a NEW video (different from previously uploaded)
+    # Handle video upload
+    if uploaded_video is not None:
+        # Check if this is a NEW video
         if st.session_state.current_video_name != uploaded_video.name:
-            # New video detected - read it ONCE and reset analysis state
             st.session_state.current_video_name = uploaded_video.name
             st.session_state.uploaded_video_bytes = uploaded_video.read()
-            st.session_state.video_processed = True  # Mark as processed
             st.session_state.analysis_complete = False
+            st.session_state.show_analyze_button = True
             
             # Clear previous results
-            if 'analysis_results' in st.session_state:
-                del st.session_state.analysis_results
-            if 'analyzed_video_bytes' in st.session_state:
-                del st.session_state.analyzed_video_bytes
-            if 'analyzed_video_path' in st.session_state:
-                del st.session_state.analyzed_video_path
-            if 'selected_display_for_analysis' in st.session_state:
-                del st.session_state.selected_display_for_analysis
-    
-    # MAIN CONTENT DISPLAY
-    if uploaded_video is not None and st.session_state.uploaded_video_bytes is not None:
+            for key in ['analysis_results', 'analyzed_video_bytes', 'analyzed_video_path', 'selected_display_for_analysis']:
+                if key in st.session_state:
+                    del st.session_state[key]
+        
         st.markdown("---")
         
-        # SHOW PREVIEW AND ANALYSIS BUTTON (only if not analyzed yet)
-        if not st.session_state.analysis_complete:
+        # SHOW PREVIEW AND ANALYSIS BUTTON
+        if st.session_state.show_analyze_button and not st.session_state.analysis_complete:
             col_preview, col_analyze = st.columns([1, 1])
             
             with col_preview:
@@ -1074,34 +1065,36 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Analysis button with callback
-                if st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
-                    # Create temporary file from stored bytes
+                # Analysis button using form to prevent multiple submissions
+                with st.form(key='analysis_form', clear_on_submit=True):
+                    analyze_submitted = st.form_submit_button(
+                        "Start AI Analysis",
+                        type="primary",
+                        use_container_width=True
+                    )
+                
+                if analyze_submitted:
+                    st.session_state.show_analyze_button = False
+                    
                     tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                     tfile.write(st.session_state.uploaded_video_bytes)
                     tfile.close()
                     
-                    # Run analysis with progress indicator
-                    with st.spinner(" AI is analyzing your video... Please wait!"):
+                    with st.spinner("AI is analyzing your video... Please wait!"):
                         results = analyze_video(tfile.name, target_pose)
                     
-                    # Clean up temp file
                     os.unlink(tfile.name)
                     
-                    # Store results if successful
                     if results:
-                        # Read analyzed video file ONCE
                         with open(results['output_path'], 'rb') as f:
                             analyzed_video_bytes = f.read()
                         
-                        # Store everything in session state
                         st.session_state.analysis_results = results
                         st.session_state.analyzed_video_bytes = analyzed_video_bytes
                         st.session_state.analyzed_video_path = results['output_path']
                         st.session_state.selected_display_for_analysis = selected_display
                         st.session_state.analysis_complete = True
                         
-                        # Add to exercise history
                         st.session_state.exercise_history.append({
                             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             'target_pose': selected_display,
@@ -1110,14 +1103,12 @@ with tab2:
                             'confidence': results['confidence']
                         })
                         
-                        # Keep only last 50 records
                         if len(st.session_state.exercise_history) > 50:
                             st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                         
-                        # Force ONE rerun to display results
                         st.rerun()
         
-        # DISPLAY RESULTS (only if analysis is complete)
+        # DISPLAY RESULTS
         if st.session_state.analysis_complete and 'analysis_results' in st.session_state:
             results = st.session_state.analysis_results
             selected_display = st.session_state.selected_display_for_analysis
@@ -1219,7 +1210,7 @@ with tab2:
             
             with action_col2:
                 st.download_button(
-                    label=" Download Annotated Video",
+                    label="Download Annotated Video",
                     data=analyzed_video_bytes,
                     file_name=f"flexifit_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
                     mime="video/mp4",
@@ -1228,18 +1219,7 @@ with tab2:
                     key="download_analyzed_video"
                 )
                 
-                # Reset button to analyze another video
-                if st.button("Analyze Another Video", use_container_width=True, key="reset_analysis"):
-                    st.session_state.analysis_complete = False
-                    st.session_state.video_processed = False
-                    st.session_state.current_video_name = None
-                    st.session_state.uploaded_video_bytes = None
-                    if 'analysis_results' in st.session_state:
-                        del st.session_state.analysis_results
-                    if 'analyzed_video_bytes' in st.session_state:
-                        del st.session_state.analyzed_video_bytes
-                    st.rerun()
-                   
+              
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
@@ -1508,6 +1488,7 @@ with st.sidebar:
    
        
         
+
 
 
 
