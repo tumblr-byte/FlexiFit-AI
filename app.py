@@ -963,6 +963,54 @@ with tab1:
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
+
+# Define callback function OUTSIDE the tab
+def run_analysis():
+    """Callback function to run analysis"""
+    if st.session_state.video_data is None:
+        return
+    
+    # Create temp file
+    tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+    tfile.write(st.session_state.video_data)
+    tfile.close()
+    
+    # Run analysis
+    results = analyze_video(tfile.name, st.session_state.current_target_pose)
+    
+    # Cleanup
+    os.unlink(tfile.name)
+    
+    if results:
+        # Read analyzed video
+        with open(results['output_path'], 'rb') as f:
+            analyzed_video = f.read()
+        
+        # Store results
+        st.session_state.result_data = results
+        st.session_state.analyzed_video = analyzed_video
+        st.session_state.analysis_done = True
+        
+        # Add to history
+        exercise_mapping = {
+            "Downdog": "Downdog",
+            "Plank": "Plank Pose",
+            "Warrior2": "Warrior 2",
+            "Modified_Tree": "Modified Tree Pose",
+            "Standard_Tree": "Standard Tree Pose"
+        }
+        
+        st.session_state.exercise_history.append({
+            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            'target_pose': st.session_state.target_display_name,
+            'detected_pose': exercise_mapping.get(results['detected_pose'], results['detected_pose']),
+            'accuracy': results['accuracy'],
+            'confidence': results['confidence']
+        })
+        
+        if len(st.session_state.exercise_history) > 50:
+            st.session_state.exercise_history = st.session_state.exercise_history[-50:]
+
 with tab2:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>', unsafe_allow_html=True)
     
@@ -997,6 +1045,10 @@ with tab2:
         reverse_mapping = {v: k for k, v in exercise_mapping.items()}
         target_pose = reverse_mapping[selected_display]
         
+        # Store in session state for callback
+        st.session_state.current_target_pose = target_pose
+        st.session_state.target_display_name = selected_display
+        
         st.markdown(f"""
         <div class="success-box">
         <h3 style="margin: 0;"><i class="fa-solid fa-check-circle icon-primary"></i> Target Exercise Selected</h3>
@@ -1020,8 +1072,6 @@ with tab2:
         st.session_state.video_data = None
     if 'analysis_done' not in st.session_state:
         st.session_state.analysis_done = False
-    if 'processing' not in st.session_state:
-        st.session_state.processing = False
     
     # Handle video upload
     if uploaded_video is not None:
@@ -1032,17 +1082,16 @@ with tab2:
             st.session_state.video_hash = video_hash
             st.session_state.video_data = uploaded_video.read()
             st.session_state.analysis_done = False
-            st.session_state.processing = False
             
             # Clear old results
-            for key in ['result_data', 'analyzed_video', 'target_name']:
+            for key in ['result_data', 'analyzed_video']:
                 if key in st.session_state:
                     del st.session_state[key]
         
         st.markdown("---")
         
-        # Show preview and button ONLY if not analyzed
-        if not st.session_state.analysis_done and not st.session_state.processing:
+        # Show preview and button
+        if not st.session_state.analysis_done:
             col_preview, col_analyze = st.columns([1, 1])
             
             with col_preview:
@@ -1068,55 +1117,19 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Button click handler
-                if st.button("Start AI Analysis", type="primary", use_container_width=True, key="start_analysis"):
-                    st.session_state.processing = True
-                    st.rerun()
-        
-        # Processing state - show spinner and run analysis
-        if st.session_state.processing and not st.session_state.analysis_done:
-            with st.spinner("AI is analyzing your video... Please wait!"):
-                # Create temp file
-                tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-                tfile.write(st.session_state.video_data)
-                tfile.close()
-                
-                # Run analysis
-                results = analyze_video(tfile.name, target_pose)
-                
-                # Cleanup
-                os.unlink(tfile.name)
-                
-                if results:
-                    # Read analyzed video
-                    with open(results['output_path'], 'rb') as f:
-                        analyzed_video = f.read()
-                    
-                    # Store results
-                    st.session_state.result_data = results
-                    st.session_state.analyzed_video = analyzed_video
-                    st.session_state.target_name = selected_display
-                    st.session_state.analysis_done = True
-                    st.session_state.processing = False
-                    
-                    # Add to history
-                    st.session_state.exercise_history.append({
-                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        'target_pose': selected_display,
-                        'detected_pose': exercise_mapping.get(results['detected_pose'], results['detected_pose']),
-                        'accuracy': results['accuracy'],
-                        'confidence': results['confidence']
-                    })
-                    
-                    if len(st.session_state.exercise_history) > 50:
-                        st.session_state.exercise_history = st.session_state.exercise_history[-50:]
-                    
-                    st.rerun()
+                # Button with on_click callback - THIS IS THE KEY!
+                st.button(
+                    "Start AI Analysis", 
+                    type="primary", 
+                    use_container_width=True, 
+                    key="analyze_button",
+                    on_click=run_analysis  # CALLBACK FUNCTION
+                )
         
         # Display results
         if st.session_state.analysis_done and 'result_data' in st.session_state:
             results = st.session_state.result_data
-            target_name = st.session_state.target_name
+            target_name = st.session_state.target_display_name
             analyzed_video = st.session_state.analyzed_video
             
             st.markdown("---")
@@ -1492,6 +1505,7 @@ with st.sidebar:
    
        
         
+
 
 
 
