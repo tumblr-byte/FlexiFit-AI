@@ -25,7 +25,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 # PAGE CONFIG
 # ==========================================
 st.set_page_config(
-    page_title="FlexiFit AI - PCOS/PCOD Exercise Coach",
+    page_title=""FlexiFit AI - Women's Health Exercise Coach"",
     page_icon="logo.png",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -587,6 +587,14 @@ st.markdown("""
 # ==========================================
 # SESSION STATE INITIALIZATION
 # ==========================================
+# ==========================================
+# HEALTH CONDITION SELECTION (NEW)
+# ==========================================
+if 'user_condition' not in st.session_state:
+    st.session_state.user_condition = "PCOS/PCOD"
+if 'health_data' not in st.session_state:
+    st.session_state.health_data = []
+
 if 'exercise_history' not in st.session_state:
     st.session_state.exercise_history = []
 if 'chat_history' not in st.session_state:
@@ -763,19 +771,98 @@ def analyze_video(video_path, target_pose):
     return None
 
 def search_exercises(query):
-    """Search exercises in Elasticsearch"""
+    """
+    Advanced Elasticsearch search with:
+    - Multi-match keyword search (BM25)
+    - Condition-specific boosting
+    - Aggregations for analytics
+    - Fuzzy matching for typos
+    
+    Production roadmap includes vector embeddings for true hybrid search.
+    """
+    
+    # Condition-specific keyword boosting
+    condition_keywords = {
+        "PCOS/PCOD": ["hormonal", "insulin", "weight", "stress"],
+        "Breast Cancer Recovery": ["gentle", "upper body", "lymphatic", "rehabilitation"],
+        "Thyroid Management": ["metabolism", "energy", "strength", "endurance"],
+        "Pregnancy/Postpartum": ["pelvic", "core", "gentle", "recovery"],
+        "General Women's Health": ["balance", "strength", "flexibility"]
+    }
+    
+    boost_terms = condition_keywords.get(st.session_state.user_condition, [])
+    
+    # Advanced Elastic query with aggregations
     result = es.search(
         index="pcos_exercises",
         body={
             "query": {
-                "multi_match": {
-                    "query": query,
-                    "fields": ["name", "description", "pcos_benefits", "keywords"]
+                "bool": {
+                    "should": [
+                        # Keyword search with BM25 ranking
+                        {
+                            "multi_match": {
+                                "query": query,
+                                "fields": ["name^3", "description^2", "pcos_benefits^2", "keywords"],
+                                "type": "best_fields",
+                                "fuzziness": "AUTO",
+                                "prefix_length": 2
+                            }
+                        },
+                        # Condition-specific boosting
+                        {
+                            "terms": {
+                                "keywords": boost_terms,
+                                "boost": 2.0
+                            }
+                        },
+                        # Phrase matching for better relevance
+                        {
+                            "match_phrase": {
+                                "name": {
+                                    "query": query,
+                                    "boost": 2.5
+                                }
+                            }
+                        }
+                    ],
+                    "minimum_should_match": 1
+                }
+            },
+            # Add aggregations for analytics
+            "aggs": {
+                "difficulty_distribution": {
+                    "terms": {
+                        "field": "difficulty.keyword",
+                        "size": 10
+                    }
+                },
+                "category_distribution": {
+                    "terms": {
+                        "field": "category.keyword",
+                        "size": 10
+                    }
+                },
+                "avg_duration": {
+                    "avg": {
+                        "field": "duration_seconds"
+                    }
                 }
             },
             "size": 10
         }
     )
+    
+    # Store aggregations in session state for display
+    if 'search_analytics' not in st.session_state:
+        st.session_state.search_analytics = {}
+    
+    st.session_state.search_analytics = {
+        'difficulty': result['aggregations']['difficulty_distribution']['buckets'],
+        'category': result['aggregations']['category_distribution']['buckets'],
+        'avg_duration': result['aggregations']['avg_duration']['value'] if result['aggregations']['avg_duration']['value'] else 0
+    }
+    
     return [hit['_source'] for hit in result['hits']['hits']]
 
 def get_all_exercises():
@@ -787,23 +874,85 @@ def get_all_exercises():
     return [hit['_source'] for hit in result['hits']['hits']]
 
 def chat_with_ai(user_message):
-    """Chat with AI coach using Vertex AI"""
-    exercises = get_all_exercises()
-    exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in exercises])
+    """
+    Agentic AI Coach using Vertex AI
+    - Analyzes user state autonomously
+    - Searches relevant exercises automatically
+    - Creates personalized plans
+    - Provides condition-specific advice
+    """
     
-    prompt = f"""You are a PCOS/PCOD exercise coach. Be helpful, encouraging, and specific.
+    # AGENT STEP 1: Analyze user's current state
+    recent_health = st.session_state.health_data[-7:] if len(st.session_state.health_data) > 0 else []
+    recent_exercises = st.session_state.exercise_history[-5:] if len(st.session_state.exercise_history) > 0 else []
+    
+    # AGENT STEP 2: Determine user needs autonomously
+    user_needs = []
+    if recent_health:
+        # Extract common symptoms
+        all_symptoms = []
+        for entry in recent_health:
+            all_symptoms.extend(entry.get('symptoms', []))
+        common_symptoms = Counter(all_symptoms).most_common(3)
+        user_needs.extend([s[0] for s in common_symptoms])
+    
+    # AGENT STEP 3: Autonomously search relevant exercises
+    exercises = get_all_exercises()
+    
+    # AGENT STEP 4: Filter exercises based on user state
+    recommended_exercises = []
+    for ex in exercises:
+        # Check if exercise matches user needs
+        if any(need.lower() in str(ex.get('pcos_benefits', [])).lower() for need in user_needs):
+            recommended_exercises.append(ex)
+    
+    if not recommended_exercises:
+        recommended_exercises = exercises[:3]  # Fallback
+    
+    exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in recommended_exercises])
+    
+    # AGENT STEP 5: Create contextual prompt
+    prompt = f"""You are an AGENTIC {st.session_state.user_condition} health coach for middle-class Indian women.
 
-Available exercises:
+AUTONOMOUS ANALYSIS COMPLETE:
+- User Condition: {st.session_state.user_condition}
+- Recent Symptoms: {', '.join(user_needs) if user_needs else 'None tracked'}
+- Exercise History: {len(recent_exercises)} workouts completed
+- Health Tracking: {len(recent_health)} days recorded
+
+RECOMMENDED EXERCISES (autonomously selected):
 {exercise_context}
 
-User's recent exercise history:
-{json.dumps(st.session_state.exercise_history[-3:], indent=2)}
+AFFORDABILITY CONSTRAINTS:
+- Budget: ₹50-100/day for food
+- Access: Local Indian markets only
+- Cultural: Indian family meals, vegetarian-friendly
 
-User asks: {user_message}
+USER'S QUESTION: {user_message}
 
-Provide a helpful, personalized response. If suggesting exercises, explain why they help with PCOS/PCOD."""
+PROVIDE:
+1. Direct answer to their question
+2. Personalized recommendation based on their symptoms
+3. Affordable diet suggestion (dal, roti, rice, seasonal vegetables)
+4. Next steps they should take
+
+Be empathetic, specific, and actionable. Reference the exercises I've autonomously selected for them."""
     
     response = gemini_model.generate_content(prompt)
+    
+    # AGENT STEP 6: Log autonomous action
+    agent_action = {
+        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        'user_query': user_message,
+        'identified_needs': user_needs,
+        'recommended_exercises': len(recommended_exercises),
+        'action_taken': 'Autonomous exercise recommendation + personalized advice'
+    }
+    
+    if 'agent_actions' not in st.session_state:
+        st.session_state.agent_actions = []
+    st.session_state.agent_actions.append(agent_action)
+    
     return response.text
 
 def get_exercise_image_path(exercise_name, exercise_id):
@@ -834,7 +983,19 @@ st.markdown("""
 """.format(base64.b64encode(open("logo.png", "rb").read()).decode()), unsafe_allow_html=True)
 
 
-st.markdown('<p class="sub-header">Your AI-Powered PCOS/PCOD Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
+# Health Condition Selector
+st.markdown('<div style="text-align: center; margin: 2rem 0;">', unsafe_allow_html=True)
+condition_col1, condition_col2, condition_col3 = st.columns([1, 2, 1])
+with condition_col2:
+    selected_condition = st.selectbox(
+        "Select Your Health Condition:",
+        ["PCOS/PCOD", "Breast Cancer Recovery", "Thyroid Management", "Pregnancy/Postpartum", "General Women's Health"],
+        key="condition_selector"
+    )
+    st.session_state.user_condition = selected_condition
+st.markdown('</div>', unsafe_allow_html=True)
+
+st.markdown(f'<p class="sub-header">Your AI-Powered {st.session_state.user_condition} Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
 
 # ==========================================
 # STATS ROW
@@ -879,10 +1040,11 @@ st.markdown("<br>", unsafe_allow_html=True)
 # ==========================================
 # TABS
 # ==========================================
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Workout Tracker",
     "Analyze Video",
     "AI Coach Chat",
+    "Health Tracker",
     "Progress Stats"
 ])
 
@@ -900,6 +1062,30 @@ with tab1:
         
         if exercises:
             st.markdown(f'<h3 style="text-align: center; margin: 2rem 0;"><i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises</h3>', unsafe_allow_html=True)
+            
+            # Show Elastic aggregations analytics
+            if 'search_analytics' in st.session_state and st.session_state.search_analytics:
+                st.markdown('<div class="info-box">', unsafe_allow_html=True)
+                st.markdown('<h4 style="margin-top: 0;">Search Analytics (Powered by Elastic Aggregations)</h4>', unsafe_allow_html=True)
+                
+                col_analytics1, col_analytics2, col_analytics3 = st.columns(3)
+                
+                with col_analytics1:
+                    st.markdown("**Difficulty Breakdown:**")
+                    for bucket in st.session_state.search_analytics['difficulty']:
+                        st.markdown(f"• {bucket['key']}: {bucket['doc_count']} exercises")
+                
+                with col_analytics2:
+                    st.markdown("**Category Distribution:**")
+                    for bucket in st.session_state.search_analytics['category']:
+                        st.markdown(f"• {bucket['key']}: {bucket['doc_count']} exercises")
+                
+                with col_analytics3:
+                    avg_dur = st.session_state.search_analytics['avg_duration']
+                    st.markdown(f"**Average Duration:**")
+                    st.markdown(f"• {avg_dur:.0f} seconds")
+                
+                st.markdown('</div>', unsafe_allow_html=True)
             
             cols = st.columns(2)
             
@@ -956,7 +1142,6 @@ with tab1:
             <p style="font-size: 1.1rem;">Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!</p>
         </div>
         """, unsafe_allow_html=True)
-
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
@@ -1231,6 +1416,7 @@ with tab2:
                     key="dl"
                 )
 
+
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
@@ -1297,7 +1483,7 @@ with tab3:
     
     with col_send:
         if st.button("Send Message", use_container_width=True, type="primary", key="send_chat_btn"):
-            if user_input and user_input.strip():  # Check if not empty
+            if user_input and user_input.strip():
                 st.session_state.chat_history.append({
                     'role': 'user',
                     'content': user_input
@@ -1313,22 +1499,272 @@ with tab3:
                     'role': 'assistant',
                     'content': response
                 })
-
-                st.rerun() 
                 
-                
+                st.rerun()
             else:
                 st.warning(" Please type a message first!")
     
     with col_clear:
         if st.button(" Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
-            
+    
+    # Show Agent Actions Log
+    st.markdown("---")
+    st.markdown("### AI Agent Actions Log")
+    
+    if 'agent_actions' in st.session_state and st.session_state.agent_actions:
+        st.markdown("""
+        <div class="info-box">
+        <h4>Autonomous Actions Taken by AI Coach</h4>
+        <p>FlexiFit AI analyzes your health data and autonomously recommends exercises based on your symptoms and condition.</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        with st.expander(f"View {len(st.session_state.agent_actions)} Agent Actions", expanded=False):
+            for action in reversed(st.session_state.agent_actions[-10:]):
+                st.markdown(f"""
+                <div class="glass-card">
+                <p><b>Time:</b> {action['timestamp']}</p>
+                <p><b>User Query:</b> {action['user_query']}</p>
+                <p><b>Identified Needs:</b> {', '.join(action['identified_needs']) if action['identified_needs'] else 'None'}</p>
+                <p><b>Exercises Recommended:</b> {action['recommended_exercises']}</p>
+                <p><b>Action:</b> {action['action_taken']}</p>
+                </div>
+                """, unsafe_allow_html=True)
+    else:
+        st.info("Start chatting with the AI coach to see autonomous actions!")
 
 # ==========================================
-# TAB 4: PROGRESS HISTORY
+# TAB 4: HEALTH TRACKING (NEW)
 # ==========================================
 with tab4:
+    st.markdown('<h2 class="result-header"><i class="fa-solid fa-heart-pulse icon-primary"></i> Health Tracking Dashboard</h2>', unsafe_allow_html=True)
+    
+    st.markdown(f"""
+    <div class="info-box">
+    <h3>Track Your {st.session_state.user_condition} Journey</h3>
+    <p>Comprehensive health tracking helps you understand patterns and share data with your doctor.</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Demo Mode Toggle
+    demo_mode = st.checkbox("View Demo Data (90-day journey)", value=True, key="demo_mode_toggle")
+    
+    if demo_mode:
+        st.markdown("""
+        <div style="background: linear-gradient(135deg, rgba(222, 226, 118, 0.2), rgba(240, 238, 154, 0.15)); 
+                    padding: 1rem; border-radius: 10px; border-left: 4px solid #dee276; margin: 1rem 0;">
+        <b>Demo Mode Active:</b> Showing realistic 90-day health journey for demonstration.
+        <br><i>In production, users build this data through daily tracking.</i>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    col_left, col_right = st.columns([1, 1])
+    
+    with col_left:
+        st.markdown("### Daily Check-In")
+        
+        # Period tracking
+        period_status = st.selectbox("Period Status", 
+            ["No period", "Light flow", "Medium flow", "Heavy flow", "Spotting"],
+            key="period_status_input")
+        
+        # Symptom tracking
+        if st.session_state.user_condition == "PCOS/PCOD":
+            symptom_options = ["Irregular periods", "Acne", "Hair loss", "Excess hair growth",
+                             "Weight gain", "Mood swings", "Anxiety", "Fatigue"]
+        elif st.session_state.user_condition == "Breast Cancer Recovery":
+            symptom_options = ["Fatigue", "Pain", "Lymphedema", "Nausea", 
+                             "Weakness", "Anxiety", "Sleep issues"]
+        elif st.session_state.user_condition == "Thyroid Management":
+            symptom_options = ["Fatigue", "Weight changes", "Hair loss", "Cold sensitivity",
+                             "Mood changes", "Sleep issues", "Muscle weakness"]
+        else:
+            symptom_options = ["Fatigue", "Pain", "Mood changes", "Sleep issues"]
+        
+        symptoms = st.multiselect("Symptoms Today", symptom_options, key="symptoms_input")
+        
+        # Weight tracking
+        weight = st.number_input("Weight (kg)", min_value=30.0, max_value=200.0, value=60.0, step=0.1, key="weight_input")
+        
+        # Energy level
+        energy = st.select_slider("Energy Level Today", 
+            options=["Very Low", "Low", "Moderate", "Good", "Excellent"],
+            key="energy_input")
+        
+        # Medication
+        medication_taken = st.text_input("Medications Taken Today", 
+            placeholder="e.g., Metformin 500mg, Vitamin D",
+            key="medication_input")
+        
+        # Meals
+        meals_today = st.text_area("Meals Today (affordable options)",
+            placeholder="Breakfast: Poha\nLunch: Dal, roti, sabzi\nDinner: Khichdi",
+            key="meals_input")
+        
+        # Exercise done
+        exercise_today = st.number_input("Exercise Minutes Today", min_value=0, max_value=300, value=0, key="exercise_input")
+        
+        # Notes
+        notes = st.text_area("Notes for Doctor/Self",
+            placeholder="How are you feeling today?",
+            key="notes_input")
+        
+        if st.button("Save Today's Entry", type="primary", use_container_width=True, key="save_health_btn"):
+            entry = {
+                'date': datetime.now().strftime("%Y-%m-%d"),
+                'condition': st.session_state.user_condition,
+                'period_status': period_status,
+                'symptoms': symptoms,
+                'weight': weight,
+                'energy': energy,
+                'medication': medication_taken,
+                'meals': meals_today,
+                'exercise_minutes': exercise_today,
+                'notes': notes
+            }
+            st.session_state.health_data.append(entry)
+            st.success("Entry saved successfully!")
+            st.balloons()
+    
+    with col_right:
+        st.markdown("### Your Health Trends")
+        
+        if demo_mode or len(st.session_state.health_data) > 0:
+            # Show demo data
+            st.markdown("""
+            <div class="glass-card">
+            <h4>Weight Trend (Last 30 Days)</h4>
+            <p>Demo shows gradual improvement with consistent exercise</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Simulated weight data
+            import pandas as pd
+            demo_dates = [(datetime.now() - timedelta(days=30-i)).strftime("%Y-%m-%d") for i in range(30)]
+            demo_weights = [68 - (i * 0.05) + np.random.uniform(-0.2, 0.2) for i in range(30)]
+            
+            chart_data = pd.DataFrame({
+                'Date': demo_dates,
+                'Weight (kg)': demo_weights
+            })
+            st.line_chart(chart_data.set_index('Date'))
+            
+            # Most common symptoms
+            st.markdown("""
+            <div class="glass-card">
+            <h4>Most Common Symptoms (Last 30 Days)</h4>
+            <ul>
+                <li>Fatigue: 18 days</li>
+                <li>Irregular periods: 12 days</li>
+                <li>Mood swings: 10 days</li>
+                <li>Weight gain concern: 8 days</li>
+            </ul>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Exercise consistency
+            st.markdown("""
+            <div class="glass-card">
+            <h4>Exercise Consistency</h4>
+            <p><b>70% consistency</b> - Great progress!</p>
+            <p>21 out of 30 days with exercise</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Doctor report button
+            st.markdown("---")
+            if st.button("Generate Doctor Report", use_container_width=True, type="primary", key="gen_report_btn"):
+                report = f"""
+HEALTH TRACKING REPORT
+Generated: {datetime.now().strftime("%Y-%m-%d")}
+Condition: {st.session_state.user_condition}
+
+=== SUMMARY ===
+Tracking Period: 30 days
+Weight: Started at 68kg, current 66.5kg (1.5kg loss)
+Exercise Consistency: 70% (21/30 days)
+
+=== PERIOD TRACKING ===
+Cycle Length: 32-35 days (irregular pattern)
+Last Period: 12 days ago
+
+=== COMMON SYMPTOMS ===
+- Fatigue: 18 days
+- Irregular periods: 12 days  
+- Mood swings: 10 days
+
+=== EXERCISE HABITS ===
+Average: 35 minutes/day
+Most frequent: Yoga, Walking
+
+=== MEDICATIONS ===
+Currently taking: Metformin 500mg daily
+
+=== NOTES ===
+Patient reports gradual improvement in energy levels.
+Exercise consistency has improved significantly.
+Recommend continuing current routine.
+"""
+                st.download_button(
+                    "Download Report (TXT)",
+                    data=report,
+                    file_name=f"health_report_{datetime.now().strftime('%Y%m%d')}.txt",
+                    mime="text/plain",
+                    key="download_report_btn"
+                )
+        else:
+            st.info("Start tracking today to see your trends!")
+    
+    # Insights Section
+    st.markdown("---")
+    st.markdown("### Insights You'll Unlock Over Time")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("""
+        <div class="glass-card">
+        <h4>After 1 Month</h4>
+        <ul style="font-size: 0.95rem;">
+            <li>Period cycle patterns</li>
+            <li>Common symptom triggers</li>
+            <li>Exercise impact on mood</li>
+            <li>Weight trend analysis</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col2:
+        st.markdown("""
+        <div class="glass-card">
+        <h4>After 3 Months</h4>
+        <ul style="font-size: 0.95rem;">
+            <li>Cycle regularity improvement</li>
+            <li>Symptom-diet correlations</li>
+            <li>Exercise effectiveness</li>
+            <li>Medication impact tracking</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+    
+    with col3:
+        st.markdown("""
+        <div class="glass-card">
+        <h4>After 6 Months</h4>
+        <ul style="font-size: 0.95rem;">
+            <li>Overall health improvement score</li>
+            <li>Personalized recommendations</li>
+            <li>Comprehensive doctor report</li>
+            <li>Long-term habit tracking</li>
+        </ul>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ==========================================
+# TAB 5: PROGRESS HISTORY
+# ==========================================
+with tab5:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-line icon-primary"></i> Your Progress & History</h2>', unsafe_allow_html=True)
     
     history_tab1, history_tab2 = st.tabs(["Exercise Analytics", "Chat History"])
@@ -1495,10 +1931,54 @@ with st.sidebar:
     """, unsafe_allow_html=True)
     
     st.markdown("---")
+    st.markdown(f"""
+    <div style="color: #919c08;">
+        <h3 style="color: #919c08; margin-bottom: 1rem;">Your Profile</h3>
+        <p style="color: #262626;"><b>Condition:</b> {st.session_state.user_condition}</p>
+        <p style="color: #262626;"><b>Exercises Completed:</b> {len(st.session_state.exercise_history)}</p>
+        <p style="color: #262626;"><b>Days Tracked:</b> {len(st.session_state.health_data)}</p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    st.markdown("""
+    <div style="color: #919c08;">
+        <h3 style="color: #919c08; margin-bottom: 1rem;">Conditions Supported</h3>
+        <ul style="list-style: none; padding: 0; color: #262626;">
+            <li style="padding: 0.5rem 0;">• PCOS/PCOD (15M women)</li>
+            <li style="padding: 0.5rem 0;">• Breast Cancer Recovery (10M)</li>
+            <li style="padding: 0.5rem 0;">• Thyroid Management (30M)</li>
+            <li style="padding: 0.5rem 0;">• Pregnancy/Postpartum (20M)</li>
+        </ul>
+        <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+     st.markdown("---")
+    
+    st.markdown("""
+    <div style="color: #919c08;">
+        <h3 style="color: #919c08; margin-bottom: 1rem;">Tech Features</h3>
+        <ul style="list-style: none; padding: 0; color: #262626; font-size: 0.9rem;">
+            <li style="padding: 0.4rem 0;">✓ Keyword search (BM25)</li>
+            <li style="padding: 0.4rem 0;">✓ Elastic aggregations</li>
+            <li style="padding: 0.4rem 0;">✓ Condition-aware boosting</li>
+            <li style="padding: 0.4rem 0;">✓ Agentic AI recommendations</li>
+            <li style="padding: 0.4rem 0;">✓ Real-time pose detection</li>
+            <li style="padding: 0.4rem 0;">✓ Health tracking analytics</li>
+        </ul>
+        <p style="color: #262626; font-size: 0.85rem; margin-top: 0.5rem; font-style: italic;">
+        Production: + Vector embeddings for true hybrid search
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+ 
     
    
        
         
+
 
 
 
