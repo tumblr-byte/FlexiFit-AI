@@ -959,7 +959,6 @@ with tab1:
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
-
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
@@ -1013,32 +1012,40 @@ with tab2:
             key="video_uploader"
         )
     
-    # Handle video upload and state management
+    # Initialize session state variables if they don't exist
+    if 'current_video_name' not in st.session_state:
+        st.session_state.current_video_name = None
+    if 'uploaded_video_bytes' not in st.session_state:
+        st.session_state.uploaded_video_bytes = None
+    if 'analysis_complete' not in st.session_state:
+        st.session_state.analysis_complete = False
+    if 'analysis_triggered' not in st.session_state:
+        st.session_state.analysis_triggered = False
+    
+    # Handle new video upload
     if uploaded_video is not None:
-        # Check if this is a new video upload - ONLY READ ONCE
-        video_changed = False
-        if 'current_video_name' not in st.session_state:
-            video_changed = True
+        # Check if this is a NEW video (different from previously uploaded)
+        if st.session_state.current_video_name != uploaded_video.name:
+            # New video detected - read it ONCE and reset analysis state
             st.session_state.current_video_name = uploaded_video.name
-        elif st.session_state.current_video_name != uploaded_video.name:
-            video_changed = True
-            st.session_state.current_video_name = uploaded_video.name
-        
-        # Only read video bytes if it's a new upload
-        if video_changed:
-            video_bytes = uploaded_video.read()
-            st.session_state.uploaded_video_bytes = video_bytes
+            st.session_state.uploaded_video_bytes = uploaded_video.read()
             st.session_state.analysis_complete = False
+            st.session_state.analysis_triggered = False
             
+            # Clear previous results
             if 'analysis_results' in st.session_state:
                 del st.session_state.analysis_results
             if 'analyzed_video_bytes' in st.session_state:
                 del st.session_state.analyzed_video_bytes
+            if 'analyzed_video_path' in st.session_state:
+                del st.session_state.analyzed_video_path
+            if 'selected_display_for_analysis' in st.session_state:
+                del st.session_state.selected_display_for_analysis
         
         st.markdown("---")
         
-        # Show preview and analysis button only if analysis hasn't been done
-        if not st.session_state.get('analysis_complete', False):
+        # SHOW PREVIEW AND ANALYSIS BUTTON (only if not analyzed yet)
+        if not st.session_state.analysis_complete:
             col_preview, col_analyze = st.columns([1, 1])
             
             with col_preview:
@@ -1064,38 +1071,46 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Button click triggers analysis - PREVENT DOUBLE CLICK
-                analyze_button = st.button("Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn")
+                # Analysis button - SINGLE CLICK ONLY
+                analyze_clicked = st.button(
+                    "Start AI Analysis", 
+                    type="primary", 
+                    use_container_width=True, 
+                    key="analyze_btn",
+                    disabled=st.session_state.analysis_triggered
+                )
                 
-                if analyze_button and not st.session_state.get('processing', False):
-                    # Set processing flag immediately
-                    st.session_state.processing = True
+                # CRITICAL: Handle analysis ONLY on button click, prevent duplicate runs
+                if analyze_clicked and not st.session_state.analysis_triggered:
+                    # Set flag immediately to prevent double-clicking
+                    st.session_state.analysis_triggered = True
                     
-                    # Create temporary file
+                    # Create temporary file from stored bytes
                     tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                     tfile.write(st.session_state.uploaded_video_bytes)
                     tfile.close()
                     
-                    # Run analysis with spinner
+                    # Run analysis with progress indicator
                     with st.spinner("AI is analyzing your video... Please wait!"):
                         results = analyze_video(tfile.name, target_pose)
                     
                     # Clean up temp file
                     os.unlink(tfile.name)
                     
-                    # Store results
+                    # Store results if successful
                     if results:
-                        # Read analyzed video immediately
+                        # Read analyzed video file ONCE
                         with open(results['output_path'], 'rb') as f:
                             analyzed_video_bytes = f.read()
                         
+                        # Store everything in session state
                         st.session_state.analysis_results = results
-                        st.session_state.analysis_complete = True
+                        st.session_state.analyzed_video_bytes = analyzed_video_bytes
                         st.session_state.analyzed_video_path = results['output_path']
                         st.session_state.selected_display_for_analysis = selected_display
-                        st.session_state.analyzed_video_bytes = analyzed_video_bytes
+                        st.session_state.analysis_complete = True
                         
-                        # Add to history
+                        # Add to exercise history
                         st.session_state.exercise_history.append({
                             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                             'target_pose': selected_display,
@@ -1108,14 +1123,11 @@ with tab2:
                         if len(st.session_state.exercise_history) > 50:
                             st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                         
-                        # Clear processing flag
-                        st.session_state.processing = False
-                        
-                        # Force rerun to display results
+                        # Force ONE rerun to display results
                         st.rerun()
         
-        # Display results if analysis is complete
-        if st.session_state.get('analysis_complete', False) and 'analysis_results' in st.session_state:
+        # DISPLAY RESULTS (only if analysis is complete)
+        if st.session_state.analysis_complete and 'analysis_results' in st.session_state:
             results = st.session_state.analysis_results
             selected_display = st.session_state.selected_display_for_analysis
             analyzed_video_bytes = st.session_state.analyzed_video_bytes
@@ -1123,7 +1135,7 @@ with tab2:
             st.markdown("---")
             st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
             
-            # Status Message - Full Width
+            # Status Message
             if results['match']:
                 st.markdown("""
                 <div class="result-status result-perfect">
@@ -1147,7 +1159,7 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Metrics - Full Width Row
+            # Metrics Row
             metric_col1, metric_col2, metric_col3 = st.columns(3)
             
             with metric_col1:
@@ -1176,7 +1188,7 @@ with tab2:
             
             st.markdown("---")
             
-            # Video Comparison - Two Columns Layout
+            # Video Comparison
             st.markdown('<h3 style="text-align: center; margin-bottom: 2rem;"><i class="fa-solid fa-video icon-primary"></i> Video Comparison</h3>', unsafe_allow_html=True)
             
             video_col1, video_col2 = st.columns(2)
@@ -1211,19 +1223,31 @@ with tab2:
             
             st.markdown("---")
             
-            # Action Buttons - Centered Layout
+            # Download Button
             action_col1, action_col2, action_col3 = st.columns([1, 2, 1])
             
             with action_col2:
                 st.download_button(
-                    label="Download Annotated Video",
+                    label=" Download Annotated Video",
                     data=analyzed_video_bytes,
                     file_name=f"flexifit_analysis_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4",
                     mime="video/mp4",
                     use_container_width=True,
                     type="primary",
-                    key="download_btn"
+                    key="download_analyzed_video"
                 )
+                
+                # Reset button to analyze another video
+                if st.button("Analyze Another Video", use_container_width=True, key="reset_analysis"):
+                    st.session_state.analysis_complete = False
+                    st.session_state.analysis_triggered = False
+                    st.session_state.current_video_name = None
+                    st.session_state.uploaded_video_bytes = None
+                    if 'analysis_results' in st.session_state:
+                        del st.session_state.analysis_results
+                    if 'analyzed_video_bytes' in st.session_state:
+                        del st.session_state.analyzed_video_bytes
+                    st.rerun()
                    
 # ==========================================
 # TAB 3: AI CHAT
@@ -1493,6 +1517,7 @@ with st.sidebar:
    
        
         
+
 
 
 
