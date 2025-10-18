@@ -1148,25 +1148,31 @@ with tab1:
 # TAB 2: ANALYZE VIDEO
 # ==========================================
 with tab2:
-    st.markdown('<h2 class="result-header"><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>', unsafe_allow_html=True)
-    
+    st.markdown(
+        '<h2 class="result-header"><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>',
+        unsafe_allow_html=True
+    )
+
     st.markdown("""
     <div class="info-box">
-    <h3 style="margin-top: 0;"><i class="fa-solid fa-lightbulb icon-primary"></i> How it works:</h3>
-    <ol style="font-size: 1rem; line-height: 2;">
-        <li><b><i class="fa-solid fa-hand-pointer icon-primary"></i> Choose</b> the exercise you're performing from the dropdown</li>
-        <li><b><i class="fa-solid fa-upload icon-primary"></i> Upload</b> your video (MP4, MOV, AVI format)</li>
-        <li><b><i class="fa-solid fa-robot icon-primary"></i> Analyze</b> - Our AI will detect your pose in real-time</li>
-        <li><b><i class="fa-solid fa-download icon-primary"></i> Download</b> the annotated video with visual feedback!</li>
-    </ol>
+        <h3 style="margin-top: 0;"><i class="fa-solid fa-lightbulb icon-primary"></i> How it works:</h3>
+        <ol style="font-size: 1rem; line-height: 2;">
+            <li><b><i class="fa-solid fa-hand-pointer icon-primary"></i> Choose</b> the exercise you're performing from the dropdown</li>
+            <li><b><i class="fa-solid fa-upload icon-primary"></i> Upload</b> your video (MP4, MOV, AVI format)</li>
+            <li><b><i class="fa-solid fa-robot icon-primary"></i> Analyze</b> - Our AI will detect your pose in real-time</li>
+            <li><b><i class="fa-solid fa-download icon-primary"></i> Download</b> the annotated video with visual feedback!</li>
+        </ol>
     </div>
     """, unsafe_allow_html=True)
-    
+
     col1, col2 = st.columns([1, 1])
-    
+
+    # -----------------------
+    # Column 1: Exercise Selection
+    # -----------------------
     with col1:
         st.markdown('<h3><i class="fa-solid fa-dumbbell icon-primary"></i> Select Target Exercise</h3>', unsafe_allow_html=True)
-        
+
         exercise_mapping = {
             "Downdog": "Downdog",
             "Plank": "Plank Pose",
@@ -1174,20 +1180,23 @@ with tab2:
             "Modified_Tree": "Modified Tree Pose",
             "Standard_Tree": "Standard Tree Pose"
         }
-        
+
         display_names = list(exercise_mapping.values())
         selected_display = st.selectbox("Choose your exercise:", display_names, key="exercise_select")
-        
+
         reverse_mapping = {v: k for k, v in exercise_mapping.items()}
         target_pose = reverse_mapping[selected_display]
-        
+
         st.markdown(f"""
         <div class="success-box">
-        <h3 style="margin: 0;"><i class="fa-solid fa-check-circle icon-primary"></i> Target Exercise Selected</h3>
-        <h2 style="margin: 1rem 0 0 0; color: #E0E786; font-size: 1.8rem;">{selected_display}</h2>
+            <h3 style="margin: 0;"><i class="fa-solid fa-check-circle icon-primary"></i> Target Exercise Selected</h3>
+            <h2 style="margin: 1rem 0 0 0; color: #E0E786; font-size: 1.8rem;">{selected_display}</h2>
         </div>
         """, unsafe_allow_html=True)
-    
+
+    # -----------------------
+    # Column 2: Video Upload
+    # -----------------------
     with col2:
         st.markdown('<h3><i class="fa-solid fa-upload icon-primary"></i> Upload Your Video</h3>', unsafe_allow_html=True)
         uploaded_video = st.file_uploader(
@@ -1196,27 +1205,28 @@ with tab2:
             help="Upload a video showing your full body performing the exercise",
             key="video_uploader"
         )
-    
-    # Initialize session state
-    if 'video_analyzed' not in st.session_state:
-        st.session_state.video_analyzed = False
-    if 'current_video_id' not in st.session_state:
-        st.session_state.current_video_id = None
-    if 'analysis_results' not in st.session_state:
-        st.session_state.analysis_results = None
-    if 'analyzed_video_data' not in st.session_state:
-        st.session_state.analyzed_video_data = None
-    if 'original_video_data' not in st.session_state:
-        st.session_state.original_video_data = None
-    if 'analysis_in_progress' not in st.session_state:
-        st.session_state.analysis_in_progress = False
 
-    result_container = st.empty()
-    
-    # Handle new video upload
+    # -----------------------
+    # Initialize session state
+    # -----------------------
+    for key, default in {
+        'video_analyzed': False,
+        'current_video_id': None,
+        'analysis_results': None,
+        'analyzed_video_data': None,
+        'original_video_data': None,
+        'analysis_in_progress': False,
+        'exercise_history': []
+    }.items():
+        if key not in st.session_state:
+            st.session_state[key] = default
+
+    # -----------------------
+    # Handle video upload
+    # -----------------------
     if uploaded_video is not None:
         video_id = f"{uploaded_video.name}_{uploaded_video.size}"
-        
+
         if st.session_state.current_video_id != video_id:
             st.session_state.current_video_id = video_id
             st.session_state.video_analyzed = False
@@ -1224,13 +1234,15 @@ with tab2:
             st.session_state.analyzed_video_data = None
             st.session_state.original_video_data = uploaded_video.read()
             st.session_state.analysis_in_progress = False
-        
+
         st.markdown("---")
-        
-        # SECTION 1: Show uploaded video + analyze button
+
+        # -----------------------
+        # Section 1: Show Uploaded Video + Analyze Button
+        # -----------------------
         if not st.session_state.video_analyzed:
             col_preview, col_analyze = st.columns([1, 1])
-            
+
             with col_preview:
                 st.markdown('<h3><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h3>', unsafe_allow_html=True)
                 vb64 = base64.b64encode(st.session_state.original_video_data).decode()
@@ -1241,43 +1253,45 @@ with tab2:
                     </video>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             with col_analyze:
                 st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Ready to Analyze!</h3>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div class="info-box">
-                <h3 style="margin-top: 0;"><i class="fa-solid fa-chart-line icon-primary"></i> Analysis Details</h3>
-                <p style="font-size: 1rem;"><b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}</p>
-                <p style="font-size: 1rem;"><b><i class="fa-solid fa-brain icon-primary"></i> AI Model:</b> Custom Pose Classifier</p>
-                <p style="font-size: 1rem;"><b><i class="fa-solid fa-chart-line icon-primary"></i> Accuracy:</b> 92% on validation set</p>
-                <p style="font-size: 1rem;"><b><i class="fa-solid fa-gauge-high icon-primary"></i> Processing:</b> Real-time frame analysis</p>
+                    <h3 style="margin-top: 0;"><i class="fa-solid fa-chart-line icon-primary"></i> Analysis Details</h3>
+                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}</p>
+                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-brain icon-primary"></i> AI Model:</b> Custom Pose Classifier</p>
+                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-chart-line icon-primary"></i> Accuracy:</b> 92% on validation set</p>
+                    <p style="font-size: 1rem;"><b><i class="fa-solid fa-gauge-high icon-primary"></i> Processing:</b> Real-time frame analysis</p>
                 </div>
                 """, unsafe_allow_html=True)
-                
+
                 analyze_clicked = st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn")
 
                 if analyze_clicked and not st.session_state.video_analyzed and not st.session_state.analysis_in_progress:
                     st.session_state.analysis_in_progress = True
 
-        # SECTION 1.5: Run analysis once (no flicker)
+        # -----------------------
+        # Section 1.5: Run Analysis Once
+        # -----------------------
         if st.session_state.analysis_in_progress and not st.session_state.video_analyzed:
             st.session_state.analysis_in_progress = False
             with st.spinner("Analyzing your video... This may take a minute."):
                 tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                 tfile.write(st.session_state.original_video_data)
                 tfile.close()
-                
+
                 results = analyze_video(tfile.name, target_pose)
                 os.unlink(tfile.name)
-                
+
                 if results:
                     with open(results['output_path'], 'rb') as f:
                         analyzed_data = f.read()
-                    
+
                     st.session_state.analysis_results = results
                     st.session_state.analyzed_video_data = analyzed_data
                     st.session_state.video_analyzed = True
-                    
+
                     st.session_state.exercise_history.append({
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         'target_pose': selected_display,
@@ -1285,78 +1299,81 @@ with tab2:
                         'accuracy': results['accuracy'],
                         'confidence': results['confidence']
                     })
-                    
+
                     if len(st.session_state.exercise_history) > 50:
                         st.session_state.exercise_history = st.session_state.exercise_history[-50:]
-                    
+
                     try:
                         os.unlink(results['output_path'])
                     except:
                         pass
-                
+
                 st.experimental_rerun()
 
-        # SECTION 2: Show results
+        # -----------------------
+        # Section 2: Show Analysis Results + Download
+        # -----------------------
         if st.session_state.video_analyzed and st.session_state.analysis_results:
             results = st.session_state.analysis_results
             
             st.markdown("---")
             st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
-            
+
             if results['match']:
                 st.markdown("""
                 <div class="result-status result-perfect">
-                <h2 style="margin: 0; font-size: 2.2rem;">
-                    <i class="fa-solid fa-check-circle icon-primary" style="font-size: 2.5rem;"></i> PERFECT MATCH!
-                </h2>
-                <p style="margin: 1.5rem 0 0 0; font-size: 1.2rem; line-height: 1.8;">
-                Excellent work! Your pose matches the target exercise perfectly. Keep up the great form!
-                </p>
+                    <h2 style="margin: 0; font-size: 2.2rem;">
+                        <i class="fa-solid fa-check-circle icon-primary" style="font-size: 2.5rem;"></i> PERFECT MATCH!
+                    </h2>
+                    <p style="margin: 1.5rem 0 0 0; font-size: 1.2rem; line-height: 1.8;">
+                        Excellent work! Your pose matches the target exercise perfectly. Keep up the great form!
+                    </p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
                 st.markdown(f"""
                 <div class="result-status result-mismatch">
-                <h2 style="margin: 0; font-size: 2.2rem;"><i class="fa-solid fa-triangle-exclamation icon-accent" style="font-size: 2.5rem;"></i> Different Pose Detected</h2>
-                <p style="margin: 1.5rem 0 0 0; font-size: 1.1rem; line-height: 1.8;">
-                <b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}<br>
-                <b><i class="fa-solid fa-eye icon-accent"></i> Detected Exercise:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}<br><br>
-                Don't worry! Check the annotated video below to see where adjustments are needed.
-                </p>
+                    <h2 style="margin: 0; font-size: 2.2rem;">
+                        <i class="fa-solid fa-triangle-exclamation icon-accent" style="font-size: 2.5rem;"></i> Different Pose Detected
+                    </h2>
+                    <p style="margin: 1.5rem 0 0 0; font-size: 1.1rem; line-height: 1.8;">
+                        <b><i class="fa-solid fa-bullseye icon-primary"></i> Target Exercise:</b> {selected_display}<br>
+                        <b><i class="fa-solid fa-eye icon-accent"></i> Detected Exercise:</b> {exercise_mapping.get(results['detected_pose'], results['detected_pose'])}<br><br>
+                        Don't worry! Check the annotated video below to see where adjustments are needed.
+                    </p>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
+            # -----------------------
+            # Metrics
+            # -----------------------
             m1, m2, m3 = st.columns(3)
-            
             with m1:
                 st.markdown(f"""
                 <div class="metric-card">
-                <h3><i class="fa-solid fa-bullseye icon-primary"></i> Accuracy</h3>
-                <h1>{results['accuracy']:.1f}%</h1>
+                    <h3><i class="fa-solid fa-bullseye icon-primary"></i> Accuracy</h3>
+                    <h1>{results['accuracy']:.1f}%</h1>
                 </div>
                 """, unsafe_allow_html=True)
-            
             with m2:
                 st.markdown(f"""
                 <div class="metric-card">
-                <h3><i class="fa-solid fa-brain icon-primary"></i> Confidence</h3>
-                <h1>{results['confidence']*100:.1f}%</h1>
+                    <h3><i class="fa-solid fa-brain icon-primary"></i> Confidence</h3>
+                    <h1>{results['confidence']*100:.1f}%</h1>
                 </div>
                 """, unsafe_allow_html=True)
-            
             with m3:
                 st.markdown(f"""
                 <div class="metric-card">
-                <h3><i class="fa-solid fa-film icon-primary"></i> Frames</h3>
-                <h1>{results['total_frames']}</h1>
+                    <h3><i class="fa-solid fa-film icon-primary"></i> Frames</h3>
+                    <h1>{results['total_frames']}</h1>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             st.markdown("---")
             st.markdown('<h3 style="text-align: center; margin-bottom: 2rem;"><i class="fa-solid fa-video icon-primary"></i> Video Comparison</h3>', unsafe_allow_html=True)
-            
+
             v1, v2 = st.columns(2)
-            
             with v1:
                 st.markdown('<h4 style="text-align: center; color: #919c08;"><i class="fa-solid fa-upload icon-primary"></i> Original Upload</h4>', unsafe_allow_html=True)
                 ob64 = base64.b64encode(st.session_state.original_video_data).decode()
@@ -1367,14 +1384,14 @@ with tab2:
                     </video>
                 </div>
                 """, unsafe_allow_html=True)
-            
             with v2:
-                st.markdown("""<h4 style="text-align: center; color: #919c08;"><i class="fa-solid fa-brain icon-primary"></i> AI Analyzed Video</h4>
+                st.markdown("""
+                <h4 style="text-align: center; color: #919c08;"><i class="fa-solid fa-brain icon-primary"></i> AI Analyzed Video</h4>
                 <p style="text-align: center; font-size: 0.95rem; margin-bottom: 1rem;">
-                <span style="color: #4CAF50; font-weight: 700;">Green</span> = Correct Pose | 
-                <span style="color: #f44336; font-weight: 700;">Red</span> = Incorrect Pose
-                </p>""", unsafe_allow_html=True)
-                
+                    <span style="color: #4CAF50; font-weight: 700;">Green</span> = Correct Pose | 
+                    <span style="color: #f44336; font-weight: 700;">Red</span> = Incorrect Pose
+                </p>
+                """, unsafe_allow_html=True)
                 ab64 = base64.b64encode(st.session_state.analyzed_video_data).decode()
                 st.markdown(f"""
                 <div class="video-container">
@@ -1383,10 +1400,9 @@ with tab2:
                     </video>
                 </div>
                 """, unsafe_allow_html=True)
-            
+
             st.markdown("---")
             _, center, _ = st.columns([1, 2, 1])
-            
             with center:
                 st.download_button(
                     label=" Download Annotated Video",
@@ -1397,6 +1413,7 @@ with tab2:
                     type="primary",
                     key="download_video_btn"
                 )
+
 
 
                
@@ -1960,6 +1977,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
