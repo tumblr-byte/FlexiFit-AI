@@ -1197,7 +1197,7 @@ with tab2:
             key="video_uploader"
         )
     
-    # Initialize session state ONCE
+    # Initialize session state
     if 'video_analyzed' not in st.session_state:
         st.session_state.video_analyzed = False
     if 'current_video_id' not in st.session_state:
@@ -1211,7 +1211,6 @@ with tab2:
     if 'analysis_in_progress' not in st.session_state:
         st.session_state.analysis_in_progress = False
 
-    # Placeholder for analysis results
     result_container = st.empty()
     
     # Handle new video upload
@@ -1228,7 +1227,7 @@ with tab2:
         
         st.markdown("---")
         
-        # SECTION 1: Show uploaded video + analyze button (ONLY if not analyzed yet)
+        # SECTION 1: Show uploaded video + analyze button
         if not st.session_state.video_analyzed:
             col_preview, col_analyze = st.columns([1, 1])
             
@@ -1255,12 +1254,15 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                if st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
+                analyze_clicked = st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn")
+
+                if analyze_clicked and not st.session_state.video_analyzed and not st.session_state.analysis_in_progress:
                     st.session_state.analysis_in_progress = True
-        
-        # SECTION 1.5: Run analysis (no rerun)
+
+        # SECTION 1.5: Run analysis once (no flicker)
         if st.session_state.analysis_in_progress and not st.session_state.video_analyzed:
-            with st.spinner(" Analyzing your video... This may take a minute."):
+            st.session_state.analysis_in_progress = False
+            with st.spinner("Analyzing your video... This may take a minute."):
                 tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                 tfile.write(st.session_state.original_video_data)
                 tfile.close()
@@ -1275,7 +1277,6 @@ with tab2:
                     st.session_state.analysis_results = results
                     st.session_state.analyzed_video_data = analyzed_data
                     st.session_state.video_analyzed = True
-                    st.session_state.analysis_in_progress = False
                     
                     st.session_state.exercise_history.append({
                         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -1292,8 +1293,10 @@ with tab2:
                         os.unlink(results['output_path'])
                     except:
                         pass
-        
-        # SECTION 2: Show results (ONLY if analyzed)
+                
+                st.experimental_rerun()
+
+        # SECTION 2: Show results
         if st.session_state.video_analyzed and st.session_state.analysis_results:
             results = st.session_state.analysis_results
             
@@ -1394,6 +1397,7 @@ with tab2:
                     type="primary",
                     key="download_video_btn"
                 )
+
 
                
 
@@ -1956,6 +1960,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
