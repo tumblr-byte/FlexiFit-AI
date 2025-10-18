@@ -12,7 +12,7 @@ from vertexai.generative_models import GenerativeModel
 import tempfile
 import os
 import warnings
-from datetime import datetime
+from datetime import datetime, timedelta
 from PIL import Image
 import json
 from collections import Counter
@@ -1964,6 +1964,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
