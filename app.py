@@ -1143,6 +1143,7 @@ with tab1:
         </div>
         """, unsafe_allow_html=True)
 
+
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
@@ -1207,19 +1208,23 @@ with tab2:
         st.session_state.analyzed_video_data = None
     if 'original_video_data' not in st.session_state:
         st.session_state.original_video_data = None
+    if 'analysis_in_progress' not in st.session_state:
+        st.session_state.analysis_in_progress = False
+
+    # Placeholder for analysis results
+    result_container = st.empty()
     
     # Handle new video upload
     if uploaded_video is not None:
         video_id = f"{uploaded_video.name}_{uploaded_video.size}"
         
-        # Check if this is a NEW video
         if st.session_state.current_video_id != video_id:
-            # Reset everything for new video
             st.session_state.current_video_id = video_id
             st.session_state.video_analyzed = False
             st.session_state.analysis_results = None
             st.session_state.analyzed_video_data = None
             st.session_state.original_video_data = uploaded_video.read()
+            st.session_state.analysis_in_progress = False
         
         st.markdown("---")
         
@@ -1250,52 +1255,43 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Single analyze button
                 if st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
-                    # Show processing message
-                    with st.spinner(" Analyzing your video... This may take a minute."):
-                        # Create temp file
-                        tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
-                        tfile.write(st.session_state.original_video_data)
-                        tfile.close()
-                        
-                        # Run analysis
-                        results = analyze_video(tfile.name, target_pose)
-                        
-                        # Clean up temp file
-                        os.unlink(tfile.name)
-                        
-                        if results:
-                            # Read analyzed video
-                            with open(results['output_path'], 'rb') as f:
-                                analyzed_data = f.read()
-                            
-                            # Store results in session state
-                            st.session_state.analysis_results = results
-                            st.session_state.analyzed_video_data = analyzed_data
-                            st.session_state.video_analyzed = True
-                            
-                            # Save to history
-                            st.session_state.exercise_history.append({
-                                'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                                'target_pose': selected_display,
-                                'detected_pose': exercise_mapping.get(results['detected_pose'], results['detected_pose']),
-                                'accuracy': results['accuracy'],
-                                'confidence': results['confidence']
-                            })
-                            
-                            # Limit history
-                            if len(st.session_state.exercise_history) > 50:
-                                st.session_state.exercise_history = st.session_state.exercise_history[-50:]
-                            
-                            # Clean up output file
-                            try:
-                                os.unlink(results['output_path'])
-                            except:
-                                pass
-                            
-                            # Force rerun to show results
-                            st.rerun()
+                    st.session_state.analysis_in_progress = True
+        
+        # SECTION 1.5: Run analysis (no rerun)
+        if st.session_state.analysis_in_progress and not st.session_state.video_analyzed:
+            with st.spinner(" Analyzing your video... This may take a minute."):
+                tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
+                tfile.write(st.session_state.original_video_data)
+                tfile.close()
+                
+                results = analyze_video(tfile.name, target_pose)
+                os.unlink(tfile.name)
+                
+                if results:
+                    with open(results['output_path'], 'rb') as f:
+                        analyzed_data = f.read()
+                    
+                    st.session_state.analysis_results = results
+                    st.session_state.analyzed_video_data = analyzed_data
+                    st.session_state.video_analyzed = True
+                    st.session_state.analysis_in_progress = False
+                    
+                    st.session_state.exercise_history.append({
+                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'target_pose': selected_display,
+                        'detected_pose': exercise_mapping.get(results['detected_pose'], results['detected_pose']),
+                        'accuracy': results['accuracy'],
+                        'confidence': results['confidence']
+                    })
+                    
+                    if len(st.session_state.exercise_history) > 50:
+                        st.session_state.exercise_history = st.session_state.exercise_history[-50:]
+                    
+                    try:
+                        os.unlink(results['output_path'])
+                    except:
+                        pass
         
         # SECTION 2: Show results (ONLY if analyzed)
         if st.session_state.video_analyzed and st.session_state.analysis_results:
@@ -1304,7 +1300,6 @@ with tab2:
             st.markdown("---")
             st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-simple icon-primary"></i> Analysis Results</h2>', unsafe_allow_html=True)
             
-            # Show match status
             if results['match']:
                 st.markdown("""
                 <div class="result-status result-perfect">
@@ -1328,7 +1323,6 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Metrics
             m1, m2, m3 = st.columns(3)
             
             with m1:
@@ -1355,7 +1349,6 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Video comparison
             st.markdown("---")
             st.markdown('<h3 style="text-align: center; margin-bottom: 2rem;"><i class="fa-solid fa-video icon-primary"></i> Video Comparison</h3>', unsafe_allow_html=True)
             
@@ -1388,7 +1381,6 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
             
-            # Download button
             st.markdown("---")
             _, center, _ = st.columns([1, 2, 1])
             
@@ -1402,7 +1394,7 @@ with tab2:
                     type="primary",
                     key="download_video_btn"
                 )
-                
+
                
 
 # ==========================================
@@ -1964,6 +1956,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
