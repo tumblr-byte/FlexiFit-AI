@@ -959,6 +959,7 @@ with tab1:
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
+
 # ==========================================
 # TAB 2: ANALYZE VIDEO
 # ==========================================
@@ -1019,18 +1020,18 @@ with tab2:
         st.session_state.uploaded_video_bytes = None
     if 'analysis_complete' not in st.session_state:
         st.session_state.analysis_complete = False
-    if 'analysis_triggered' not in st.session_state:
-        st.session_state.analysis_triggered = False
+    if 'video_processed' not in st.session_state:
+        st.session_state.video_processed = False
     
-    # Handle new video upload
-    if uploaded_video is not None:
+    # Handle new video upload - ONLY PROCESS ONCE
+    if uploaded_video is not None and not st.session_state.video_processed:
         # Check if this is a NEW video (different from previously uploaded)
         if st.session_state.current_video_name != uploaded_video.name:
             # New video detected - read it ONCE and reset analysis state
             st.session_state.current_video_name = uploaded_video.name
             st.session_state.uploaded_video_bytes = uploaded_video.read()
+            st.session_state.video_processed = True  # Mark as processed
             st.session_state.analysis_complete = False
-            st.session_state.analysis_triggered = False
             
             # Clear previous results
             if 'analysis_results' in st.session_state:
@@ -1041,7 +1042,9 @@ with tab2:
                 del st.session_state.analyzed_video_path
             if 'selected_display_for_analysis' in st.session_state:
                 del st.session_state.selected_display_for_analysis
-        
+    
+    # MAIN CONTENT DISPLAY
+    if uploaded_video is not None and st.session_state.uploaded_video_bytes is not None:
         st.markdown("---")
         
         # SHOW PREVIEW AND ANALYSIS BUTTON (only if not analyzed yet)
@@ -1071,27 +1074,15 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Analysis button - SINGLE CLICK ONLY
-                analyze_clicked = st.button(
-                    "Start AI Analysis", 
-                    type="primary", 
-                    use_container_width=True, 
-                    key="analyze_btn",
-                    disabled=st.session_state.analysis_triggered
-                )
-                
-                # CRITICAL: Handle analysis ONLY on button click, prevent duplicate runs
-                if analyze_clicked and not st.session_state.analysis_triggered:
-                    # Set flag immediately to prevent double-clicking
-                    st.session_state.analysis_triggered = True
-                    
+                # Analysis button with callback
+                if st.button(" Start AI Analysis", type="primary", use_container_width=True, key="analyze_btn"):
                     # Create temporary file from stored bytes
                     tfile = tempfile.NamedTemporaryFile(delete=False, suffix='.mp4')
                     tfile.write(st.session_state.uploaded_video_bytes)
                     tfile.close()
                     
                     # Run analysis with progress indicator
-                    with st.spinner("AI is analyzing your video... Please wait!"):
+                    with st.spinner(" AI is analyzing your video... Please wait!"):
                         results = analyze_video(tfile.name, target_pose)
                     
                     # Clean up temp file
@@ -1240,7 +1231,7 @@ with tab2:
                 # Reset button to analyze another video
                 if st.button("Analyze Another Video", use_container_width=True, key="reset_analysis"):
                     st.session_state.analysis_complete = False
-                    st.session_state.analysis_triggered = False
+                    st.session_state.video_processed = False
                     st.session_state.current_video_name = None
                     st.session_state.uploaded_video_bytes = None
                     if 'analysis_results' in st.session_state:
@@ -1517,6 +1508,7 @@ with st.sidebar:
    
        
         
+
 
 
 
