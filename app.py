@@ -1142,8 +1142,9 @@ with tab1:
         </div>
         """, unsafe_allow_html=True)
 
+
 # ==========================================
-# TAB 2: ANALYZE VIDEO - COMPLETE FIXED VERSION
+# TAB 2: ANALYZE VIDEO - STABLE NO FLICKER
 # ==========================================
 with tab2:
     st.markdown(
@@ -1176,6 +1177,10 @@ with tab2:
         st.session_state.analysis_results = None
     if 'target_exercise' not in st.session_state:
         st.session_state.target_exercise = None
+    if 'upload_confirmed' not in st.session_state:
+        st.session_state.upload_confirmed = False
+    if 'current_file_id' not in st.session_state:
+        st.session_state.current_file_id = None
 
     exercise_mapping = {
         "Downdog": "Downdog",
@@ -1315,60 +1320,67 @@ with tab2:
                 st.session_state.processing_complete = False
                 st.session_state.analysis_results = None
                 st.session_state.target_exercise = None
+                st.session_state.upload_confirmed = False
+                st.session_state.current_file_id = None
                 st.rerun()
 
     # UPLOAD AND PROCESS SECTION - Only show if NOT processing complete
     else:
-        col1, col2 = st.columns([1, 1])
+        # Step 1: Exercise Selection
+        st.markdown('<h3><i class="fa-solid fa-dumbbell icon-primary"></i> Step 1: Select Target Exercise</h3>', unsafe_allow_html=True)
+        display_names = list(exercise_mapping.values())
+        selected_display = st.selectbox("Choose your exercise:", display_names, key="exercise_selector")
+        target_pose = reverse_mapping[selected_display]
 
-        with col1:
-            st.markdown('<h3><i class="fa-solid fa-dumbbell icon-primary"></i> Select Target Exercise</h3>', unsafe_allow_html=True)
-            display_names = list(exercise_mapping.values())
-            selected_display = st.selectbox("Choose your exercise:", display_names)
-            target_pose = reverse_mapping[selected_display]
+        st.markdown(f"""
+        <div class="success-box">
+            <h3 style="margin: 0;"><i class="fa-solid fa-check-circle icon-primary"></i> Target Exercise Selected</h3>
+            <h2 style="margin: 1rem 0 0 0; color: #E0E786; font-size: 1.8rem;">{selected_display}</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
-            st.markdown(f"""
-            <div class="success-box">
-                <h3 style="margin: 0;"><i class="fa-solid fa-check-circle icon-primary"></i> Target Exercise Selected</h3>
-                <h2 style="margin: 1rem 0 0 0; color: #E0E786; font-size: 1.8rem;">{selected_display}</h2>
-            </div>
-            """, unsafe_allow_html=True)
+        st.markdown("---")
 
-        with col2:
-            st.markdown('<h3><i class="fa-solid fa-upload icon-primary"></i> Upload Your Video</h3>', unsafe_allow_html=True)
+        # Step 2: Video Upload (only if not confirmed)
+        if not st.session_state.upload_confirmed:
+            st.markdown('<h3><i class="fa-solid fa-upload icon-primary"></i> Step 2: Upload Your Video</h3>', unsafe_allow_html=True)
             uploaded = st.file_uploader(
                 "Choose a video file",
                 type=['mp4', 'mov', 'avi'],
-                help="Upload a video showing your full body performing the exercise"
+                help="Upload a video showing your full body performing the exercise",
+                key="video_uploader"
             )
 
-        if uploaded is not None:
-            # Only read file if it's a new upload
-            current_file_id = f"{uploaded.name}_{uploaded.size}"
-            
-            if 'current_upload_id' not in st.session_state:
-                st.session_state.current_upload_id = None
-            
-            if st.session_state.current_upload_id != current_file_id:
-                # New file uploaded - read it
-                video_bytes = uploaded.read()
-                st.session_state.original_video_data = video_bytes
-                st.session_state.current_upload_id = current_file_id
-            
-            # Always update target exercise in case user changed dropdown
-            st.session_state.target_exercise = target_pose
-            
-            # Use stored video data
-            video_bytes = st.session_state.original_video_data
+            if uploaded is not None:
+                # Check if this is a new file
+                file_id = f"{uploaded.name}_{uploaded.size}"
+                
+                if st.session_state.current_file_id != file_id:
+                    # New file - read it once
+                    video_bytes = uploaded.read()
+                    st.session_state.original_video_data = video_bytes
+                    st.session_state.current_file_id = file_id
+                
+                st.success(f"Video uploaded: {uploaded.name}")
+                
+                # Confirm button
+                if st.button("Confirm Upload & Continue", type="primary", use_container_width=True):
+                    st.session_state.upload_confirmed = True
+                    st.session_state.target_exercise = target_pose
+                    st.rerun()
+            else:
+                st.info("Please upload a video file to begin.")
 
+        # Step 3: Preview and Analysis (only if upload confirmed)
+        if st.session_state.upload_confirmed and st.session_state.original_video_data:
             st.markdown("---")
-
-            # Preview and Action
+            st.markdown('<h3><i class="fa-solid fa-eye icon-primary"></i> Step 3: Preview & Analyze</h3>', unsafe_allow_html=True)
+            
             pc, ac = st.columns([1, 1])
 
             with pc:
-                st.markdown('<h3><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h3>', unsafe_allow_html=True)
-                vb64 = base64.b64encode(video_bytes).decode()
+                st.markdown('<h4 style="text-align: center; color: #919c08;"><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h4>', unsafe_allow_html=True)
+                vb64 = base64.b64encode(st.session_state.original_video_data).decode()
                 st.markdown(f"""
                 <div class="video-container">
                     <video controls muted loop>
@@ -1378,7 +1390,7 @@ with tab2:
                 """, unsafe_allow_html=True)
 
             with ac:
-                st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Analysis Info</h3>', unsafe_allow_html=True)
+                st.markdown('<h4 style="text-align: center; color: #919c08;"><i class="fa-solid fa-robot icon-primary"></i> Analysis Info</h4>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div class="info-box">
                     <h3 style="margin-top: 0;"><i class="fa-solid fa-chart-line icon-primary"></i> Analysis Details</h3>
@@ -1389,7 +1401,7 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
 
-                # Single button for analysis
+                # Analysis button
                 if st.button("Start AI Analysis", type="primary", use_container_width=True):
                     # Create temporary file for input video
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_input:
@@ -1407,8 +1419,11 @@ with tab2:
                     </div>
                     """, unsafe_allow_html=True)
                     
+                    # Update target in case user changed dropdown
+                    st.session_state.target_exercise = target_pose
+                    
                     # Analyze video
-                    res = analyze_video(input_path, target_pose)
+                    res = analyze_video(input_path, st.session_state.target_exercise)
                     
                     # Clean up input temp file
                     try:
@@ -1449,10 +1464,16 @@ with tab2:
                         st.rerun()
                     else:
                         status_text.error("Video processing failed. Please check your file and try again.")
-        
-        else:
-            st.info("Please upload a video file to begin processing.")
-               
+            
+            # Change video button
+            st.markdown("---")
+            change_col1, change_col2, change_col3 = st.columns([1, 1, 1])
+            with change_col2:
+                if st.button("Change Video", use_container_width=True, type="secondary"):
+                    st.session_state.upload_confirmed = False
+                    st.session_state.original_video_data = None
+                    st.session_state.current_file_id = None
+                    st.rerun()
 
 # ==========================================
 # TAB 3: AI CHAT
@@ -2013,6 +2034,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
