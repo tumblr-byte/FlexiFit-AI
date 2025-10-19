@@ -1141,8 +1141,11 @@ with tab1:
             <p style="font-size: 1.1rem;">Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!</p>
         </div>
         """, unsafe_allow_html=True)
+
+
+
 # ==========================================
-# TAB 2: ANALYZE VIDEO - FINAL STABLE VERSION
+# TAB 2: ANALYZE VIDEO - AUTO PROCESS VERSION
 # ==========================================
 with tab2:
     st.markdown(
@@ -1162,7 +1165,7 @@ with tab2:
     </div>
     """, unsafe_allow_html=True)
 
-    # Simple session state
+    # Session state initialization
     if 'tab2_processed_video' not in st.session_state:
         st.session_state.tab2_processed_video = None
     if 'tab2_original_video' not in st.session_state:
@@ -1173,6 +1176,8 @@ with tab2:
         st.session_state.tab2_target = None
     if 'tab2_show_results' not in st.session_state:
         st.session_state.tab2_show_results = False
+    if 'tab2_processed_file_id' not in st.session_state:
+        st.session_state.tab2_processed_file_id = None
 
     exercise_mapping = {
         "Downdog": "Downdog",
@@ -1286,29 +1291,30 @@ with tab2:
                     mime="video/mp4",
                     use_container_width=True,
                     type="primary",
-                    key="final_download_btn"
+                    key="auto_download_btn"
                 )
         
         st.markdown("---")
         
         rc1, rc2, rc3 = st.columns([1, 1, 1])
         with rc2:
-            if st.button("Analyze Another Video", use_container_width=True, type="secondary", key="reset_all_btn"):
+            if st.button("Analyze Another Video", use_container_width=True, type="secondary", key="auto_reset_btn"):
                 st.session_state.tab2_processed_video = None
                 st.session_state.tab2_original_video = None
                 st.session_state.tab2_results = None
                 st.session_state.tab2_target = None
                 st.session_state.tab2_show_results = False
+                st.session_state.tab2_processed_file_id = None
                 st.rerun()
 
-    # UPLOAD VIEW
+    # UPLOAD AND AUTO-PROCESS VIEW
     else:
         col1, col2 = st.columns([1, 1])
 
         with col1:
             st.markdown('<h3><i class="fa-solid fa-dumbbell icon-primary"></i> Select Target Exercise</h3>', unsafe_allow_html=True)
             display_names = list(exercise_mapping.values())
-            selected_display = st.selectbox("Choose your exercise:", display_names, key="final_exercise_select")
+            selected_display = st.selectbox("Choose your exercise:", display_names, key="auto_exercise_select")
             target_pose = reverse_mapping[selected_display]
 
             st.markdown(f"""
@@ -1324,30 +1330,20 @@ with tab2:
                 "Choose a video file",
                 type=['mp4', 'mov', 'avi'],
                 help="Upload a video showing your full body performing the exercise",
-                key="final_uploader"
+                key="auto_uploader"
             )
 
         if uploaded is not None:
-            st.markdown("---")
+            current_file_id = f"{uploaded.name}_{uploaded.size}_{target_pose}"
             
-            pc, ac = st.columns([1, 1])
-
-            with pc:
-                st.markdown('<h3><i class="fa-solid fa-film icon-primary"></i> Your Uploaded Video</h3>', unsafe_allow_html=True)
-                video_bytes = uploaded.getvalue()
-                vb64 = base64.b64encode(video_bytes).decode()
+            # Only process if this is a new file or different target
+            if st.session_state.tab2_processed_file_id != current_file_id:
+                st.markdown("---")
+                
+                # Show analysis info immediately
+                st.markdown('<h3 style="text-align: center;"><i class="fa-solid fa-robot icon-primary"></i> Analysis Info</h3>', unsafe_allow_html=True)
                 st.markdown(f"""
-                <div class="video-container">
-                    <video controls muted loop>
-                        <source src="data:video/mp4;base64,{vb64}" type="video/mp4">
-                    </video>
-                </div>
-                """, unsafe_allow_html=True)
-
-            with ac:
-                st.markdown('<h3><i class="fa-solid fa-robot icon-primary"></i> Analysis Info</h3>', unsafe_allow_html=True)
-                st.markdown(f"""
-                <div class="info-box">
+                <div class="info-box" style="text-align: center;">
                     <h3 style="margin-top: 0;"><i class="fa-solid fa-chart-line icon-primary"></i> Ready to Analyze</h3>
                     <p style="font-size: 1rem;"><b><i class="fa-solid fa-bullseye icon-primary"></i> Target:</b> {selected_display}</p>
                     <p style="font-size: 1rem;"><b><i class="fa-solid fa-brain icon-primary"></i> Model:</b> Custom Pose Classifier</p>
@@ -1355,66 +1351,79 @@ with tab2:
                     <p style="font-size: 1rem;"><b><i class="fa-solid fa-gauge-high icon-primary"></i> Processing:</b> Real-time</p>
                 </div>
                 """, unsafe_allow_html=True)
-
-                if st.button("Start AI Analysis", type="primary", use_container_width=True, key="final_analyze_btn"):
-                    with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_input:
-                        tmp_input.write(video_bytes)
-                        input_path = tmp_input.name
+                
+                # Get video bytes
+                video_bytes = uploaded.getvalue()
+                
+                # Create temp file and process
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_input:
+                    tmp_input.write(video_bytes)
+                    input_path = tmp_input.name
+                
+                progress_bar = st.progress(0)
+                status_text = st.empty()
+                
+                status_text.markdown("""
+                <div class="info-box" style="text-align: center;">
+                    <h3><i class="fa-solid fa-spinner fa-spin icon-primary"></i> Analyzing Video...</h3>
+                    <p>Processing frames with AI. This may take a minute.</p>
+                </div>
+                """, unsafe_allow_html=True)
+                
+                # Run analysis
+                res = analyze_video(input_path, target_pose)
+                
+                # Clean up input file
+                try:
+                    os.unlink(input_path)
+                except:
+                    pass
+                
+                if res:
+                    # Read processed video
+                    with open(res['output_path'], 'rb') as f:
+                        st.session_state.tab2_processed_video = f.read()
                     
-                    progress_bar = st.progress(0)
-                    status_text = st.empty()
+                    # Store everything
+                    st.session_state.tab2_original_video = video_bytes
+                    st.session_state.tab2_results = res
+                    st.session_state.tab2_target = target_pose
+                    st.session_state.tab2_show_results = True
+                    st.session_state.tab2_processed_file_id = current_file_id
                     
-                    status_text.markdown("""
-                    <div class="info-box" style="text-align: center;">
-                        <h3><i class="fa-solid fa-spinner fa-spin icon-primary"></i> Analyzing Video...</h3>
-                        <p>Processing frames with AI. This may take a minute.</p>
-                    </div>
-                    """, unsafe_allow_html=True)
+                    # Add to history
+                    if 'exercise_history' not in st.session_state:
+                        st.session_state.exercise_history = []
                     
-                    res = analyze_video(input_path, target_pose)
+                    st.session_state.exercise_history.append({
+                        'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        'target_pose': selected_display,
+                        'detected_pose': exercise_mapping.get(res['detected_pose'], res['detected_pose']),
+                        'accuracy': res['accuracy'],
+                        'confidence': res['confidence']
+                    })
                     
+                    if len(st.session_state.exercise_history) > 50:
+                        st.session_state.exercise_history = st.session_state.exercise_history[-50:]
+                    
+                    # Clean up output file
                     try:
-                        os.unlink(input_path)
+                        os.unlink(res['output_path'])
                     except:
                         pass
                     
-                    if res:
-                        with open(res['output_path'], 'rb') as f:
-                            st.session_state.tab2_processed_video = f.read()
-                        
-                        st.session_state.tab2_original_video = video_bytes
-                        st.session_state.tab2_results = res
-                        st.session_state.tab2_target = target_pose
-                        st.session_state.tab2_show_results = True
-                        
-                        if 'exercise_history' not in st.session_state:
-                            st.session_state.exercise_history = []
-                        
-                        st.session_state.exercise_history.append({
-                            'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            'target_pose': selected_display,
-                            'detected_pose': exercise_mapping.get(res['detected_pose'], res['detected_pose']),
-                            'accuracy': res['accuracy'],
-                            'confidence': res['confidence']
-                        })
-                        
-                        if len(st.session_state.exercise_history) > 50:
-                            st.session_state.exercise_history = st.session_state.exercise_history[-50:]
-                        
-                        try:
-                            os.unlink(res['output_path'])
-                        except:
-                            pass
-                        
-                        progress_bar.progress(1.0)
-                        status_text.success("Processing completed successfully!")
-                        
-                        st.rerun()
-                    else:
-                        status_text.error("Video processing failed. Please check your file and try again.")
+                    progress_bar.progress(1.0)
+                    status_text.success("Processing completed successfully!")
+                    
+                    # Auto redirect to results
+                    st.rerun()
+                else:
+                    status_text.error("Video processing failed. Please check your file and try again.")
         
         else:
-            st.info("Please upload a video file to begin processing.")
+            st.info("Please upload a video file to begin automatic processing.")
+
+
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
@@ -1974,6 +1983,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
