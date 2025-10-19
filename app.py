@@ -1142,7 +1142,6 @@ with tab1:
         </div>
         """, unsafe_allow_html=True)
 
-
 # ==========================================
 # TAB 2: ANALYZE VIDEO - MINIMAL RERUN VERSION
 # ==========================================
@@ -1347,9 +1346,10 @@ with tab2:
             )
             
             if uploaded is not None:
-                file_id = f"{uploaded.name}_{uploaded.size}"
+                st.success(f"Video uploaded: {uploaded.name}")
                 
-                if state['file_id'] != file_id:
+                if st.button("Confirm Upload", type="primary", use_container_width=True, key="confirm_upload_btn"):
+                    file_id = f"{uploaded.name}_{uploaded.size}"
                     video_bytes = uploaded.read()
                     state['video_data'] = video_bytes
                     state['file_id'] = file_id
@@ -1451,7 +1451,6 @@ with tab2:
                         st.rerun()
                     else:
                         status_text.error("Video processing failed. Please check your file and try again.")
-
 
 # ==========================================
 # TAB 3: AI CHAT
@@ -2012,6 +2011,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
