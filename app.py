@@ -1343,10 +1343,23 @@ with tab2:
             )
 
         if uploaded is not None:
-            # Store original video data
-            video_bytes = uploaded.read()
-            st.session_state.original_video_data = video_bytes
+            # Only read file if it's a new upload
+            current_file_id = f"{uploaded.name}_{uploaded.size}"
+            
+            if 'current_upload_id' not in st.session_state:
+                st.session_state.current_upload_id = None
+            
+            if st.session_state.current_upload_id != current_file_id:
+                # New file uploaded - read it
+                video_bytes = uploaded.read()
+                st.session_state.original_video_data = video_bytes
+                st.session_state.current_upload_id = current_file_id
+            
+            # Always update target exercise in case user changed dropdown
             st.session_state.target_exercise = target_pose
+            
+            # Use stored video data
+            video_bytes = st.session_state.original_video_data
 
             st.markdown("---")
 
@@ -2000,6 +2013,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
