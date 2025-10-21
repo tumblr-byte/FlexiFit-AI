@@ -37,7 +37,7 @@ st.markdown("""
    """, unsafe_allow_html=True)
 
 # ==========================================
-# CUSTOM CSS - BEAUTIFUL LIGHT THEME WITH #DEE276
+#  CSS 
 # ==========================================
 st.markdown("""
 <style>
@@ -906,11 +906,11 @@ def chat_with_ai(user_message):
             recommended_exercises.append(ex)
     
     if not recommended_exercises:
-        recommended_exercises = exercises[:3]  # Fallback
+        recommended_exercises = exercises[:3]  
     
     exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in recommended_exercises])
     
-    # AGENT STEP 5: Create contextual prompt
+
     prompt = f"""You are an AGENTIC {st.session_state.user_condition} health coach for middle-class Indian women.
 
 AUTONOMOUS ANALYSIS COMPLETE:
@@ -923,7 +923,7 @@ RECOMMENDED EXERCISES (autonomously selected):
 {exercise_context}
 
 AFFORDABILITY CONSTRAINTS:
-- Budget: ₹50-100/day for food
+- Budget: ₹150/day for food
 - Access: Local Indian markets only
 - Cultural: Indian family meals, vegetarian-friendly
 
@@ -1145,7 +1145,7 @@ with tab1:
 
 
 # ==========================================
-# TAB 2: ANALYZE VIDEO - AUTO PROCESS VERSION
+# TAB 2: ANALYZE VIDEO 
 # ==========================================
 with tab2:
     st.markdown(
@@ -1542,7 +1542,7 @@ with tab3:
         st.info("Start chatting with the AI coach to see autonomous actions!")
 
 # ==========================================
-# TAB 4: HEALTH TRACKING (NEW)
+# TAB 4: HEALTH TRACKING 
 # ==========================================
 with tab4:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-heart-pulse icon-primary"></i> Health Tracking Dashboard</h2>', unsafe_allow_html=True)
@@ -1983,6 +1983,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
