@@ -1972,18 +1972,7 @@ with st.sidebar:
     
     st.markdown("---")
     
-    st.markdown("""
-    <div style="color: #919c08;">
-        <h3 style="color: #919c08; margin-bottom: 1rem;">Conditions Supported</h3>
-        <ul style="list-style: none; padding: 0; color: #262626;">
-            <li style="padding: 0.5rem 0;">• PCOS/PCOD (15M women)</li>
-            <li style="padding: 0.5rem 0;">• Breast Cancer Recovery (10M)</li>
-            <li style="padding: 0.5rem 0;">• Thyroid Management (30M)</li>
-            <li style="padding: 0.5rem 0;">• Pregnancy/Postpartum (20M)</li>
-        </ul>
-        <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
-    </div>
-    """, unsafe_allow_html=True)
+
 
 
 
