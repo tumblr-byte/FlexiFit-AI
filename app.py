@@ -663,15 +663,15 @@ class_names = ["Downdog", "Plank", "Warrior2", "Modified_Tree", "Standard_Tree"]
 # ==========================================
 # HELPER FUNCTIONS
 # ==========================================
-def extract_landmarks(frame):
+def extract_landmarks(frame, pose_detector):
     """Extract pose landmarks from frame"""
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    with mp_pose.Pose(static_image_mode=False) as pose_detector:
-        results = pose_detector.process(frame_rgb)
-        if not results.pose_landmarks:
-            return None, None
-        lm = results.pose_landmarks.landmark
-        return [[l.x, l.y, l.z] for l in lm], results
+    results = pose_detector.process(frame_rgb)
+    if not results.pose_landmarks:
+        return None, None
+    lm = results.pose_landmarks.landmark
+    return [[l.x, l.y, l.z] for l in lm], results
+
 
 def detect_class(lm):
     """Detect exercise class from landmarks"""
@@ -705,47 +705,48 @@ def analyze_video(video_path, target_pose):
     
     total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-        
-        frame_count += 1
-        progress = min(frame_count / total_frames, 1.0)
-        progress_bar.progress(progress)
-        status_text.text(f"Analyzing frame {frame_count}/{total_frames}...")
-        
-        lm, results = extract_landmarks(frame)
-        
-        if lm is not None:
-            class_name, confidence = detect_class(lm)
-            detected_poses.append(class_name)
-            confidences.append(confidence)
+    with mp_pose.Pose(static_image_mode=False) as pose_detector:
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                break
             
-            is_correct = (class_name == target_pose)
-            color = (0, 255, 0) if is_correct else (0, 0, 255)
+            frame_count += 1
+            progress = min(frame_count / total_frames, 1.0)
+            progress_bar.progress(progress)
+            status_text.text(f"Analyzing frame {frame_count}/{total_frames}...")
             
-            mp_drawing.draw_landmarks(
-                frame,
-                results.pose_landmarks,
-                mp_pose.POSE_CONNECTIONS,
-                mp_drawing.DrawingSpec(color=color, thickness=4, circle_radius=4),
-                mp_drawing.DrawingSpec(color=color, thickness=4)
-            )
+            lm, results = extract_landmarks(frame, pose_detector)
             
-            cv2.putText(frame, f"Target: {target_pose}", (20, 40),
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
-            cv2.putText(frame, f"Detected: {class_name}", (20, 90),
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.2, color, 3)
-            cv2.putText(frame, f"Confidence: {confidence*100:.1f}%", (20, 140),
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
+            if lm is not None:
+                class_name, confidence = detect_class(lm)
+                detected_poses.append(class_name)
+                confidences.append(confidence)
+                
+                is_correct = (class_name == target_pose)
+                color = (0, 255, 0) if is_correct else (0, 0, 255)
+                
+                mp_drawing.draw_landmarks(
+                    frame,
+                    results.pose_landmarks,
+                    mp_pose.POSE_CONNECTIONS,
+                    mp_drawing.DrawingSpec(color=color, thickness=4, circle_radius=4),
+                    mp_drawing.DrawingSpec(color=color, thickness=4)
+                )
+                
+                cv2.putText(frame, f"Target: {target_pose}", (20, 40),
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, (255, 255, 255), 3)
+                cv2.putText(frame, f"Detected: {class_name}", (20, 90),
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.2, color, 3)
+                cv2.putText(frame, f"Confidence: {confidence*100:.1f}%", (20, 140),
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
+                
+                status = "CORRECT ✓" if is_correct else "INCORRECT ✗"
+                status_color = (0, 255, 0) if is_correct else (0, 0, 255)
+                cv2.putText(frame, status, (20, height - 30),
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.5, status_color, 4)
             
-            status = "CORRECT ✓" if is_correct else "INCORRECT ✗"
-            status_color = (0, 255, 0) if is_correct else (0, 0, 255)
-            cv2.putText(frame, status, (20, height - 30),
-                       cv2.FONT_HERSHEY_SIMPLEX, 1.5, status_color, 4)
-        
-        out.write(frame)
+            out.write(frame)
     
     cap.release()
     out.release()
@@ -1983,6 +1984,7 @@ with st.sidebar:
         <p style="color: #262626; font-weight: bold; margin-top: 1rem;">Total: 75M+ Indian women</p>
     </div>
     """, unsafe_allow_html=True)
+
 
 
 
