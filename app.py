@@ -956,17 +956,17 @@ def chat_with_ai(user_message):
     - Searches relevant exercises automatically
     - Creates personalized plans
     - Provides condition-specific advice
+    - Responds based on user's explicit budget/ingredients if mentioned
     """
     
+    # Detect if user is searching for exercises
     search_keywords = ["find exercise", "search for", "show me exercise", "recommend exercise", 
                        "what exercise", "exercises for", "help with", "suggest exercise"]
-    
     is_search_query = any(keyword in user_message.lower() for keyword in search_keywords)
-    
-    search_context = ""  # Initialize empty
+    search_context = ""
     
     if is_search_query:
-        # Extract search intent using AI
+        # Extract search keywords using AI
         intent_prompt = f"""Extract the exercise search keywords from this user message.
         Return ONLY the keywords, nothing else.
         
@@ -978,18 +978,13 @@ def chat_with_ai(user_message):
         "What exercises help with fatigue?" → "fatigue energy"
         
         Keywords:"""
-        
         try:
             search_query = gemini_model.generate_content(intent_prompt).text.strip()
-            
-            # Perform hybrid search
             exercises = search_exercises(search_query)
             
-            # Build conversational response with search results
             if exercises:
-                exercise_list = "\n".join([f"• **{ex['name']}** ({ex['difficulty']}): {ex['description'][:100]}..." 
+                exercise_list = "\n".join([f"• **{ex['name']}** ({ex['difficulty']}): {ex['description'][:100]}..."
                                            for ex in exercises[:3]])
-                
                 search_context = f"""
 CONVERSATIONAL SEARCH RESULTS (via Hybrid Search):
 I found {len(exercises)} exercises matching "{search_query}":
@@ -1001,37 +996,35 @@ These were found using HYBRID SEARCH (keyword + semantic vector matching).
             else:
                 search_context = f"I searched for '{search_query}' but didn't find exact matches. Let me suggest alternatives:"
         except:
-            search_context = ""  # If search fails, continue normally
+            search_context = ""
     
-    # AGENT STEP 1: Analyze user's current state
-    recent_health = st.session_state.health_data[-7:] if len(st.session_state.health_data) > 0 else []
-    recent_exercises = st.session_state.exercise_history[-5:] if len(st.session_state.exercise_history) > 0 else []
+    # Step 1: Analyze user's recent health and exercise history
+    recent_health = st.session_state.health_data[-7:] if st.session_state.health_data else []
+    recent_exercises = st.session_state.exercise_history[-5:] if st.session_state.exercise_history else []
     
-    # AGENT STEP 2: Determine user needs autonomously
+    # Step 2: Determine user needs
     user_needs = []
     if recent_health:
-        # Extract common symptoms
         all_symptoms = []
         for entry in recent_health:
             all_symptoms.extend(entry.get('symptoms', []))
         common_symptoms = Counter(all_symptoms).most_common(3)
         user_needs.extend([s[0] for s in common_symptoms])
     
-    # AGENT STEP 3: Autonomously search relevant exercises
+    # Step 3: Search all exercises
     exercises = get_all_exercises()
     
-    # AGENT STEP 4: Filter exercises based on user state
+    # Step 4: Filter exercises based on user needs
     recommended_exercises = []
     for ex in exercises:
-        # Check if exercise matches user needs
         if any(need.lower() in str(ex.get('pcos_benefits', [])).lower() for need in user_needs):
             recommended_exercises.append(ex)
-    
     if not recommended_exercises:
-        recommended_exercises = exercises[:3]  
+        recommended_exercises = exercises[:3]
     
     exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in recommended_exercises])
     
+    # Step 5: Build AI prompt without hardcoded budget
     prompt = f"""You are an AGENTIC {st.session_state.user_condition} health coach for middle-class Indian women.
 
 AUTONOMOUS ANALYSIS COMPLETE:
@@ -1045,24 +1038,21 @@ RECOMMENDED EXERCISES (autonomously selected):
 
 {search_context}
 
-AFFORDABILITY CONSTRAINTS:
-- Budget: ₹150/day for food
-- Access: Local Indian markets only
-- Cultural: Indian family meals, vegetarian-friendly
-
-USER'S QUESTION: {user_message}
+USER'S MESSAGE: {user_message}
 
 PROVIDE:
 1. Direct answer to their question
 2. Personalized recommendation based on their symptoms
-3. Affordable diet suggestion (dal, roti, rice, seasonal vegetables)
+3. Affordable diet suggestion based on user's budget and available ingredients (if mentioned)
 4. Next steps they should take
 
-Be empathetic, specific, and actionable. Reference the exercises I've autonomously selected for them."""
+Be empathetic, specific, and actionable. Reference the exercises I've autonomously selected for them.
+"""
     
+    # Step 6: Generate response from Gemini
     response = gemini_model.generate_content(prompt)
     
-    # AGENT STEP 6: Log autonomous action
+    # Step 7: Log AI action
     agent_action = {
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'user_query': user_message,
@@ -1070,12 +1060,12 @@ Be empathetic, specific, and actionable. Reference the exercises I've autonomous
         'recommended_exercises': len(recommended_exercises),
         'action_taken': 'Autonomous exercise recommendation + personalized advice'
     }
-    
     if 'agent_actions' not in st.session_state:
         st.session_state.agent_actions = []
     st.session_state.agent_actions.append(agent_action)
     
     return response.text
+
 
 def get_exercise_image_path(exercise_name, exercise_id):
     """Get the correct image path for an exercise"""
@@ -1170,6 +1160,7 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Progress Stats"
 ])
 
+
 # ==========================================
 # TAB 1: EXERCISE LIBRARY
 # ==========================================
@@ -1183,96 +1174,60 @@ with tab1:
     </div>
     ''', unsafe_allow_html=True)
     st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #262626; margin-bottom: 2rem;">Browse our curated collection of exercises specifically designed for PCOS/PCOD management</p>', unsafe_allow_html=True)
-    
-    search_query = st.text_input("Search exercises...", placeholder="Try: balance, beginner, stress relief, hormonal balance..." , key="search_exercises_input")
-    
-    if search_query:
-        exercises = search_exercises(search_query)
-        
-        if exercises:
-            search_method = st.session_state.get('last_search_method', 'Keyword')
-            st.markdown(f'''<h3 style="text-align: center; margin: 2rem 0;">
-                   <i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises
-                 <span style="font-size: 0.7rem; color: #919c08; font-weight: 500;"> (via {search_method} Search)</span>
-                  </h3>''', unsafe_allow_html=True)
-            
-            # Show Elastic aggregations analytics
-            if 'search_analytics' in st.session_state and st.session_state.search_analytics:
-                st.markdown('<div class="info-box">', unsafe_allow_html=True)
-                st.markdown('<h4 style="margin-top: 0;">Search Analytics (Powered by Elastic Aggregations)</h4>', unsafe_allow_html=True)
-                
-                col_analytics1, col_analytics2, col_analytics3 = st.columns(3)
-                
-                with col_analytics1:
-                    st.markdown("**Difficulty Breakdown:**")
-                    for bucket in st.session_state.search_analytics['difficulty']:
-                        st.markdown(f"• {bucket['key']}: {bucket['doc_count']} exercises")
-                
-                with col_analytics2:
-                    st.markdown("**Category Distribution:**")
-                    for bucket in st.session_state.search_analytics['category']:
-                        st.markdown(f"• {bucket['key']}: {bucket['doc_count']} exercises")
-                
-                with col_analytics3:
-                    avg_dur = st.session_state.search_analytics['avg_duration']
-                    st.markdown(f"**Average Duration:**")
-                    st.markdown(f"• {avg_dur:.0f} seconds")
-                
-                st.markdown('</div>', unsafe_allow_html=True)
-            
-            cols = st.columns(2)
-            
-            for idx, ex in enumerate(exercises):
-                with cols[idx % 2]:
-                    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-                    
-                    image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
-                    
-                    if os.path.exists(image_name):
-                        img = Image.open(image_name)
-                        img = img.resize((350, 350))
-                        st.image(img, width=350)
-                    else:
-                        st.markdown("""
-                        <div style="background: linear-gradient(135deg, rgba(199, 208, 108, 0.15) 0%, rgba(224, 231, 134, 0.08) 100%); 
-                                    height: 200px; display: flex; align-items: center; justify-content: center;
-                                    border-radius: 12px; color: #919c08; font-size: 1.2rem; border: 2px solid rgba(224, 231, 134, 0.2);
-                                    backdrop-filter: blur(10px);">
-                            <i class="fa-solid fa-image icon-primary" style="font-size: 3rem;"></i>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"### <i class='fa-solid fa-heart-pulse icon-primary'></i> {ex['name']}", unsafe_allow_html=True)
-                    
-                    st.markdown(f"""
-                    <span class="badge badge-primary"><i class="fa-solid fa-layer-group icon-primary"></i> {ex['category']}</span>
-                    <span class="badge badge-warning"><i class="fa-solid fa-signal icon-accent"></i> {ex['difficulty']}</span>
-                    <span class="badge badge-success"><i class="fa-solid fa-clock icon-primary"></i> {ex['duration_seconds']}s</span>
+
+    # Load all exercises directly
+    exercises = get_all_exercises()
+
+    if exercises:
+        st.markdown(f'''<h3 style="text-align: center; margin: 2rem 0;">
+               <i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises
+              </h3>''', unsafe_allow_html=True)
+
+        cols = st.columns(2)
+
+        for idx, ex in enumerate(exercises):
+            with cols[idx % 2]:
+                st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+
+                image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
+
+                if os.path.exists(image_name):
+                    img = Image.open(image_name)
+                    img = img.resize((350, 350))
+                    st.image(img, width=350)
+                else:
+                    st.markdown("""
+                    <div style="background: linear-gradient(135deg, rgba(199, 208, 108, 0.15) 0%, rgba(224, 231, 134, 0.08) 100%); 
+                                height: 200px; display: flex; align-items: center; justify-content: center;
+                                border-radius: 12px; color: #919c08; font-size: 1.2rem; border: 2px solid rgba(224, 231, 134, 0.2);
+                                backdrop-filter: blur(10px);">
+                        <i class="fa-solid fa-image icon-primary" style="font-size: 3rem;"></i>
+                    </div>
                     """, unsafe_allow_html=True)
-                    
-                    st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}", unsafe_allow_html=True)
-                    
-                    with st.expander(" View Details", expanded=False):
-                        st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}", unsafe_allow_html=True)
-                        st.markdown("**<i class='fa-solid fa-star icon-primary'></i> PCOS/PCOD Benefits:**", unsafe_allow_html=True)
-                        for benefit in ex['pcos_benefits']:
-                            st.markdown(f"• {benefit}", unsafe_allow_html=True)
-                    
-                    st.markdown('</div>', unsafe_allow_html=True)
-        else:
-            st.markdown("""
-            <div class="info-box" style="text-align: center; padding: 2rem;">
-                <h3><i class="fa-solid fa-magnifying-glass icon-primary" style="font-size: 2.5rem;"></i></h3>
-                <h3>No exercises found</h3>
-                <p style="font-size: 1.1rem;">Try different keywords like "balance", "beginner", "stress relief", or "hormonal balance"</p>
-            </div>
-            """, unsafe_allow_html=True)
+
+                st.markdown(f"### <i class='fa-solid fa-heart-pulse icon-primary'></i> {ex['name']}", unsafe_allow_html=True)
+
+                st.markdown(f"""
+                <span class="badge badge-primary"><i class="fa-solid fa-layer-group icon-primary"></i> {ex['category']}</span>
+                <span class="badge badge-warning"><i class="fa-solid fa-signal icon-accent"></i> {ex['difficulty']}</span>
+                <span class="badge badge-success"><i class="fa-solid fa-clock icon-primary"></i> {ex['duration_seconds']}s</span>
+                """, unsafe_allow_html=True)
+
+                st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}", unsafe_allow_html=True)
+
+                with st.expander(" View Details", expanded=False):
+                    st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}", unsafe_allow_html=True)
+                    st.markdown("**<i class='fa-solid fa-star icon-primary'></i> PCOS/PCOD Benefits:**", unsafe_allow_html=True)
+                    for benefit in ex['pcos_benefits']:
+                        st.markdown(f"• {benefit}", unsafe_allow_html=True)
+
+                st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="info-box" style="text-align: center; padding: 2.5rem;">
-            <h3><i class="fa-solid fa-search icon-primary" style="font-size: 3rem;"></i></h3>
-            <h2>Search for PCOS/PCOD Exercises</h2>
-            <p style="font-size: 1.1rem;">Type keywords like "balance", "beginner", "stress relief", or "hormonal balance" to find exercises!</p>
+        <div class="info-box" style="text-align: center; padding: 2rem;">
+            <h3><i class="fa-solid fa-magnifying-glass icon-primary" style="font-size: 2.5rem;"></i></h3>
+            <h3>No exercises found</h3>
+            <p style="font-size: 1.1rem;">No exercises available in the library.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -2105,6 +2060,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
