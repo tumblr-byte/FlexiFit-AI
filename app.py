@@ -1153,7 +1153,7 @@ st.markdown("<br>", unsafe_allow_html=True)
 # TABS
 # ==========================================
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
-    "Workout Tracker",
+    "Workout",
     "Analyze Video",
     "AI Coach Chat",
     "Health Tracker",
@@ -1166,14 +1166,8 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # ==========================================
 with tab1:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
-    st.markdown('''
-    <div style="text-align: center; margin: -1rem 0 1rem 0;">
-        <span class="badge-success" style="font-size: 0.9rem;">
-            <i class="fa-solid fa-bolt icon-primary"></i> Hybrid Search Active (BM25 + Vector Embeddings)
-        </span>
-    </div>
-    ''', unsafe_allow_html=True)
-    st.markdown('<p style="text-align: center; font-size: 1.1rem; color: #262626; margin-bottom: 2rem;">Browse our curated collection of exercises specifically designed for PCOS/PCOD management</p>', unsafe_allow_html=True)
+  
+  
 
     # Load all exercises directly
     exercises = get_all_exercises()
@@ -2060,6 +2054,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
