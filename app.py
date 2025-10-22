@@ -1166,25 +1166,60 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 # ==========================================
 with tab1:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
-  
-  
-
-    # Load all exercises directly
-    exercises = get_all_exercises()
-
+    
+    # SEARCH SECTION - NEW CODE STARTS HERE
+    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
+    st.markdown('<h3 style="margin-top: 0;"><i class="fa-solid fa-magnifying-glass icon-primary"></i> Search Exercises</h3>', unsafe_allow_html=True)
+    
+    col_search, col_button = st.columns([3, 1])
+    
+    with col_search:
+        search_query = st.text_input(
+            "Search for exercises",
+            key="tab1_search_input",
+            placeholder="Try: stress relief, beginner, hormonal balance, flexibility...",
+            label_visibility="collapsed"
+        )
+    
+    with col_button:
+        search_clicked = st.button("Search", type="primary", use_container_width=True, key="tab1_search_btn")
+        if st.button("Show All", use_container_width=True, key="tab1_showall_btn"):
+            search_query = ""
+            search_clicked = False
+    
+    # Show search method if search was performed
+    if search_query and search_clicked:
+        search_method = st.session_state.get('last_search_method', 'Hybrid Search (BM25 + Vector)')
+        st.markdown(f"""
+        <div style="background: linear-gradient(135deg, rgba(222, 226, 118, 0.15), rgba(240, 238, 154, 0.1)); 
+                    padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #dee276;">
+        <b>Search Method:</b> {search_method}<br>
+        <b>Technologies:</b> Elasticsearch BM25 (keyword) + Vector Embeddings (semantic)
+        </div>
+        """, unsafe_allow_html=True)
+    
+    st.markdown('</div>', unsafe_allow_html=True)
+    # SEARCH SECTION - NEW CODE ENDS HERE
+    
+    # Load exercises based on search or show all
+    if search_query and search_clicked:
+        exercises = search_exercises(search_query)  # HYBRID SEARCH CALLED HERE
+    else:
+        exercises = get_all_exercises()  # DEFAULT: SHOW ALL
+    
     if exercises:
         st.markdown(f'''<h3 style="text-align: center; margin: 2rem 0;">
                <i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises
               </h3>''', unsafe_allow_html=True)
-
+        
         cols = st.columns(2)
-
+        
         for idx, ex in enumerate(exercises):
             with cols[idx % 2]:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-
+                
                 image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
-
+                
                 if os.path.exists(image_name):
                     img = Image.open(image_name)
                     img = img.resize((350, 350))
@@ -1198,34 +1233,32 @@ with tab1:
                         <i class="fa-solid fa-image icon-primary" style="font-size: 3rem;"></i>
                     </div>
                     """, unsafe_allow_html=True)
-
+                
                 st.markdown(f"### <i class='fa-solid fa-heart-pulse icon-primary'></i> {ex['name']}", unsafe_allow_html=True)
-
+                
                 st.markdown(f"""
                 <span class="badge badge-primary"><i class="fa-solid fa-layer-group icon-primary"></i> {ex['category']}</span>
                 <span class="badge badge-warning"><i class="fa-solid fa-signal icon-accent"></i> {ex['difficulty']}</span>
                 <span class="badge badge-success"><i class="fa-solid fa-clock icon-primary"></i> {ex['duration_seconds']}s</span>
                 """, unsafe_allow_html=True)
-
+                
                 st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}", unsafe_allow_html=True)
-
-                with st.expander(" View Details", expanded=False):
+                
+                with st.expander("View Details", expanded=False):
                     st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}", unsafe_allow_html=True)
                     st.markdown("**<i class='fa-solid fa-star icon-primary'></i> PCOS/PCOD Benefits:**", unsafe_allow_html=True)
                     for benefit in ex['pcos_benefits']:
                         st.markdown(f"• {benefit}", unsafe_allow_html=True)
-
+                
                 st.markdown('</div>', unsafe_allow_html=True)
     else:
         st.markdown("""
         <div class="info-box" style="text-align: center; padding: 2rem;">
             <h3><i class="fa-solid fa-magnifying-glass icon-primary" style="font-size: 2.5rem;"></i></h3>
             <h3>No exercises found</h3>
-            <p style="font-size: 1.1rem;">No exercises available in the library.</p>
+            <p style="font-size: 1.1rem;">Try different search terms or click "Show All"</p>
         </div>
         """, unsafe_allow_html=True)
-
-
 
 # ==========================================
 # TAB 2: ANALYZE VIDEO 
@@ -1506,7 +1539,6 @@ with tab2:
         else:
             st.info("Please upload a video file to begin automatic processing.")
 
-
 # ==========================================
 # TAB 3: AI CHAT
 # ==========================================
@@ -1567,7 +1599,7 @@ with tab3:
     
     st.markdown("---")
     
-    user_input = st.text_input(" Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
+    user_input = st.text_input("Type your message...", key="chat_input", placeholder="Ask me anything about PCOS exercises, nutrition, or wellness...")
     
     col_send, col_clear = st.columns([3, 1])
     
@@ -1582,7 +1614,7 @@ with tab3:
                 if len(st.session_state.chat_history) > 100:
                     st.session_state.chat_history = st.session_state.chat_history[-100:]
                 
-                with st.spinner(" AI Coach is thinking..."):
+                with st.spinner("AI Coach is thinking..."):
                     response = chat_with_ai(user_input)
                 
                 st.session_state.chat_history.append({
@@ -1592,10 +1624,10 @@ with tab3:
                 
                 st.rerun()
             else:
-                st.warning(" Please type a message first!")
+                st.warning("Please type a message first!")
     
     with col_clear:
-        if st.button(" Clear Chat", use_container_width=True):
+        if st.button("Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
     
     # Show Agent Actions Log
@@ -2054,6 +2086,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
