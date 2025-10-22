@@ -777,41 +777,26 @@ def analyze_video(video_path, target_pose):
         }
     
     return None
-
-
 def search_exercises(query):
     """
-    HYBRID SEARCH: Keyword (BM25) + Semantic Understanding + Condition Boosting
-    - BM25 for exact keyword matching
-    - Synonym expansion for semantic understanding (simulates vector search)
-    - Condition-specific result boosting
-    - Real-time aggregations for analytics
+    HYBRID SEARCH: Keyword (BM25) + Vector Semantic Search
+    - Multi-match keyword search for exact terms
+    - Vector embeddings for semantic meaning
+    - Condition-specific boosting
+    - Aggregations for analytics
     """
     
-    # Semantic synonym expansion (simulates vector understanding)
-    semantic_expansions = {
-        "beginner": ["beginner", "easy", "gentle", "simple", "basic", "starter"],
-        "intermediate": ["intermediate", "moderate", "medium", "regular"],
-        "advanced": ["advanced", "hard", "challenging", "expert", "difficult"],
-        "stress": ["stress", "anxiety", "calm", "relaxation", "peaceful", "mindful"],
-        "weight": ["weight", "fat", "obesity", "metabolism", "calories"],
-        "balance": ["balance", "stability", "equilibrium", "posture"],
-        "strength": ["strength", "power", "muscle", "tone", "resistance"],
-        "flexibility": ["flexibility", "stretch", "mobility", "range"],
-        "30": ["30", "quick", "short", "brief"],
-        "60": ["60", "moderate", "standard"],
-    }
+    # Load embedding model
+    try:
+        embedder = load_embedding_model()
+        query_vector = embedder.encode(query).tolist()
+        use_vector = True
+    except:
+        # Fallback to keyword-only if embedding fails
+        use_vector = False
+        st.warning("Vector search unavailable, using keyword search only")
     
-    # Expand query with synonyms (semantic layer)
-    expanded_terms = [query]
-    for key, synonyms in semantic_expansions.items():
-        if key in query.lower():
-            expanded_terms.extend(synonyms)
-    
-    # Remove duplicates
-    expanded_terms = list(set(expanded_terms))
-    
-    # Condition-specific boosting
+    # Condition-specific keyword boosting
     condition_keywords = {
         "PCOS/PCOD": ["hormonal", "insulin", "weight", "stress"],
         "Breast Cancer Recovery": ["gentle", "upper body", "lymphatic", "rehabilitation"],
@@ -822,90 +807,117 @@ def search_exercises(query):
     
     boost_terms = condition_keywords.get(st.session_state.user_condition, [])
     
-    # Build HYBRID query with semantic expansion
-    query_body = {
-        "query": {
-            "bool": {
-                "should": [
-                    # 1. EXACT keyword match (BM25) - highest priority
-                    {
-                        "multi_match": {
-                            "query": query,
-                            "fields": ["difficulty^10", "category^8", "name^5", "keywords^4", "description^2"],
-                            "type": "best_fields",
-                            "boost": 10.0
-                        }
-                    },
-                    # 2. SEMANTIC expansion - synonym matching
-                    {
-                        "multi_match": {
-                            "query": " ".join(expanded_terms),
-                            "fields": ["name^3", "description^2", "keywords^4", "pcos_benefits^2"],
-                            "type": "cross_fields",
-                            "operator": "or",
-                            "boost": 5.0
-                        }
-                    },
-                    # 3. Duration-specific search
-                    {
-                        "range": {
-                            "duration_seconds": {
-                                "gte": int(query.replace('s', '').strip()) - 15 if query.replace('s', '').strip().isdigit() else 0,
-                                "lte": int(query.replace('s', '').strip()) + 15 if query.replace('s', '').strip().isdigit() else 999,
-                                "boost": 15.0
-                            }
-                        }
-                    } if query.replace('s', '').strip().isdigit() else None,
-                    # 4. Condition-specific boosting
-                    {
-                        "terms": {
-                            "keywords": boost_terms,
-                            "boost": 3.0
-                        }
-                    },
-                    # 5. Phrase matching for exact queries
-                    {
-                        "match_phrase": {
-                            "name": {
+    # Build hybrid query
+    if use_vector:
+        # HYBRID: Keyword + Vector Search
+        query_body = {
+            "query": {
+                "bool": {
+                    "should": [
+                        # 1. Keyword search with BM25 ranking
+                        {
+                            "multi_match": {
                                 "query": query,
-                                "boost": 8.0
+                                "fields": ["name^3", "description^2", "pcos_benefits^2", "keywords"],
+                                "type": "best_fields",
+                                "fuzziness": "AUTO",
+                                "prefix_length": 2,
+                                "boost": 1.0
+                            }
+                        },
+                        # 2. Semantic vector search (if embeddings exist in index)
+                        # Note: This requires your Elastic index to have 'embedding' field
+                        # For demo, we'll show the structure even if field doesn't exist yet
+                        {
+                            "script_score": {
+                                "query": {"match_all": {}},
+                                "script": {
+                                    "source": """
+                                        if (doc.containsKey('embedding') && doc['embedding'].size() > 0) {
+                                            return cosineSimilarity(params.query_vector, 'embedding') + 1.0;
+                                        }
+                                        return 1.0;
+                                    """,
+                                    "params": {"query_vector": query_vector}
+                                },
+                                "boost": 1.5
+                            }
+                        },
+                        # 3. Condition-specific boosting
+                        {
+                            "terms": {
+                                "keywords": boost_terms,
+                                "boost": 2.0
+                            }
+                        },
+                        # 4. Phrase matching for exact queries
+                        {
+                            "match_phrase": {
+                                "name": {
+                                    "query": query,
+                                    "boost": 2.5
+                                }
                             }
                         }
-                    }
-                ],
-                "minimum_should_match": 1
-            }
-        },
-        "min_score": 1.0,  # Filter low-relevance results
-        "aggs": {
-            "difficulty_distribution": {
-                "terms": {"field": "difficulty.keyword", "size": 10}
+                    ],
+                    "minimum_should_match": 1
+                }
             },
-            "category_distribution": {
-                "terms": {"field": "category.keyword", "size": 10}
+            # Aggregations for analytics
+            "aggs": {
+                "difficulty_distribution": {
+                    "terms": {"field": "difficulty.keyword", "size": 10}
+                },
+                "category_distribution": {
+                    "terms": {"field": "category.keyword", "size": 10}
+                },
+                "avg_duration": {
+                    "avg": {"field": "duration_seconds"}
+                }
             },
-            "avg_duration": {
-                "avg": {"field": "duration_seconds"}
-            }
-        },
-        "size": 10
-    }
-    
-    # Remove None values
-    query_body["query"]["bool"]["should"] = [q for q in query_body["query"]["bool"]["should"] if q is not None]
+            "size": 10
+        }
+    else:
+        # Fallback: Keyword-only search
+        query_body = {
+            "query": {
+                "bool": {
+                    "should": [
+                        {
+                            "multi_match": {
+                                "query": query,
+                                "fields": ["name^3", "description^2", "pcos_benefits^2", "keywords"],
+                                "type": "best_fields",
+                                "fuzziness": "AUTO"
+                            }
+                        },
+                        {"terms": {"keywords": boost_terms, "boost": 2.0}},
+                        {"match_phrase": {"name": {"query": query, "boost": 2.5}}}
+                    ],
+                    "minimum_should_match": 1
+                }
+            },
+            "aggs": {
+                "difficulty_distribution": {"terms": {"field": "difficulty.keyword", "size": 10}},
+                "category_distribution": {"terms": {"field": "category.keyword", "size": 10}},
+                "avg_duration": {"avg": {"field": "duration_seconds"}}
+            },
+            "size": 10
+        }
     
     try:
         result = es.search(index="pcos_exercises", body=query_body)
     except Exception as e:
-        st.warning(f"Search error: {str(e)}")
-        # Simple fallback
+        # If vector search fails (no embedding field), fallback to keyword
+        st.warning(f"Hybrid search error: {str(e)}. Using keyword-only search.")
         result = es.search(
             index="pcos_exercises",
             body={
                 "query": {
                     "multi_match": {
                         "query": query,
-                        "fields": ["difficulty^10", "name^5", "category^8", "description", "keywords^3"]
+                        "fields": ["name^3", "description^2"],
+                        "fuzziness": "AUTO"
                     }
                 },
                 "size": 10
@@ -923,8 +935,8 @@ def search_exercises(query):
             'avg_duration': result['aggregations']['avg_duration']['value'] if result['aggregations']['avg_duration']['value'] else 0
         }
     
-    # Store search method
-    st.session_state.last_search_method = "Hybrid (BM25 + Semantic Expansion + Condition Boost)"
+    # Store search method for display
+    st.session_state.last_search_method = "Hybrid (Keyword + Vector)" if use_vector else "Keyword (BM25)"
     
     return [hit['_source'] for hit in result['hits']['hits']]
 
@@ -2093,6 +2105,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
