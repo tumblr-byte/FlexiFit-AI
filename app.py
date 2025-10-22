@@ -1160,16 +1160,15 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Progress Stats"
 ])
 
-
 # ==========================================
 # TAB 1: EXERCISE LIBRARY
 # ==========================================
 with tab1:
-    st.markdown('<h2 class="result-header"><i class="fa-solid fa-book icon-primary"></i> PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="result-header">PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
     
-    # SEARCH SECTION - NEW CODE STARTS HERE
+    # SEARCH SECTION
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.markdown('<h3 style="margin-top: 0;"><i class="fa-solid fa-magnifying-glass icon-primary"></i> Search Exercises</h3>', unsafe_allow_html=True)
+    st.markdown('<h3 style="margin-top: 0;">Search Exercises</h3>', unsafe_allow_html=True)
     
     col_search, col_button = st.columns([3, 1])
     
@@ -1199,27 +1198,26 @@ with tab1:
         """, unsafe_allow_html=True)
     
     st.markdown('</div>', unsafe_allow_html=True)
-    # SEARCH SECTION - NEW CODE ENDS HERE
     
     # Load exercises based on search or show all
+    exercises = []
     if search_query and search_clicked:
-        exercises = search_exercises(search_query)  # HYBRID SEARCH CALLED HERE
-    else:
-        exercises = get_all_exercises()  # DEFAULT: SHOW ALL
+        exercises = search_exercises(search_query)  # HYBRID SEARCH
+    elif not search_query:
+        exercises = get_all_exercises()  # Only show all if "Show All" clicked or no query
     
+    # Display exercises
     if exercises:
         st.markdown(f'''<h3 style="text-align: center; margin: 2rem 0;">
-               <i class="fa-solid fa-bullseye icon-primary"></i> Found {len(exercises)} exercises
+               Found {len(exercises)} exercises
               </h3>''', unsafe_allow_html=True)
         
         cols = st.columns(2)
-        
         for idx, ex in enumerate(exercises):
             with cols[idx % 2]:
                 st.markdown('<div class="glass-card">', unsafe_allow_html=True)
                 
                 image_name = get_exercise_image_path(ex.get('name', ''), ex.get('exercise_id', ''))
-                
                 if os.path.exists(image_name):
                     img = Image.open(image_name)
                     img = img.resize((350, 350))
@@ -1230,23 +1228,23 @@ with tab1:
                                 height: 200px; display: flex; align-items: center; justify-content: center;
                                 border-radius: 12px; color: #919c08; font-size: 1.2rem; border: 2px solid rgba(224, 231, 134, 0.2);
                                 backdrop-filter: blur(10px);">
-                        <i class="fa-solid fa-image icon-primary" style="font-size: 3rem;"></i>
+                        <i class="fa-solid fa-image" style="font-size: 3rem;"></i>
                     </div>
                     """, unsafe_allow_html=True)
                 
-                st.markdown(f"### <i class='fa-solid fa-heart-pulse icon-primary'></i> {ex['name']}", unsafe_allow_html=True)
+                st.markdown(f"### {ex['name']}", unsafe_allow_html=True)
                 
                 st.markdown(f"""
-                <span class="badge badge-primary"><i class="fa-solid fa-layer-group icon-primary"></i> {ex['category']}</span>
-                <span class="badge badge-warning"><i class="fa-solid fa-signal icon-accent"></i> {ex['difficulty']}</span>
-                <span class="badge badge-success"><i class="fa-solid fa-clock icon-primary"></i> {ex['duration_seconds']}s</span>
+                <span class="badge badge-primary">{ex['category']}</span>
+                <span class="badge badge-warning">{ex['difficulty']}</span>
+                <span class="badge badge-success">{ex['duration_seconds']}s</span>
                 """, unsafe_allow_html=True)
                 
-                st.markdown(f"**<i class='fa-solid fa-repeat icon-primary'></i> Reps:** {ex['reps']}", unsafe_allow_html=True)
+                st.markdown(f"**Reps:** {ex['reps']}", unsafe_allow_html=True)
                 
                 with st.expander("View Details", expanded=False):
-                    st.markdown(f"**<i class='fa-solid fa-info-circle icon-primary'></i> Description:**\n{ex['description']}", unsafe_allow_html=True)
-                    st.markdown("**<i class='fa-solid fa-star icon-primary'></i> PCOS/PCOD Benefits:**", unsafe_allow_html=True)
+                    st.markdown(f"**Description:**\n{ex['description']}", unsafe_allow_html=True)
+                    st.markdown("**PCOS/PCOD Benefits:**", unsafe_allow_html=True)
                     for benefit in ex['pcos_benefits']:
                         st.markdown(f"• {benefit}", unsafe_allow_html=True)
                 
@@ -1254,11 +1252,11 @@ with tab1:
     else:
         st.markdown("""
         <div class="info-box" style="text-align: center; padding: 2rem;">
-            <h3><i class="fa-solid fa-magnifying-glass icon-primary" style="font-size: 2.5rem;"></i></h3>
             <h3>No exercises found</h3>
             <p style="font-size: 1.1rem;">Try different search terms or click "Show All"</p>
         </div>
         """, unsafe_allow_html=True)
+
 
 # ==========================================
 # TAB 2: ANALYZE VIDEO 
@@ -2086,6 +2084,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
