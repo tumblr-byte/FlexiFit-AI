@@ -999,7 +999,7 @@ These were found using HYBRID SEARCH (keyword + semantic vector matching).
             search_context = ""
     
     # Step 1: Analyze user's recent health and exercise history
-    recent_health = st.session_state.health_data[-7:] if st.session_state.health_data else []
+    recent_health = st.session_state.health_data[-1:] if st.session_state.health_data else []
     recent_exercises = st.session_state.exercise_history[-5:] if st.session_state.exercise_history else []
     
     # Step 2: Determine user needs
@@ -2054,6 +2054,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
