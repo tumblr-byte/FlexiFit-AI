@@ -7,4 +7,5 @@ google-cloud-aiplatform
 Pillow==10.1.0
 numpy==1.26.2
 vertexai
+sentence-transformers
 
