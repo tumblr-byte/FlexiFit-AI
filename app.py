@@ -788,13 +788,12 @@ def search_exercises(query):
     - Aggregations for analytics
     """
     
-    # Load embedding model
+
     try:
         embedder = load_embedding_model()
         query_vector = embedder.encode(query).tolist()
         use_vector = True
     except:
-        # Fallback to keyword-only if embedding fails
         use_vector = False
         st.warning("Vector search unavailable, using keyword search only")
     
@@ -811,58 +810,68 @@ def search_exercises(query):
     
     # Build hybrid query
     if use_vector:
-        # HYBRID: Keyword + Vector Search
         query_body = {
             "query": {
                 "bool": {
-                    "should": [
-                        # 1. Keyword search with BM25 ranking
+                    "must": [
+                        # MUST match keywords (required)
                         {
                             "multi_match": {
                                 "query": query,
-                                "fields": ["name^3", "description^2", "pcos_benefits^2", "keywords"],
+                                "fields": ["name^3", "description^2", "pcos_benefits^2", "keywords", "difficulty", "category"],
                                 "type": "best_fields",
                                 "fuzziness": "AUTO",
-                                "prefix_length": 2,
-                                "boost": 1.0
+                                "prefix_length": 2
                             }
-                        },
-                        # 2. Semantic vector search (if embeddings exist in index)
-                        # Note: This requires your Elastic index to have 'embedding' field
-                        # For demo, we'll show the structure even if field doesn't exist yet
-                        {
-                            "script_score": {
-                                "query": {"match_all": {}},
-                                "script": {
-                                    "source": """
-                                        if (doc.containsKey('embedding') && doc['embedding'].size() > 0) {
-                                            return cosineSimilarity(params.query_vector, 'embedding') + 1.0;
-                                        }
-                                        return 1.0;
-                                    """,
-                                    "params": {"query_vector": query_vector}
-                                },
-                                "boost": 1.5
-                            }
-                        },
-                        # 3. Condition-specific boosting
-                        {
-                            "terms": {
-                                "keywords": boost_terms,
-                                "boost": 2.0
-                            }
-                        },
-                        # 4. Phrase matching for exact queries
+                        }
+                    ],
+                    "should": [
+                   
                         {
                             "match_phrase": {
                                 "name": {
                                     "query": query,
-                                    "boost": 2.5
+                                    "boost": 3.0
                                 }
                             }
+                        },
+                     
+                        {
+                            "terms": {
+                                "keywords": boost_terms,
+                                "boost": 1.5
+                            }
+                        },
+                     
+                        {
+                            "script_score": {
+                                "query": {
+                                    "bool": {
+                                        "must": [
+                                            {
+                                                "multi_match": {
+                                                    "query": query,
+                                                    "fields": ["name", "description", "keywords"]
+                                                }
+                                            }
+                                        ]
+                                    }
+                                },
+                                "script": {
+                                    "source": """
+                                        if (doc.containsKey('embedding') && doc['embedding'].size() > 0) {
+                                            double similarity = cosineSimilarity(params.query_vector, 'embedding');
+                                            return similarity > 0.5 ? similarity : 0;
+                                        }
+                                        return 0;
+                                    """,
+                                    "params": {"query_vector": query_vector}
+                                },
+                                "boost": 2.0,
+                                "min_score": 0.5
+                            }
                         }
-                    ],
-                    "minimum_should_match": 1
+                    ]
                 }
             },
             # Aggregations for analytics
@@ -877,26 +886,28 @@ def search_exercises(query):
                     "avg": {"field": "duration_seconds"}
                 }
             },
-            "size": 10
+            "size": 10,
+            "min_score": 0.1  # Filter out very low relevance scores
         }
     else:
-        # Fallback: Keyword-only search
+        # Fallback: Keyword-only search (MUST match)
         query_body = {
             "query": {
                 "bool": {
-                    "should": [
+                    "must": [
                         {
                             "multi_match": {
                                 "query": query,
-                                "fields": ["name^3", "description^2", "pcos_benefits^2", "keywords"],
+                                "fields": ["name^3", "description^2", "pcos_benefits^2", "keywords", "difficulty", "category"],
                                 "type": "best_fields",
                                 "fuzziness": "AUTO"
                             }
-                        },
-                        {"terms": {"keywords": boost_terms, "boost": 2.0}},
-                        {"match_phrase": {"name": {"query": query, "boost": 2.5}}}
+                        }
                     ],
-                    "minimum_should_match": 1
+                    "should": [
+                        {"match_phrase": {"name": {"query": query, "boost": 3.0}}},
+                        {"terms": {"keywords": boost_terms, "boost": 1.5}}
+                    ]
                 }
             },
             "aggs": {
@@ -904,13 +915,14 @@ def search_exercises(query):
                 "category_distribution": {"terms": {"field": "category.keyword", "size": 10}},
                 "avg_duration": {"avg": {"field": "duration_seconds"}}
             },
-            "size": 10
+            "size": 10,
+            "min_score": 0.1
         }
     
     try:
         result = es.search(index="pcos_exercises", body=query_body)
     except Exception as e:
-        # If vector search fails (no embedding field), fallback to keyword
+        # If vector search fails (no embedding field), fallback to simple keyword
         st.warning(f"Hybrid search error: {str(e)}. Using keyword-only search.")
         result = es.search(
             index="pcos_exercises",
@@ -918,8 +930,9 @@ def search_exercises(query):
                 "query": {
                     "multi_match": {
                         "query": query,
-                        "fields": ["name^3", "description^2"],
-                        "fuzziness": "AUTO"
+                        "fields": ["name^3", "description^2", "keywords", "difficulty", "category"],
+                        "fuzziness": "AUTO",
+                        "minimum_should_match": "75%"
                     }
                 },
                 "size": 10
@@ -937,11 +950,10 @@ def search_exercises(query):
             'avg_duration': result['aggregations']['avg_duration']['value'] if result['aggregations']['avg_duration']['value'] else 0
         }
     
-    # Store search method for display
+    
     st.session_state.last_search_method = "Hybrid (Keyword + Vector)" if use_vector else "Keyword (BM25)"
     
     return [hit['_source'] for hit in result['hits']['hits']]
-
 
 
 def get_all_exercises():
@@ -2109,6 +2121,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
