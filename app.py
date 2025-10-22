@@ -1166,50 +1166,13 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
 with tab1:
     st.markdown('<h2 class="result-header">PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
     
-    # SEARCH SECTION
-    st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.markdown('<h3 style="margin-top: 0;">Search Exercises</h3>', unsafe_allow_html=True)
-    
-    col_search, col_button = st.columns([3, 1])
-    
-    with col_search:
-        search_query = st.text_input(
-            "Search for exercises",
-            key="tab1_search_input",
-            placeholder="Try: stress relief, beginner, hormonal balance, flexibility...",
-            label_visibility="collapsed"
-        )
-    
-    with col_button:
-        search_clicked = st.button("Search", type="primary", use_container_width=True, key="tab1_search_btn")
-        if st.button("Show All", use_container_width=True, key="tab1_showall_btn"):
-            search_query = ""
-            search_clicked = False
-    
-    # Show search method if search was performed
-    if search_query and search_clicked:
-        search_method = st.session_state.get('last_search_method', 'Hybrid Search (BM25 + Vector)')
-        st.markdown(f"""
-        <div style="background: linear-gradient(135deg, rgba(222, 226, 118, 0.15), rgba(240, 238, 154, 0.1)); 
-                    padding: 1rem; border-radius: 8px; margin: 1rem 0; border-left: 4px solid #dee276;">
-        <b>Search Method:</b> {search_method}<br>
-        <b>Technologies:</b> Elasticsearch BM25 (keyword) + Vector Embeddings (semantic)
-        </div>
-        """, unsafe_allow_html=True)
-    
-    st.markdown('</div>', unsafe_allow_html=True)
-    
-    # Load exercises based on search or show all
-    exercises = []
-    if search_query and search_clicked:
-        exercises = search_exercises(search_query)  # HYBRID SEARCH
-    elif not search_query:
-        exercises = get_all_exercises()  # Only show all if "Show All" clicked or no query
+    # Load all exercises directly
+    exercises = get_all_exercises()
     
     # Display exercises
     if exercises:
         st.markdown(f'''<h3 style="text-align: center; margin: 2rem 0;">
-               Found {len(exercises)} exercises
+               Total {len(exercises)} exercises
               </h3>''', unsafe_allow_html=True)
         
         cols = st.columns(2)
@@ -1252,8 +1215,8 @@ with tab1:
     else:
         st.markdown("""
         <div class="info-box" style="text-align: center; padding: 2rem;">
-            <h3>No exercises found</h3>
-            <p style="font-size: 1.1rem;">Try different search terms or click "Show All"</p>
+            <h3>No exercises available</h3>
+            <p style="font-size: 1.1rem;">Please check back later</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -2022,7 +1985,7 @@ with st.sidebar:
     
     st.markdown("""
         <h2 style="color: #919c08; margin: 1rem 0; font-weight: 900; font-size: 1.8rem;">FLEXIFIT AI</h2>
-        <p style="color: #262626; margin: 0; font-size: 1rem;">PCOS/PCOD Exercise Coach</p>
+        <p style="color: #262626; margin: 0; font-size: 1rem;">Exercise Coach</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -2084,6 +2047,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
