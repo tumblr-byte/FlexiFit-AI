@@ -948,7 +948,6 @@ def get_all_exercises():
     )
     return [hit['_source'] for hit in result['hits']['hits']]
 
-
 def chat_with_ai(user_message):
     """
     Agentic AI Coach using Vertex AI
@@ -958,6 +957,7 @@ def chat_with_ai(user_message):
     - Provides condition-specific advice
     - Checks exercise form and health tracking data
     - Shows empathy based on user's health condition
+    - Analyzes ALL health metrics: weight, energy, meals, exercise minutes
     """
     
     # Detect if user is searching for exercises
@@ -1003,7 +1003,7 @@ These were found using HYBRID SEARCH (keyword + semantic vector matching).
     recent_health = st.session_state.health_data[-1:] if st.session_state.health_data else []
     recent_exercises = st.session_state.exercise_history[-5:] if st.session_state.exercise_history else []
     
-    # Step 2: Build exercise performance analysis
+    # Step 2: Build exercise performance analysis (VIDEO UPLOADS)
     exercise_analysis = ""
     if recent_exercises:
         # Analyze recent workouts
@@ -1023,22 +1023,33 @@ These were found using HYBRID SEARCH (keyword + semantic vector matching).
                 )
         
         exercise_analysis = f"""
-EXERCISE HISTORY ANALYSIS:
-I checked your recent workouts and found:
+EXERCISE VIDEO ANALYSIS (Uploaded Videos):
+I checked your recent workout videos and found:
 {chr(10).join(workout_details)}
 
-Total workouts completed: {len(st.session_state.exercise_history)}
+Total workout videos analyzed: {len(st.session_state.exercise_history)}
 """
     else:
         exercise_analysis = """
-EXERCISE HISTORY ANALYSIS:
-I checked and found you haven't uploaded any exercise videos yet for analysis.
+EXERCISE VIDEO ANALYSIS (Uploaded Videos):
+I checked and found you haven't uploaded any exercise videos yet for form analysis.
 """
     
-    # Step 3: Build health tracking analysis
+    # Step 3: Build COMPREHENSIVE health tracking analysis
     health_analysis = ""
     user_needs = []
+    
     if recent_health:
+        latest_entry = recent_health[0]
+        
+        # Extract all data
+        weight = latest_entry.get('weight', 'Not tracked')
+        energy = latest_entry.get('energy', 'Not tracked')
+        exercise_minutes = latest_entry.get('exercise_minutes', 0)
+        meals = latest_entry.get('meals', '')
+        symptoms = latest_entry.get('symptoms', [])
+        
+        # Analyze symptoms
         all_symptoms = []
         for entry in recent_health:
             all_symptoms.extend(entry.get('symptoms', []))
@@ -1046,17 +1057,56 @@ I checked and found you haven't uploaded any exercise videos yet for analysis.
         user_needs.extend([s[0] for s in common_symptoms])
         
         symptom_list = ', '.join([s[0] for s in common_symptoms]) if common_symptoms else 'None reported'
+        
+        # Weight analysis context
+        weight_context = ""
+        if weight != 'Not tracked':
+            weight_context = f"Current weight: {weight} kg"
+            # Add condition-specific weight guidance
+            if st.session_state.user_condition == "PCOS/PCOD":
+                if weight > 75:
+                    weight_context += " (Weight management is important for PCOS)"
+                elif weight < 45:
+                    weight_context += " (Maintaining healthy weight is key)"
+                else:
+                    weight_context += " (Good weight range for your condition)"
+        
+        # Energy context
+        energy_context = f"Energy level: {energy}" if energy != 'Not tracked' else "Energy level: Not tracked"
+        
+        # Exercise minutes context (DIFFERENT from video uploads)
+        exercise_minutes_context = f"Exercise minutes logged today: {exercise_minutes} minutes"
+        if exercise_minutes == 0:
+            exercise_minutes_context += " (No exercise logged today - consider uploading a workout video for form analysis)"
+        
+        # Meals context
+        meals_context = ""
+        if meals and meals.strip():
+            meals_context = f"Meals logged today: {meals[:100]}..."
+        else:
+            meals_context = "No meals logged today"
+        
         health_analysis = f"""
-HEALTH TRACKING ANALYSIS:
+COMPREHENSIVE HEALTH TRACKING ANALYSIS:
 Based on your tracked health data:
 - Days tracked: {len(st.session_state.health_data)}
+- {weight_context}
+- {energy_context}
 - Common symptoms: {symptom_list}
-- Most recent entry: {recent_health[0].get('date', 'N/A')}
+- {exercise_minutes_context}
+- {meals_context}
+- Most recent entry: {latest_entry.get('date', 'N/A')}
+
+IMPORTANT DISTINCTION:
+- "Exercise minutes today" = Self-reported exercise time in health tracker
+- "Video uploads" = Actual workout videos analyzed for form correction
+These are DIFFERENT metrics - one is self-reported, one is AI-analyzed.
 """
     else:
         health_analysis = """
-HEALTH TRACKING ANALYSIS:
+COMPREHENSIVE HEALTH TRACKING ANALYSIS:
 No health tracking data found in your profile.
+You can track: weight, energy levels, symptoms, meals, exercise minutes in the Health Tracker tab.
 """
     
     # Step 4: Search all exercises for recommendations
@@ -1090,13 +1140,19 @@ USER'S MESSAGE: {user_message}
 INSTRUCTIONS:
 1. START with brief empathy about their {st.session_state.user_condition} condition (1-2 sentences acknowledging their journey and challenges)
 2. Answer their question directly and professionally
-3. Reference their actual exercise performance if they have workout history
-4. If they did exercises incorrectly, suggest modifications or form improvements
-5. If they did exercises correctly, acknowledge their good form
-6. Use their health tracking data (if available) to personalize advice
-7. Provide affordable diet suggestions only if user mentions budget or asks about diet
-8. Be empathetic, specific, and actionable
-9. Do not force them to track health or upload exercises - just work with available data
+3. ANALYZE ALL HEALTH METRICS:
+   - Comment on weight if tracked (underweight/healthy/overweight for their condition)
+   - Comment on energy levels if tracked
+   - If asking about diet/budget and meals are already logged, reference those meals for future planning
+   - Comment on exercise minutes (if 0, encourage video upload for form analysis)
+   - Distinguish between "exercise minutes logged" and "video uploads analyzed"
+4. Reference their actual exercise VIDEO performance if they have workout history
+5. If they did exercises incorrectly in videos, suggest modifications or form improvements
+6. If they did exercises correctly in videos, acknowledge their good form
+7. Use their health tracking data (weight, energy, symptoms, meals) to personalize advice
+8. Provide affordable diet suggestions based on Indian middle-class budget
+9. Be empathetic, specific, and actionable
+10. Do not force them to track health or upload exercises - just work with available data
 
 EMPATHY GUIDELINES for {st.session_state.user_condition}:
 - PCOS/PCOD: Acknowledge hormonal challenges, irregular cycles, weight management struggles, insulin resistance
@@ -1105,7 +1161,18 @@ EMPATHY GUIDELINES for {st.session_state.user_condition}:
 - Pregnancy/Postpartum: Honor body changes, new mother challenges, recovery needs
 - General Women's Health: Appreciate commitment to wellness and self-care journey
 
-IMPORTANT: Always start your response with empathy (1-2 sentences), then provide advice. Be conversational but professional. Reference their actual data naturally in your response.
+WEIGHT GUIDANCE BY CONDITION:
+- PCOS/PCOD: Healthy BMI 18.5-24.9, weight management crucial for insulin resistance
+- Thyroid: Weight fluctuations normal, focus on stability
+- Pregnancy/Postpartum: No weight judgment, focus on recovery
+- Breast Cancer Recovery: Gradual healthy weight maintenance
+
+IMPORTANT: 
+- Always start your response with empathy (1-2 sentences)
+- Comment on ALL tracked metrics (weight, energy, symptoms, meals, exercise minutes)
+- Distinguish between self-reported exercise minutes and AI-analyzed video uploads
+- If meals are logged and user asks about diet, reference their logged meals for planning
+- Be conversational but professional
 """
     
     # Step 7: Generate response from Gemini
@@ -1120,7 +1187,10 @@ IMPORTANT: Always start your response with empathy (1-2 sentences), then provide
         'recommended_exercises': len(recommended_exercises),
         'exercise_history_checked': len(recent_exercises) > 0,
         'health_data_checked': len(recent_health) > 0,
-        'action_taken': 'Analyzed user data + provided empathetic personalized advice'
+        'weight_tracked': len(recent_health) > 0 and recent_health[0].get('weight') is not None,
+        'energy_tracked': len(recent_health) > 0 and recent_health[0].get('energy') is not None,
+        'meals_tracked': len(recent_health) > 0 and bool(recent_health[0].get('meals', '').strip()),
+        'action_taken': 'Analyzed comprehensive health data + provided empathetic personalized advice'
     }
     if 'agent_actions' not in st.session_state:
         st.session_state.agent_actions = []
@@ -2110,6 +2180,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
