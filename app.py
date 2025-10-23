@@ -956,7 +956,7 @@ def chat_with_ai(user_message):
     - Searches relevant exercises automatically
     - Creates personalized plans
     - Provides condition-specific advice
-    - Responds based on user's explicit budget/ingredients if mentioned
+    - Checks exercise form and health tracking data
     """
     
     # Detect if user is searching for exercises
@@ -1002,7 +1002,40 @@ These were found using HYBRID SEARCH (keyword + semantic vector matching).
     recent_health = st.session_state.health_data[-1:] if st.session_state.health_data else []
     recent_exercises = st.session_state.exercise_history[-5:] if st.session_state.exercise_history else []
     
-    # Step 2: Determine user needs
+    # Step 2: Build exercise performance analysis
+    exercise_analysis = ""
+    if recent_exercises:
+        # Analyze recent workouts
+        workout_details = []
+        for idx, workout in enumerate(recent_exercises[-3:], 1):
+            target = workout['target_pose']
+            detected = workout['detected_pose']
+            accuracy = workout['accuracy']
+            
+            if target == detected:
+                workout_details.append(
+                    f"Workout {idx}: {target} - CORRECT form (Accuracy: {accuracy:.1f}%)"
+                )
+            else:
+                workout_details.append(
+                    f"Workout {idx}: Target was {target}, but detected {detected} (Accuracy: {accuracy:.1f}%). Consider trying modified version or reviewing form."
+                )
+        
+        exercise_analysis = f"""
+EXERCISE HISTORY ANALYSIS:
+I checked your recent workouts and found:
+{chr(10).join(workout_details)}
+
+Total workouts completed: {len(st.session_state.exercise_history)}
+"""
+    else:
+        exercise_analysis = """
+EXERCISE HISTORY ANALYSIS:
+I checked and found you haven't uploaded any exercise videos yet for analysis.
+"""
+    
+    # Step 3: Build health tracking analysis
+    health_analysis = ""
     user_needs = []
     if recent_health:
         all_symptoms = []
@@ -1010,61 +1043,81 @@ These were found using HYBRID SEARCH (keyword + semantic vector matching).
             all_symptoms.extend(entry.get('symptoms', []))
         common_symptoms = Counter(all_symptoms).most_common(3)
         user_needs.extend([s[0] for s in common_symptoms])
+        
+        symptom_list = ', '.join([s[0] for s in common_symptoms]) if common_symptoms else 'None reported'
+        health_analysis = f"""
+HEALTH TRACKING ANALYSIS:
+Based on your tracked health data:
+- Days tracked: {len(st.session_state.health_data)}
+- Common symptoms: {symptom_list}
+- Most recent entry: {recent_health[0].get('date', 'N/A')}
+"""
+    else:
+        health_analysis = """
+HEALTH TRACKING ANALYSIS:
+No health tracking data found in your profile.
+"""
     
-    # Step 3: Search all exercises
+    # Step 4: Search all exercises for recommendations
     exercises = get_all_exercises()
     
-    # Step 4: Filter exercises based on user needs
+    # Step 5: Filter exercises based on user needs
     recommended_exercises = []
-    for ex in exercises:
-        if any(need.lower() in str(ex.get('pcos_benefits', [])).lower() for need in user_needs):
-            recommended_exercises.append(ex)
+    if user_needs:
+        for ex in exercises:
+            if any(need.lower() in str(ex.get('pcos_benefits', [])).lower() for need in user_needs):
+                recommended_exercises.append(ex)
     if not recommended_exercises:
         recommended_exercises = exercises[:3]
     
     exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in recommended_exercises])
     
-    # Step 5: Build AI prompt without hardcoded budget
+    # Step 6: Build AI prompt
     prompt = f"""You are an AGENTIC {st.session_state.user_condition} health coach for middle-class Indian women.
 
-AUTONOMOUS ANALYSIS COMPLETE:
-- User Condition: {st.session_state.user_condition}
-- Recent Symptoms: {', '.join(user_needs) if user_needs else 'None tracked'}
-- Exercise History: {len(recent_exercises)} workouts completed
-- Health Tracking: {len(recent_health)} days recorded
+{exercise_analysis}
 
-RECOMMENDED EXERCISES (autonomously selected):
+{health_analysis}
+
+RECOMMENDED EXERCISES (autonomously selected based on your data):
 {exercise_context}
 
 {search_context}
 
 USER'S MESSAGE: {user_message}
 
-PROVIDE:
-1. Direct answer to their question
-2. Personalized recommendation based on their symptoms
-3. Affordable diet suggestion based on user's budget and available ingredients (if mentioned)
-4. Next steps they should take
+INSTRUCTIONS:
+1. Answer their question directly and professionally
+2. Reference their actual exercise performance if they have workout history
+3. If they did exercises incorrectly, suggest modifications or form improvements
+4. If they did exercises correctly, acknowledge their good form
+5. Use their health tracking data (if available) to personalize advice
+6. Provide affordable diet suggestions only if user mentions budget or asks about diet
+7. Be empathetic, specific, and actionable
+8. Do not force them to track health or upload exercises - just work with available data
 
-Be empathetic, specific, and actionable. Reference the exercises I've autonomously selected for them.
+Be conversational but professional. Reference their actual data naturally in your response.
 """
     
-    # Step 6: Generate response from Gemini
+    # Step 7: Generate response from Gemini
     response = gemini_model.generate_content(prompt)
     
-    # Step 7: Log AI action
+    # Step 8: Log AI action
     agent_action = {
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'user_query': user_message,
         'identified_needs': user_needs,
         'recommended_exercises': len(recommended_exercises),
-        'action_taken': 'Autonomous exercise recommendation + personalized advice'
+        'exercise_history_checked': len(recent_exercises) > 0,
+        'health_data_checked': len(recent_health) > 0,
+        'action_taken': 'Analyzed user data + provided personalized advice'
     }
     if 'agent_actions' not in st.session_state:
         st.session_state.agent_actions = []
     st.session_state.agent_actions.append(agent_action)
     
     return response.text
+
 
 
 def get_exercise_image_path(exercise_name, exercise_id):
@@ -2047,6 +2100,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
