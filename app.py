@@ -15,17 +15,15 @@ import warnings
 from datetime import datetime, timedelta
 from PIL import Image
 import json
+import pandas as pd
 from collections import Counter
 from sentence_transformers import SentenceTransformer
 
 
-# Suppress warnings
 warnings.filterwarnings('ignore')
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
-# ==========================================
-# PAGE CONFIG
-# ==========================================
+
 st.set_page_config(
     page_title="FlexiFit AI - Women's Health Exercise Coach",
     page_icon="logo.png",
@@ -38,9 +36,8 @@ st.markdown("""
    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet">
    """, unsafe_allow_html=True)
 
-# ==========================================
+
 #  CSS 
-# ==========================================
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700;900&display=swap');
@@ -88,7 +85,7 @@ st.markdown("""
         letter-spacing: 2px;
     }
 
-    /* Glassmorphism cards with brand color accents */
+
     .glass-card {
         background: linear-gradient(135deg, #ffffff 0%, #fefff5 100%);
         backdrop-filter: blur(20px);
@@ -122,7 +119,7 @@ st.markdown("""
         border-color: rgba(222, 226, 118, 0.5);
     }
 
-    /* Exercise cards */
+
     .exercise-card {
         background: linear-gradient(135deg, #ffffff 0%, #fefff8 100%);
         backdrop-filter: blur(15px);
@@ -144,7 +141,6 @@ st.markdown("""
         border-color: rgba(222, 226, 118, 0.4);
     }
 
-    /* Success box with brand color */
     .success-box {
         background: linear-gradient(135deg, rgba(222, 226, 118, 0.12) 0%, rgba(240, 238, 154, 0.08) 100%);
         backdrop-filter: blur(15px);
@@ -172,7 +168,6 @@ st.markdown("""
         color: #2c3e50;
     }
 
-    /* Beautiful buttons with brand color */
     .stButton>button {
         width: 100%;
         border-radius: 12px;
@@ -219,7 +214,7 @@ st.markdown("""
         border-color: #c5cc3d;
     }
 
-    /* Metric cards with brand color */
+
     .metric-card {
         background: linear-gradient(135deg, #ffffff 0%, #fffef5 100%);
         backdrop-filter: blur(20px);
@@ -297,7 +292,6 @@ st.markdown("""
 }
 
 
-    /* Chat messages with updated colors */
     .chat-user {
         background: linear-gradient(135deg, rgba(222, 226, 118, 0.15) 0%, rgba(240, 238, 154, 0.1) 100%);
         backdrop-filter: blur(15px);
@@ -326,7 +320,7 @@ st.markdown("""
         color: #2c3e50;
     }
 
-    /* Tabs with brand color */
+
     .stTabs [data-baseweb="tab-list"] {
         gap: 1.5rem;
         background: linear-gradient(135deg, #ffffff 0%, #fffef8 100%);
@@ -358,14 +352,12 @@ st.markdown("""
         border: 2px solid rgba(222, 226, 118, 0.4);
     }
 
-    /* Progress bar with brand color */
     .stProgress > div > div > div > div {
         background: linear-gradient(135deg, #dee276 0%, #eef18d 100%);
         border-radius: 10px;
         box-shadow: 0 2px 10px rgba(222, 226, 118, 0.5);
     }
 
-    /* Input fields with brand color accents */
     .stTextInput>div>div>input {
         border-radius: 12px;
         border: 2px solid rgba(222, 226, 118, 0.3);
@@ -393,7 +385,6 @@ st.markdown("""
         border: 1px solid rgba(222, 226, 118, 0.3);
     }
 
-    /* Sidebar with brand color gradient */
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #ffffff 0%, #fefff5 100%);
         color: #1C1C1C;
@@ -410,7 +401,6 @@ st.markdown("""
         color: #1C1C1C;
     }
 
-    /* Badges with brand color */
     .badge-primary {
         background: linear-gradient(135deg, rgba(222, 226, 118, 0.3) 0%, rgba(240, 238, 154, 0.2) 100%);
         color: #2c3e50;
@@ -447,7 +437,6 @@ st.markdown("""
         margin: 0.3rem;
     }
 
-    /* Typography */
     h1, h2, h3 {
         color: #62635e;
     }
@@ -464,7 +453,7 @@ st.markdown("""
         font-size: 1rem;
     }
 
-    /* Icon colors */
+
     .icon-primary {
         color: #919c08;
         font-size: 1.2rem;
@@ -479,7 +468,6 @@ st.markdown("""
         vertical-align: middle;
     }
 
-    /* Result display with brand colors */
     .result-header {
         font-size: 2.5rem;
         font-weight: 900;
@@ -513,7 +501,6 @@ st.markdown("""
         box-shadow: 0 10px 40px rgba(255, 107, 107, 0.3);
     }
 
-    /* Animations */
     @keyframes fadeIn {
         from { opacity: 0; }
         to { opacity: 1; }
@@ -586,12 +573,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ==========================================
-# SESSION STATE INITIALIZATION
-# ==========================================
-# ==========================================
-# HEALTH CONDITION SELECTION (NEW)
-# ==========================================
+
 if 'user_condition' not in st.session_state:
     st.session_state.user_condition = "PCOS/PCOD"
 if 'health_data' not in st.session_state:
@@ -602,10 +584,7 @@ if 'exercise_history' not in st.session_state:
 if 'chat_history' not in st.session_state:
     st.session_state.chat_history = []
 
-
-# ==========================================
 # MODEL CLASSES AND LOADING
-# ==========================================
 class PoseClassifier(nn.Module):
     def __init__(self, num_classes):
         super(PoseClassifier, self).__init__()
@@ -658,7 +637,6 @@ def setup_vertex_ai():
     )
     return GenerativeModel("gemini-2.5-flash")
 
-# Load resources
 model, device = load_pose_model()
 es = setup_elasticsearch()
 gemini_model = setup_vertex_ai()
@@ -668,11 +646,7 @@ mp_drawing = mp.solutions.drawing_utils
 
 class_names = ["Downdog", "Plank", "Warrior2", "Modified_Tree", "Standard_Tree"]
 
-# ==========================================
-# HELPER FUNCTIONS
-# ==========================================
 def extract_landmarks(frame, pose_detector):
-    """Extract pose landmarks from frame"""
     frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
     results = pose_detector.process(frame_rgb)
     if not results.pose_landmarks:
@@ -777,26 +751,16 @@ def analyze_video(video_path, target_pose):
         }
     
     return None
-def search_exercises(query):
-    """
-    HYBRID SEARCH: Keyword (BM25) + Vector Semantic Search
-    - Multi-match keyword search for exact terms
-    - Vector embeddings for semantic meaning
-    - Condition-specific boosting
-    - Aggregations for analytics
-    """
     
-    # Load embedding model
+def search_exercises(query):
     try:
         embedder = load_embedding_model()
         query_vector = embedder.encode(query).tolist()
         use_vector = True
     except:
-        # Fallback to keyword-only if embedding fails
         use_vector = False
         st.warning("Vector search unavailable, using keyword search only")
     
-    # Condition-specific keyword boosting
     condition_keywords = {
         "PCOS/PCOD": ["hormonal", "insulin", "weight", "stress"],
         "Breast Cancer Recovery": ["gentle", "upper body", "lymphatic", "rehabilitation"],
@@ -807,14 +771,12 @@ def search_exercises(query):
     
     boost_terms = condition_keywords.get(st.session_state.user_condition, [])
     
-    # Build hybrid query
+
     if use_vector:
-        # HYBRID: Keyword + Vector Search
         query_body = {
             "query": {
                 "bool": {
                     "should": [
-                        # 1. Keyword search with BM25 ranking
                         {
                             "multi_match": {
                                 "query": query,
@@ -825,9 +787,7 @@ def search_exercises(query):
                                 "boost": 1.0
                             }
                         },
-                        # 2. Semantic vector search (if embeddings exist in index)
-                        # Note: This requires your Elastic index to have 'embedding' field
-                        # For demo, we'll show the structure even if field doesn't exist yet
+                      
                         {
                             "script_score": {
                                 "query": {"match_all": {}},
@@ -843,14 +803,14 @@ def search_exercises(query):
                                 "boost": 1.5
                             }
                         },
-                        # 3. Condition-specific boosting
+                     
                         {
                             "terms": {
                                 "keywords": boost_terms,
                                 "boost": 2.0
                             }
                         },
-                        # 4. Phrase matching for exact queries
+                      
                         {
                             "match_phrase": {
                                 "name": {
@@ -860,10 +820,9 @@ def search_exercises(query):
                             }
                         }
                     ],
-                    "minimum_should_match": 1
+                  
                 }
             },
-            # Aggregations for analytics
             "aggs": {
                 "difficulty_distribution": {
                     "terms": {"field": "difficulty.keyword", "size": 10}
@@ -878,7 +837,6 @@ def search_exercises(query):
             "size": 10
         }
     else:
-        # Fallback: Keyword-only search
         query_body = {
             "query": {
                 "bool": {
@@ -908,7 +866,6 @@ def search_exercises(query):
     try:
         result = es.search(index="pcos_exercises", body=query_body)
     except Exception as e:
-        # If vector search fails (no embedding field), fallback to keyword
         st.warning(f"Hybrid search error: {str(e)}. Using keyword-only search.")
         result = es.search(
             index="pcos_exercises",
@@ -924,7 +881,6 @@ def search_exercises(query):
             }
         )
     
-    # Store aggregations
     if 'search_analytics' not in st.session_state:
         st.session_state.search_analytics = {}
     
@@ -935,13 +891,11 @@ def search_exercises(query):
             'avg_duration': result['aggregations']['avg_duration']['value'] if result['aggregations']['avg_duration']['value'] else 0
         }
     
-    # Store search method for display
     st.session_state.last_search_method = "Hybrid (Keyword + Vector)" if use_vector else "Keyword (BM25)"
     
     return [hit['_source'] for hit in result['hits']['hits']]
 
 def get_all_exercises():
-    """Get all exercises from Elasticsearch"""
     result = es.search(
         index="pcos_exercises",
         body={"query": {"match_all": {}}, "size": 10}
@@ -957,7 +911,7 @@ def chat_with_ai(user_message):
     - Provides condition-specific advice
     - Checks exercise form and health tracking data
     - Shows empathy based on user's health condition
-    - Analyzes ALL health metrics: weight, energy, meals, exercise minutes
+    - Analyzes ALL health metrics: period, weight, energy, meals, exercise minutes
     """
     
     # Detect if user is searching for exercises
@@ -999,11 +953,10 @@ These were found using HYBRID SEARCH (keyword + semantic vector matching).
         except:
             search_context = ""
     
-    # Step 1: Analyze user's recent health and exercise history
     recent_health = st.session_state.health_data[-1:] if st.session_state.health_data else []
     recent_exercises = st.session_state.exercise_history[-5:] if st.session_state.exercise_history else []
     
-    # Step 2: Build exercise performance analysis (VIDEO UPLOADS)
+
     exercise_analysis = ""
     if recent_exercises:
         # Analyze recent workouts
@@ -1035,21 +988,20 @@ EXERCISE VIDEO ANALYSIS (Uploaded Videos):
 I checked and found you haven't uploaded any exercise videos yet for form analysis.
 """
     
-    # Step 3: Build COMPREHENSIVE health tracking analysis
     health_analysis = ""
     user_needs = []
     
     if recent_health:
         latest_entry = recent_health[0]
         
-        # Extract all data
+        period_status = latest_entry.get('period_status', 'Not tracked')
         weight = latest_entry.get('weight', 'Not tracked')
         energy = latest_entry.get('energy', 'Not tracked')
         exercise_minutes = latest_entry.get('exercise_minutes', 0)
         meals = latest_entry.get('meals', '')
         symptoms = latest_entry.get('symptoms', [])
         
-        # Analyze symptoms
+
         all_symptoms = []
         for entry in recent_health:
             all_symptoms.extend(entry.get('symptoms', []))
@@ -1058,7 +1010,18 @@ I checked and found you haven't uploaded any exercise videos yet for form analys
         
         symptom_list = ', '.join([s[0] for s in common_symptoms]) if common_symptoms else 'None reported'
         
-        # Weight analysis context
+        
+        period_context = f"Period status today: {period_status}"
+        if period_status != 'Not tracked':
+            if period_status == "No period":
+                period_context += " (No menstruation currently)"
+            elif "Heavy" in period_status:
+                period_context += " (Consider lighter exercises, focus on rest and gentle movement)"
+            elif "Medium" in period_status:
+                period_context += " (Moderate exercise recommended, listen to your body)"
+            elif "Light" in period_status or "Spotting" in period_status:
+                period_context += " (Gentle movement and stretching recommended)"
+        
         weight_context = ""
         if weight != 'Not tracked':
             weight_context = f"Current weight: {weight} kg"
@@ -1071,15 +1034,15 @@ I checked and found you haven't uploaded any exercise videos yet for form analys
                 else:
                     weight_context += " (Good weight range for your condition)"
         
-        # Energy context
+      
         energy_context = f"Energy level: {energy}" if energy != 'Not tracked' else "Energy level: Not tracked"
         
-        # Exercise minutes context (DIFFERENT from video uploads)
+      
         exercise_minutes_context = f"Exercise minutes logged today: {exercise_minutes} minutes"
         if exercise_minutes == 0:
             exercise_minutes_context += " (No exercise logged today - consider uploading a workout video for form analysis)"
         
-        # Meals context
+       
         meals_context = ""
         if meals and meals.strip():
             meals_context = f"Meals logged today: {meals[:100]}..."
@@ -1090,6 +1053,7 @@ I checked and found you haven't uploaded any exercise videos yet for form analys
 COMPREHENSIVE HEALTH TRACKING ANALYSIS:
 Based on your tracked health data:
 - Days tracked: {len(st.session_state.health_data)}
+- {period_context}
 - {weight_context}
 - {energy_context}
 - Common symptoms: {symptom_list}
@@ -1106,13 +1070,13 @@ These are DIFFERENT metrics - one is self-reported, one is AI-analyzed.
         health_analysis = """
 COMPREHENSIVE HEALTH TRACKING ANALYSIS:
 No health tracking data found in your profile.
-You can track: weight, energy levels, symptoms, meals, exercise minutes in the Health Tracker tab.
+You can track: period status, weight, energy levels, symptoms, meals, exercise minutes in the Health Tracker tab.
 """
     
-    # Step 4: Search all exercises for recommendations
+ 
     exercises = get_all_exercises()
     
-    # Step 5: Filter exercises based on user needs
+ 
     recommended_exercises = []
     if user_needs:
         for ex in exercises:
@@ -1123,7 +1087,7 @@ You can track: weight, energy levels, symptoms, meals, exercise minutes in the H
     
     exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in recommended_exercises])
     
-    # Step 6: Build AI prompt with condition-specific empathy
+   
     prompt = f"""You are an AGENTIC {st.session_state.user_condition} health coach for middle-class Indian women.
 
 {exercise_analysis}
@@ -1141,6 +1105,7 @@ INSTRUCTIONS:
 1. START with brief empathy about their {st.session_state.user_condition} condition (1-2 sentences acknowledging their journey and challenges)
 2. Answer their question directly and professionally
 3. ANALYZE ALL HEALTH METRICS:
+   - Comment on period status if tracked (adjust exercise recommendations based on flow intensity - heavy flow needs rest, light flow allows gentle movement)
    - Comment on weight if tracked (underweight/healthy/overweight for their condition)
    - Comment on energy levels if tracked
    - If asking about diet/budget and meals are already logged, reference those meals for future planning
@@ -1149,8 +1114,8 @@ INSTRUCTIONS:
 4. Reference their actual exercise VIDEO performance if they have workout history
 5. If they did exercises incorrectly in videos, suggest modifications or form improvements
 6. If they did exercises correctly in videos, acknowledge their good form
-7. Use their health tracking data (weight, energy, symptoms, meals) to personalize advice
-8.  Provide affordable diet suggestions only if user mentions budget or asks about diet
+7. Use their health tracking data (period, weight, energy, symptoms, meals) to personalize advice
+8. Provide affordable diet suggestions only if user mentions budget or asks about diet
 9. Be empathetic, specific, and actionable
 10. Do not force them to track health or upload exercises - just work with available data
 
@@ -1169,16 +1134,17 @@ WEIGHT GUIDANCE BY CONDITION:
 
 IMPORTANT: 
 - Always start your response with empathy (1-2 sentences)
-- Comment on ALL tracked metrics (weight, energy, symptoms, meals, exercise minutes)
+- Comment on ALL tracked metrics (period, weight, energy, symptoms, meals, exercise minutes)
+- Period tracking is CRITICAL - adjust exercise intensity based on menstrual flow
 - Distinguish between self-reported exercise minutes and AI-analyzed video uploads
 - If meals are logged and user asks about diet, reference their logged meals for planning
 - Be conversational but professional
 """
     
-    # Step 7: Generate response from Gemini
+   
     response = gemini_model.generate_content(prompt)
     
-    # Step 8: Log AI action
+
     agent_action = {
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'user_query': user_message,
@@ -1187,6 +1153,7 @@ IMPORTANT:
         'recommended_exercises': len(recommended_exercises),
         'exercise_history_checked': len(recent_exercises) > 0,
         'health_data_checked': len(recent_health) > 0,
+        'period_tracked': len(recent_health) > 0 and recent_health[0].get('period_status') != 'Not tracked',
         'weight_tracked': len(recent_health) > 0 and recent_health[0].get('weight') is not None,
         'energy_tracked': len(recent_health) > 0 and recent_health[0].get('energy') is not None,
         'meals_tracked': len(recent_health) > 0 and bool(recent_health[0].get('meals', '').strip()),
@@ -1201,7 +1168,6 @@ IMPORTANT:
 
 
 def get_exercise_image_path(exercise_name, exercise_id):
-    """Get the correct image path for an exercise"""
     exercise_name_lower = exercise_name.lower()
     
     if 'downward' in exercise_name_lower or 'down dog' in exercise_name_lower or 'downdog' in exercise_name_lower:
@@ -1217,9 +1183,8 @@ def get_exercise_image_path(exercise_name, exercise_id):
     else:
         return f"{exercise_id}.jpg"
 
-# ==========================================
+
 # MAIN APP LAYOUT
-# ==========================================
 st.markdown("""
 <div style="display: flex; align-items: center; justify-content: center; gap: 1.5rem; margin: 2rem 0;">
     <img src="data:image/png;base64,{}" style="width: 100px; height: auto;">
@@ -1242,9 +1207,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 
 st.markdown(f'<p class="sub-header">Your AI-Powered {st.session_state.user_condition} Exercise Coach with Real-Time Pose Detection</p>', unsafe_allow_html=True)
 
-# ==========================================
-# STATS ROW
-# ==========================================
+
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -1282,9 +1245,8 @@ with col4:
 
 st.markdown("<br>", unsafe_allow_html=True)
 
-# ==========================================
+
 # TABS
-# ==========================================
 tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Workout",
     "Analyze Video",
@@ -1293,9 +1255,8 @@ tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "Progress Stats"
 ])
 
-# ==========================================
+
 # TAB 1: EXERCISE LIBRARY
-# ==========================================
 with tab1:
     st.markdown('<h2 class="result-header">PCOS/PCOD Exercise Library</h2>', unsafe_allow_html=True)
     
@@ -1354,9 +1315,8 @@ with tab1:
         """, unsafe_allow_html=True)
 
 
-# ==========================================
+
 # TAB 2: ANALYZE VIDEO 
-# ==========================================
 with tab2:
     st.markdown(
         '<h2 class="result-header"><i class="fa-solid fa-video icon-primary"></i> Upload & Analyze Your Exercise Video</h2>',
@@ -1375,7 +1335,7 @@ with tab2:
     </div>
     """, unsafe_allow_html=True)
 
-    # Session state initialization
+
     if 'tab2_processed_video' not in st.session_state:
         st.session_state.tab2_processed_video = None
     if 'tab2_original_video' not in st.session_state:
@@ -1398,7 +1358,6 @@ with tab2:
     }
     reverse_mapping = {v: k for k, v in exercise_mapping.items()}
 
-    # RESULTS VIEW
     if st.session_state.tab2_show_results and st.session_state.tab2_results:
         results = st.session_state.tab2_results
         
@@ -1517,7 +1476,6 @@ with tab2:
                 st.session_state.tab2_processed_file_id = None
                 st.rerun()
 
-    # UPLOAD AND AUTO-PROCESS VIEW
     else:
         col1, col2 = st.columns([1, 1])
 
@@ -1546,11 +1504,10 @@ with tab2:
         if uploaded is not None:
             current_file_id = f"{uploaded.name}_{uploaded.size}_{target_pose}"
             
-            # Only process if this is a new file or different target
             if st.session_state.tab2_processed_file_id != current_file_id:
                 st.markdown("---")
                 
-                # Show analysis info immediately
+             
                 st.markdown('<h3 style="text-align: center;"><i class="fa-solid fa-robot icon-primary"></i> Analysis Info</h3>', unsafe_allow_html=True)
                 st.markdown(f"""
                 <div class="info-box" style="text-align: center;">
@@ -1562,10 +1519,9 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Get video bytes
+                
                 video_bytes = uploaded.getvalue()
                 
-                # Create temp file and process
                 with tempfile.NamedTemporaryFile(delete=False, suffix='.mp4') as tmp_input:
                     tmp_input.write(video_bytes)
                     input_path = tmp_input.name
@@ -1580,28 +1536,25 @@ with tab2:
                 </div>
                 """, unsafe_allow_html=True)
                 
-                # Run analysis
+             
                 res = analyze_video(input_path, target_pose)
-                
-                # Clean up input file
                 try:
                     os.unlink(input_path)
                 except:
                     pass
                 
                 if res:
-                    # Read processed video
                     with open(res['output_path'], 'rb') as f:
                         st.session_state.tab2_processed_video = f.read()
                     
-                    # Store everything
+                   
                     st.session_state.tab2_original_video = video_bytes
                     st.session_state.tab2_results = res
                     st.session_state.tab2_target = target_pose
                     st.session_state.tab2_show_results = True
                     st.session_state.tab2_processed_file_id = current_file_id
                     
-                    # Add to history
+                   
                     if 'exercise_history' not in st.session_state:
                         st.session_state.exercise_history = []
                     
@@ -1616,16 +1569,14 @@ with tab2:
                     if len(st.session_state.exercise_history) > 50:
                         st.session_state.exercise_history = st.session_state.exercise_history[-50:]
                     
-                    # Clean up output file
+               
                     try:
                         os.unlink(res['output_path'])
                     except:
                         pass
                     
                     progress_bar.progress(1.0)
-                    status_text.success("Processing completed successfully!")
-                    
-                    # Auto redirect to results
+                    status_text.success("Processing completed successfully!")  
                     st.rerun()
                 else:
                     status_text.error("Video processing failed. Please check your file and try again.")
@@ -1633,9 +1584,8 @@ with tab2:
         else:
             st.info("Please upload a video file to begin automatic processing.")
 
-# ==========================================
+
 # TAB 3: AI CHAT
-# ==========================================
 with tab3:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-comments icon-primary"></i> Chat with Your AI Exercise Coach</h2>', unsafe_allow_html=True)
     
@@ -1724,7 +1674,7 @@ with tab3:
         if st.button("Clear Chat", use_container_width=True):
             st.session_state.chat_history = []
     
-    # Show Agent Actions Log
+
     st.markdown("---")
     st.markdown("### AI Agent Actions Log")
     
@@ -1750,9 +1700,8 @@ with tab3:
     else:
         st.info("Start chatting with the AI coach to see autonomous actions!")
 
-# ==========================================
+
 # TAB 4: HEALTH TRACKING 
-# ==========================================
 with tab4:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-heart-pulse icon-primary"></i> Health Tracking Dashboard</h2>', unsafe_allow_html=True)
     
@@ -1763,7 +1712,7 @@ with tab4:
     </div>
     """, unsafe_allow_html=True)
     
-    # Demo Mode Toggle
+  
     demo_mode = st.checkbox("View Demo Data (90-day journey)", value=True, key="demo_mode_toggle")
     
     if demo_mode:
@@ -1780,12 +1729,11 @@ with tab4:
     with col_left:
         st.markdown("### Daily Check-In")
         
-        # Period tracking
+       
         period_status = st.selectbox("Period Status", 
             ["No period", "Light flow", "Medium flow", "Heavy flow", "Spotting"],
             key="period_status_input")
         
-        # Symptom tracking
         if st.session_state.user_condition == "PCOS/PCOD":
             symptom_options = ["Irregular periods", "Acne", "Hair loss", "Excess hair growth",
                              "Weight gain", "Mood swings", "Anxiety", "Fatigue"]
@@ -1800,28 +1748,25 @@ with tab4:
         
         symptoms = st.multiselect("Symptoms Today", symptom_options, key="symptoms_input")
         
-        # Weight tracking
+      
         weight = st.number_input("Weight (kg)", min_value=30.0, max_value=200.0, value=60.0, step=0.1, key="weight_input")
         
-        # Energy level
+       
         energy = st.select_slider("Energy Level Today", 
             options=["Very Low", "Low", "Moderate", "Good", "Excellent"],
             key="energy_input")
         
-        # Medication
         medication_taken = st.text_input("Medications Taken Today", 
             placeholder="e.g., Metformin 500mg, Vitamin D",
             key="medication_input")
         
-        # Meals
+       
         meals_today = st.text_area("Meals Today (affordable options)",
             placeholder="Breakfast: Poha\nLunch: Dal, roti, sabzi\nDinner: Khichdi",
             key="meals_input")
         
-        # Exercise done
         exercise_today = st.number_input("Exercise Minutes Today", min_value=0, max_value=300, value=0, key="exercise_input")
         
-        # Notes
         notes = st.text_area("Notes for Doctor/Self",
             placeholder="How are you feeling today?",
             key="notes_input")
@@ -1847,7 +1792,6 @@ with tab4:
         st.markdown("### Your Health Trends")
         
         if demo_mode or len(st.session_state.health_data) > 0:
-            # Show demo data
             st.markdown("""
             <div class="glass-card">
             <h4>Weight Trend (Last 30 Days)</h4>
@@ -1855,8 +1799,8 @@ with tab4:
             </div>
             """, unsafe_allow_html=True)
             
-            # Simulated weight data
-            import pandas as pd
+          
+           
             demo_dates = [(datetime.now() - timedelta(days=30-i)).strftime("%Y-%m-%d") for i in range(30)]
             demo_weights = [68 - (i * 0.05) + np.random.uniform(-0.2, 0.2) for i in range(30)]
             
@@ -1866,7 +1810,6 @@ with tab4:
             })
             st.line_chart(chart_data.set_index('Date'))
             
-            # Most common symptoms
             st.markdown("""
             <div class="glass-card">
             <h4>Most Common Symptoms (Last 30 Days)</h4>
@@ -1879,7 +1822,6 @@ with tab4:
             </div>
             """, unsafe_allow_html=True)
             
-            # Exercise consistency
             st.markdown("""
             <div class="glass-card">
             <h4>Exercise Consistency</h4>
@@ -1888,7 +1830,7 @@ with tab4:
             </div>
             """, unsafe_allow_html=True)
             
-            # Doctor report button
+
             st.markdown("---")
             if st.button("Generate Doctor Report", use_container_width=True, type="primary", key="gen_report_btn"):
                 report = f"""
@@ -1932,7 +1874,7 @@ Recommend continuing current routine.
         else:
             st.info("Start tracking today to see your trends!")
     
-    # Insights Section
+   
     st.markdown("---")
     st.markdown("### Insights You'll Unlock Over Time")
     
@@ -1977,9 +1919,8 @@ Recommend continuing current routine.
         </div>
         """, unsafe_allow_html=True)
 
-# ==========================================
+
 # TAB 5: PROGRESS HISTORY
-# ==========================================
 with tab5:
     st.markdown('<h2 class="result-header"><i class="fa-solid fa-chart-line icon-primary"></i> Your Progress & History</h2>', unsafe_allow_html=True)
     
@@ -2106,9 +2047,7 @@ with tab5:
 
 
 
-# ==========================================
 # SIDEBAR
-# ==========================================
 with st.sidebar:
     st.markdown("""
     <div style="text-align: center; padding: 1.5rem 0; margin-bottom: 2rem;">
@@ -2180,6 +2119,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
