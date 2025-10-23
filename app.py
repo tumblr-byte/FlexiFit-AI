@@ -957,6 +957,7 @@ def chat_with_ai(user_message):
     - Creates personalized plans
     - Provides condition-specific advice
     - Checks exercise form and health tracking data
+    - Shows empathy based on user's health condition
     """
     
     # Detect if user is searching for exercises
@@ -1072,7 +1073,7 @@ No health tracking data found in your profile.
     
     exercise_context = "\n".join([f"- {ex['name']}: {ex['description']}" for ex in recommended_exercises])
     
-    # Step 6: Build AI prompt
+    # Step 6: Build AI prompt with condition-specific empathy
     prompt = f"""You are an AGENTIC {st.session_state.user_condition} health coach for middle-class Indian women.
 
 {exercise_analysis}
@@ -1087,16 +1088,24 @@ RECOMMENDED EXERCISES (autonomously selected based on your data):
 USER'S MESSAGE: {user_message}
 
 INSTRUCTIONS:
-1. Answer their question directly and professionally
-2. Reference their actual exercise performance if they have workout history
-3. If they did exercises incorrectly, suggest modifications or form improvements
-4. If they did exercises correctly, acknowledge their good form
-5. Use their health tracking data (if available) to personalize advice
-6. Provide affordable diet suggestions only if user mentions budget or asks about diet
-7. Be empathetic, specific, and actionable
-8. Do not force them to track health or upload exercises - just work with available data
+1. START with brief empathy about their {st.session_state.user_condition} condition (1-2 sentences acknowledging their journey and challenges)
+2. Answer their question directly and professionally
+3. Reference their actual exercise performance if they have workout history
+4. If they did exercises incorrectly, suggest modifications or form improvements
+5. If they did exercises correctly, acknowledge their good form
+6. Use their health tracking data (if available) to personalize advice
+7. Provide affordable diet suggestions only if user mentions budget or asks about diet
+8. Be empathetic, specific, and actionable
+9. Do not force them to track health or upload exercises - just work with available data
 
-Be conversational but professional. Reference their actual data naturally in your response.
+EMPATHY GUIDELINES for {st.session_state.user_condition}:
+- PCOS/PCOD: Acknowledge hormonal challenges, irregular cycles, weight management struggles, insulin resistance
+- Breast Cancer Recovery: Recognize recovery journey, strength through treatment, physical and emotional healing
+- Thyroid Management: Understand energy fluctuations, metabolism concerns, temperature sensitivity
+- Pregnancy/Postpartum: Honor body changes, new mother challenges, recovery needs
+- General Women's Health: Appreciate commitment to wellness and self-care journey
+
+IMPORTANT: Always start your response with empathy (1-2 sentences), then provide advice. Be conversational but professional. Reference their actual data naturally in your response.
 """
     
     # Step 7: Generate response from Gemini
@@ -1106,11 +1115,12 @@ Be conversational but professional. Reference their actual data naturally in you
     agent_action = {
         'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         'user_query': user_message,
+        'user_condition': st.session_state.user_condition,
         'identified_needs': user_needs,
         'recommended_exercises': len(recommended_exercises),
         'exercise_history_checked': len(recent_exercises) > 0,
         'health_data_checked': len(recent_health) > 0,
-        'action_taken': 'Analyzed user data + provided personalized advice'
+        'action_taken': 'Analyzed user data + provided empathetic personalized advice'
     }
     if 'agent_actions' not in st.session_state:
         st.session_state.agent_actions = []
@@ -2100,6 +2110,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
