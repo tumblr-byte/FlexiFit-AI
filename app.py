@@ -1150,7 +1150,7 @@ INSTRUCTIONS:
 5. If they did exercises incorrectly in videos, suggest modifications or form improvements
 6. If they did exercises correctly in videos, acknowledge their good form
 7. Use their health tracking data (weight, energy, symptoms, meals) to personalize advice
-8. Provide affordable diet suggestions based on Indian middle-class budget
+8.  Provide affordable diet suggestions only if user mentions budget or asks about diet
 9. Be empathetic, specific, and actionable
 10. Do not force them to track health or upload exercises - just work with available data
 
@@ -2180,6 +2180,7 @@ with st.sidebar:
     
     st.markdown("---")
     
+
 
 
 
